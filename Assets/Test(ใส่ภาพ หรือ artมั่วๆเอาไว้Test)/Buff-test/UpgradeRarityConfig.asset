@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d77735eb47710974899982ed29ffa51c, type: 3}
+  m_Name: UpgradeRarityConfig
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeRarityConfigSO
+  rarityVisuals:
+  - rarity: 0
+    frameTexture: {fileID: 2800000, guid: f603288fedf08c242a0fdbf1710ab96c, type: 3}
+    frameColor: {r: 1, g: 1, b: 1, a: 0}
+    framePrefab: {fileID: 8033181055448807177, guid: ceb696a044635a1439754b6891d8c6f5, type: 3}
+  - rarity: 1
+    frameTexture: {fileID: 2800000, guid: f603288fedf08c242a0fdbf1710ab96c, type: 3}
+    frameColor: {r: 1, g: 1, b: 1, a: 0}
+    framePrefab: {fileID: 6434808111111567458, guid: 5b007544f3d81ed44925bd2a4c01e262, type: 3}
+  - rarity: 2
+    frameTexture: {fileID: 2800000, guid: f603288fedf08c242a0fdbf1710ab96c, type: 3}
+    frameColor: {r: 1, g: 1, b: 1, a: 0}
+    framePrefab: {fileID: 7154944624910683344, guid: b15856b67761c3e4daee1f2c721f755d, type: 3}
+  - rarity: 3
+    frameTexture: {fileID: 2800000, guid: f603288fedf08c242a0fdbf1710ab96c, type: 3}
+    frameColor: {r: 1, g: 1, b: 1, a: 0}
+    framePrefab: {fileID: 7472899574662895178, guid: 7c1be5ae2f6ae9f49aef8474058c0d4c, type: 3}
+  - rarity: 4
+    frameTexture: {fileID: 2800000, guid: f603288fedf08c242a0fdbf1710ab96c, type: 3}
+    frameColor: {r: 1, g: 1, b: 1, a: 0}
+    framePrefab: {fileID: 5407160288780814796, guid: 31e77b7d6967c0e439a05e000a21ac40, type: 3}

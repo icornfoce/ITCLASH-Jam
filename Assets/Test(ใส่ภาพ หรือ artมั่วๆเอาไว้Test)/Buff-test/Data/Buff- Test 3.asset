@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db6606c273ce912448875559b713d8a2, type: 3}
+  m_Name: Buff- Test 3
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeItemSO
+  itemName: MM
+  description: UU
+  icon: {fileID: 2800000, guid: 6f4d5835c657ac04b815086bf3d1e68b, type: 3}
+  rarity: 2
+  baseWeight: 100
+  maxLevel: 3
+  codeForBuff:
+  - {fileID: 11400000, guid: 31663aca2b8e4934ea8dbeeb8583e9aa, type: 2}
+  runtimeWeight: 100

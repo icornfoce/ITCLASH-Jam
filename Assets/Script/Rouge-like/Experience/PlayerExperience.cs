@@ -19,9 +19,11 @@ public class PlayerExperience : MonoBehaviour
     [Tooltip("ตัวคูณ Exp เช่น โบนัส 10% ให้ใส่ 10")]
     public float expGrowthRate = 0f; 
 
-    // เหตุการณ์สำหรับการเรียกใช้ตอนอัพเวล และตอนได้รับ EXP (เพื่อเอาไปรบกวนกับ UI)
     public Action<int> OnLevelUp;
     public Action<float, float> OnExpChanged; // CurrentEXP, MaxEXP
+
+    [HideInInspector] 
+    public int queuedLevelUps = 0; // คิวสำหรับ Level Up ที่รอผู้เล่นกดบัฟ
 
     private void Awake()
     {
@@ -61,8 +63,40 @@ public class PlayerExperience : MonoBehaviour
             
             CalculateNextLevelExp();
             
+            // ข้ามการสุ่มบัฟให้ที่เลเวลเริ่มต้น (เพราะ 1 ไป 2 ถึงจะได้บัฟแรก)
+            if (currentLevel > 1)
+            {
+                queuedLevelUps++;
+            }
+            
             OnLevelUp?.Invoke(currentLevel);
             Debug.Log($"Level Up! Now Level {currentLevel}");
+        }
+
+        ProcessLevelUpQueue();
+    }
+
+    // ฟังก์ชันจัดการดึงคิวพาเนลออกมาโชว์
+    public void ProcessLevelUpQueue()
+    {
+        // หากมีพาเนลกำลังใช้งานอยู่ (ผู้เล่นกำลังเลือกบัฟ) ให้หยุดกระบวนการนี้ รอจนกว่า UI จะปิดลง
+        if (LevelUpManager.Instance != null && LevelUpManager.Instance.IsPanelActive())
+        {
+            return;
+        }
+
+        if (queuedLevelUps > 0)
+        {
+            queuedLevelUps--;
+            if (LevelUpManager.Instance != null)
+            {
+                LevelUpManager.Instance.ShowLevelUpPanel();
+            }
+            else
+            {
+                Debug.LogWarning("[PlayerExperience] ไม่พบ LevelUpManager ในฉาก ระบบจะเคลียร์คิวทิ้งอัตโนมัติ");
+                ProcessLevelUpQueue();
+            }
         }
     }
 

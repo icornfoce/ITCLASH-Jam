@@ -71,7 +71,7 @@ public class DevPanelController : MonoBehaviour
         // ------------------------------------------------
         if (Input.GetKeyDown(KeyCode.J))
         {
-            Enemy[] allEnemies = FindObjectsOfType<Enemy>();
+            Enemy[] allEnemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
             int count = 0;
             
             foreach (Enemy e in allEnemies)
@@ -88,7 +88,7 @@ public class DevPanelController : MonoBehaviour
         // ------------------------------------------------
         if (Input.GetKeyDown(KeyCode.K))
         {
-            Enemy[] allEnemies = FindObjectsOfType<Enemy>();
+            Enemy[] allEnemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
             Enemy closest = null;
             float minDistance = float.MaxValue;
 

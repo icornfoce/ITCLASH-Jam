@@ -91,11 +91,24 @@ public class PlayerController : MonoBehaviour
         // --- อัปเดต Animation สำหรับ 2D Blend Tree ---
         if (animator != null)
         {
-            animator.SetFloat(horizontalParam, x, animationDampTime, Time.deltaTime);
-            animator.SetFloat(verticalParam, z, animationDampTime, Time.deltaTime);
+            if (HasParameter(horizontalParam)) animator.SetFloat(horizontalParam, x, animationDampTime, Time.deltaTime);
+            if (HasParameter(verticalParam)) animator.SetFloat(verticalParam, z, animationDampTime, Time.deltaTime);
             
-            float inputMagnitude = new Vector2(x, z).magnitude;
-            animator.SetFloat(speedParam, inputMagnitude * walkSpeed, animationDampTime, Time.deltaTime);
+            if (HasParameter(speedParam))
+            {
+                float inputMagnitude = new Vector2(x, z).magnitude;
+                animator.SetFloat(speedParam, inputMagnitude * walkSpeed, animationDampTime, Time.deltaTime);
+            }
         }
+    }
+
+    private bool HasParameter(string paramName)
+    {
+        if (string.IsNullOrEmpty(paramName) || animator == null) return false;
+        foreach (AnimatorControllerParameter param in animator.parameters)
+        {
+            if (param.name == paramName) return true;
+        }
+        return false;
     }
 }
