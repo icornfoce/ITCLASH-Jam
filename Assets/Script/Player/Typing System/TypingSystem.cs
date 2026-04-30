@@ -1,5 +1,7 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
+using UnityEngine.EventSystems;
 
 public class TypingSystem : MonoBehaviour
 {
@@ -7,13 +9,34 @@ public class TypingSystem : MonoBehaviour
     [SerializeField] private GameObject typingUI; 
     [SerializeField] private TMP_InputField inputField;
 
+    [Header("Vignette Effects")]
+    [Tooltip("ลาก Q_Vignette_Base (ตั้งเป็นสีโทนมืด) มาใส่ช่องนี้")]
+    [SerializeField] private Q_Vignette_Base typingVignette;
+    [Tooltip("ความเร็วในการเข้มขึ้น/จางลงของ Overlay")]
+    [SerializeField] private float overlayFadeSpeed = 10f;
+    [Tooltip("ความเข้มสูงสุดตอนพิมพ์ (0-1)")]
+    [SerializeField] private float maxOverlayAlpha = 0.8f;
+
+    private float currentOverlayAlpha = 0f;
+
     [Header("Matched Items Slots")]
     [SerializeField] private ItemInfo firstItem;
     [SerializeField] private ItemInfo secondItem;
 
     [Header("Settings")]
     [Range(0.1f, 1f)] [SerializeField] private float slowTimeScale = 0.2f;
+    [SerializeField] private Transform shakeTransform; 
+    
+    [Header("Shake Settings (Local Fallback)")]
+    [SerializeField] private int shakeWordLengthThreshold = 10;
+    [SerializeField] private float shakeDuration = 0.3f;
+    [SerializeField] private float shakeMagnitude = 0.2f;
+
+    [Header("Shake Settings (Scriptable Object)")]
+    [SerializeField] private TypingShakeSettings shakeSettings; 
+    
     private bool isSlowed = false;
+    private bool needsFocus = false;
 
     [Header("Audio Effects")]
     [SerializeField] private AudioSource audioSource;
@@ -27,7 +50,14 @@ public class TypingSystem : MonoBehaviour
     [SerializeField] private GameObject matchVFXPrefab;
     [SerializeField] private GameObject combineVFXPrefab;
     [SerializeField] private GameObject releaseVFXPrefab;
-    [SerializeField] private Transform vfxSpawnPoint; // Where to spawn player-centered VFX
+    [SerializeField] private GameObject correctTypingVFXPrefab;
+    [SerializeField] private GameObject errorTypingVFXPrefab;
+    [SerializeField] private GameObject typingSuccessVFXPrefab;
+    [SerializeField] private GameObject typingFailureVFXPrefab;
+
+    [Header("Real-time SFX")]
+    [SerializeField] private AudioClip typingSuccessSFX;
+    [SerializeField] private AudioClip typingFailureSFX;
 
     [Header("Item Spawning Settings")]
     [SerializeField] private Transform playerTransform; // ลาก Player มาใส่ตรงนี้ (ถ้าไม่ใส่จะหา Tag "Player" อัตโนมัติ)
@@ -40,6 +70,7 @@ public class TypingSystem : MonoBehaviour
     
     private GameObject spawnedFirst;
     private GameObject spawnedSecond;
+    private Vector3 currentShakeOffset;
 
     // Properties to access the current main item
     public string ItemName => firstItem?.itemName ?? string.Empty;
@@ -53,7 +84,7 @@ public class TypingSystem : MonoBehaviour
         {
             foreach (var item in itemData.items)
             {
-                item.isUnlocked = false;
+                item.isUnlocked = true;
             }
         }
 
@@ -64,13 +95,35 @@ public class TypingSystem : MonoBehaviour
             if (player != null) playerTransform = player.transform;
             else playerTransform = transform; // ถ้าหาไม่เจอจริงๆ ให้ใช้ตัวเองไปก่อน
         }
+
+        // กำหนดโปร่งใสเริ่มต้น
+        if (typingVignette != null)
+        {
+            currentOverlayAlpha = 0f;
+            SetTypingVignetteAlpha(0f);
+            typingVignette.gameObject.SetActive(false);
+        }
+
+        // Subscribe to input changes
+        if (inputField != null)
+        {
+            inputField.onValueChanged.AddListener(OnInputValueChanged);
+        }
     }
+
+
 
     void Update()
     {
         if (Input.GetMouseButtonDown(1))
         {
             ReleaseItem();
+            
+            // ให้คลิกขวาปิดหน้าต่างพิมพ์และค่อยๆ จาง Vignette เหมือนการกด ESC
+            if (isSlowed)
+            {
+                SetSlowMotion(false);
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.E) && !isSlowed)
@@ -83,8 +136,101 @@ public class TypingSystem : MonoBehaviour
             SetSlowMotion(false);
         }
 
+        // ตรวจสอบการกด Enter เพื่อส่งคำศัพท์ (ส่งเฉพาะตอนที่เปิดหน้าต่างพิมพ์อยู่)
+        if (isSlowed && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
+        {
+            if (inputField != null)
+            {
+                if (!string.IsNullOrEmpty(inputField.text))
+                {
+                    TryMatchItem(inputField.text.Trim());
+                }
+                else
+                {
+                    // ถ้าช่องว่างแล้วกด Enter ก็ปิดหน้าต่างพิมพ์ (เหมือนกด ESC)
+                    SetSlowMotion(false);
+                }
+                
+                inputField.text = "";
+            }
+        }
+
+        // อัปเดตความเข้มของ Q Vignette ตอนพิมพ์
+        if (typingVignette != null)
+        {
+            float targetAlpha = isSlowed ? maxOverlayAlpha : 0f;
+            // ใช้ Time.unscaledDeltaTime เพราะเกมถูก slow อยู่
+            currentOverlayAlpha = Mathf.MoveTowards(currentOverlayAlpha, targetAlpha, overlayFadeSpeed * Time.unscaledDeltaTime);
+            SetTypingVignetteAlpha(currentOverlayAlpha);
+
+            if (currentOverlayAlpha > 0 && !typingVignette.gameObject.activeSelf)
+            {
+                typingVignette.gameObject.SetActive(true);
+            }
+            else if (currentOverlayAlpha <= 0 && typingVignette.gameObject.activeSelf)
+            {
+                typingVignette.gameObject.SetActive(false);
+            }
+        }
+
+        // บังคับโฟกัสช่องพิมพ์จนกว่าจะสำเร็จ
+        if (needsFocus && inputField != null)
+        {
+            // บังคับให้สถานะพร้อมใช้งาน
+            inputField.interactable = true;
+            inputField.enabled = true;
+
+            if (!inputField.isFocused)
+            {
+                inputField.Select();
+                inputField.ActivateInputField();
+                
+                if (EventSystem.current != null)
+                {
+                    // บังคับเลือกวัตถุ
+                    EventSystem.current.SetSelectedGameObject(inputField.gameObject);
+                    
+                    // จำลองการคลิก
+                    PointerEventData eventData = new PointerEventData(EventSystem.current);
+                    inputField.OnPointerClick(eventData);
+                }
+            }
+            else
+            {
+                needsFocus = false;
+                // เลื่อนไปท้ายสุดเพื่อความพร้อม
+                inputField.MoveTextEnd(false);
+            }
+        }
+
         // ทำให้ไอเทมที่ลอยอยู่มีการขยับขึ้นลง (Bobbing Effect)
         ApplyFloatingEffect();
+    }
+
+    void LateUpdate()
+    {
+        if (currentShakeOffset != Vector3.zero)
+        {
+            Transform target = shakeTransform != null ? shakeTransform : (Camera.main != null ? Camera.main.transform : null);
+            if (target != null)
+            {
+                target.localPosition += currentShakeOffset;
+            }
+        }
+    }
+
+    private void SetTypingVignetteAlpha(float alpha)
+    {
+        if (typingVignette.cornerImages == null) return;
+        for (int i = 0; i < typingVignette.cornerImages.Length; i++)
+        {
+            if (typingVignette.cornerImages[i] != null)
+            {
+                Color c = typingVignette.cornerImages[i].color;
+                c.a = alpha;
+                typingVignette.cornerImages[i].color = c;
+            }
+        }
     }
 
     private void ApplyFloatingEffect()
@@ -134,47 +280,113 @@ public class TypingSystem : MonoBehaviour
 
     public bool TryMatchItem(string input)
     {
-        if (itemData == null) return false;
+        Debug.Log($"<color=white>[TypingSystem] Attempting to match: '{input}'</color>");
+        
+        if (itemData == null) 
+        {
+            Debug.LogError("[TypingSystem] ItemData is NOT assigned in the Inspector!");
+            return false;
+        }
+
+        if (itemData.items == null || itemData.items.Count == 0)
+        {
+            Debug.LogWarning("[TypingSystem] ItemData list is empty!");
+        }
+
+        // Check for special commands
+        if (string.Equals(input, "logout", System.StringComparison.OrdinalIgnoreCase))
+        {
+            Debug.Log("[TypingSystem] Logout command triggered.");
+            #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+            #else
+                Application.Quit();
+            #endif
+            SetSlowMotion(false);
+            return true;
+        }
 
         foreach (var item in itemData.items)
         {
-            if (string.Equals(item.itemName, input, System.StringComparison.OrdinalIgnoreCase))
+            bool isMatch = string.Equals(item.itemName, input, System.StringComparison.OrdinalIgnoreCase);
+            
+            if (isMatch)
             {
+                Debug.Log($"[TypingSystem] MATCH FOUND: '{item.itemName}' (Unlocked: {item.isUnlocked})");
+                
                 if (item.isUnlocked) // เช็คว่าปลดล็อค (แตะในด่าน) แล้วหรือยัง
                 {
+                    // Determine settings (Use SO if assigned, otherwise use local)
+                    int threshold = shakeSettings != null ? shakeSettings.wordLengthThreshold : shakeWordLengthThreshold;
+                    float duration = shakeSettings != null ? shakeSettings.duration : shakeDuration;
+                    float magnitude = shakeSettings != null ? shakeSettings.magnitude : shakeMagnitude;
+
+                    Debug.Log($"[TypingSystem] Triggering Effects for '{input}'. Length: {input.Length}, Threshold: {threshold}");
+                    
+                    // Shake screen if word is long enough
+                    if (input.Length >= threshold)
+                    {
+                        StartCoroutine(ShakeScreen(duration, magnitude));
+                    }
+                    else
+                    {
+                        Debug.Log($"[TypingSystem] Word too short for shake ({input.Length} < {threshold})");
+                    }
+
+                    SpawnVFX(correctTypingVFXPrefab, playerTransform.position);
                     ProcessItemMatch(item);
                     SetSlowMotion(false);
                     return true;
                 }
                 else
                 {
-                    Debug.Log($"Item {item.itemName} is found but not unlocked yet!");
-                    break; // ไม่ return true เพื่อให้เล่นเสียง Error
+                    Debug.LogWarning($"[TypingSystem] Item '{item.itemName}' is locked!");
+                    break; 
                 }
             }
         }
 
+        Debug.LogWarning($"[TypingSystem] No match found for '{input}' in {itemData.items.Count} items.");
+        
+        // ถ้าพิมพ์ผิด หรือหาไม่เจอ ให้ปิดหน้าต่างพิมพ์เหมือนกัน
+        SpawnVFX(errorTypingVFXPrefab, playerTransform.position);
+        SetSlowMotion(false);
         PlaySFX(errorSFX);
         return false;
     }
 
     private void ProcessItemMatch(ItemInfo matchedItem)
     {
+        // ถ้าช่องแรกว่าง ให้ใส่ช่องแรก
         if (firstItem == null || string.IsNullOrEmpty(firstItem.itemName))
         {
             firstItem = matchedItem;
             spawnedFirst = SpawnItemAtOffset(firstItem, firstSlotOffset);
             
             PlaySFX(matchSFX);
-            SpawnVFX(matchVFXPrefab, vfxSpawnPoint != null ? vfxSpawnPoint.position : transform.position);
+            SpawnVFX(matchVFXPrefab, spawnedFirst.transform.position);
             Debug.Log($"<color=cyan>First Item: {firstItem.itemName}</color>");
         }
-        else
+        // ถ้าช่องสองว่าง ให้ใส่ช่องสอง
+        else if (secondItem == null || string.IsNullOrEmpty(secondItem.itemName))
         {
             secondItem = matchedItem;
             spawnedSecond = SpawnItemAtOffset(secondItem, secondSlotOffset);
             
+            PlaySFX(matchSFX);
+            SpawnVFX(matchVFXPrefab, spawnedSecond.transform.position);
             Debug.Log($"<color=cyan>Second Item: {secondItem.itemName}</color>");
+            CheckCombination();
+        }
+        // ถ้าเต็มทั้งสองช่อง ให้เปลี่ยนอันที่สองเป็นอันใหม่
+        else
+        {
+            if (spawnedSecond != null) Destroy(spawnedSecond);
+            secondItem = matchedItem;
+            spawnedSecond = SpawnItemAtOffset(secondItem, secondSlotOffset);
+            
+            PlaySFX(matchSFX);
+            SpawnVFX(matchVFXPrefab, spawnedSecond.transform.position);
             CheckCombination();
         }
     }
@@ -269,66 +481,72 @@ public class TypingSystem : MonoBehaviour
                 // ตั้งค่าไอเทมใหม่
                 firstItem = combo.resultItem;
                 secondItem = null;
+                spawnedSecond = null;
                 
                 // สร้างไอเทมผลลัพธ์
                 spawnedFirst = SpawnItemAtOffset(firstItem, firstSlotOffset);
-                spawnedSecond = null;
                 
                 PlaySFX(combineSFX);
-                SpawnVFX(combineVFXPrefab, vfxSpawnPoint != null ? vfxSpawnPoint.position : transform.position);
+                SpawnVFX(combineVFXPrefab, spawnedFirst.transform.position);
                 return;
             }
         }
         
-        Debug.Log("No combination found. Replacing first item with latest.");
-        
-        // ถ้าผสมไม่ได้ ให้เอาอันที่สองมาแทนอันแรก
-        if (spawnedFirst != null) Destroy(spawnedFirst);
-        
-        firstItem = secondItem;
-        spawnedFirst = spawnedSecond;
-        
-        // เลื่อนตำแหน่ง spawnedFirst มาอยู่ที่ Slot 1 (Update จะจัดการเรื่อง bobbing ให้เอง)
-        if (spawnedFirst != null)
-        {
-            spawnedFirst.transform.localPosition = new Vector3(
-                firstSlotOffset.x,
-                firstSlotOffset.y,
-                firstSlotOffset.z - (firstItem.itemSize.z * 0.5f)
-            );
-        }
-
-        secondItem = null;
-        spawnedSecond = null;
-        
-        PlaySFX(matchSFX); // Play match sound if just replaced
+        Debug.Log("No combination found. Keeping both items in their slots.");
+        // ไม่ต้องทำอะไร ปล่อยให้มันลอยอยู่คนละฝั่งตามปกติ
     }
 
     private void ReleaseItem()
     {
-        if (firstItem != null && spawnedFirst != null)
+        // ปล่อยชิ้นที่สองก่อน (ถ้ามี)
+        if (secondItem != null && spawnedSecond != null)
         {
-            // คืนค่าความชัด (Alpha = 1) ก่อนปล่อย
-            ApplyTransparency(spawnedFirst, 1.0f);
-
-            // ปล่อยไอเทมออกจากตัว
-            spawnedFirst.transform.SetParent(null);
-            
-            // วางไว้ข้างหน้าผู้เล่น
-            Vector3 spawnPos = playerTransform.position + playerTransform.forward * 2f;
-            spawnedFirst.transform.position = spawnPos;
-            
-            PlaySFX(releaseSFX);
-            SpawnVFX(releaseVFXPrefab, spawnPos);
-
-            Debug.Log($"Released: {firstItem.itemName}");
-            
-            // ล้างสถานะแต่ไม่ทำลาย Object เพราะเราปล่อยมันลงพื้นแล้ว
-            firstItem = null;
-            spawnedFirst = null;
-            secondItem = null;
-            spawnedSecond = null;
+            PerformRelease(ref secondItem, ref spawnedSecond);
         }
+        // ถ้าไม่มีชิ้นที่สอง ให้ปล่อยชิ้นแรก
+        else if (firstItem != null && spawnedFirst != null)
+        {
+            PerformRelease(ref firstItem, ref spawnedFirst);
+        }
+    }
+
+    private void PerformRelease(ref ItemInfo item, ref GameObject obj)
+    {
+        if (item == null || obj == null) return;
+
+        // ── เรียกใช้ Skill ของไอเทมนี้ (ถ้ามี) ──
+        if (item.itemSkill != null)
+        {
+            // คำนวณจุดเกิดสกิล โดยใช้ค่า Offset ที่ตั้งไว้ใน ItemData
+            // แปลง Local Offset ให้เป็น World Position (คำนึงถึงทิศทางที่ Player หันหน้าอยู่)
+            Vector3 spawnPos = playerTransform.position
+                + playerTransform.right   * item.skillSpawnOffset.x   // ซ้าย/ขวา
+                + playerTransform.up      * item.skillSpawnOffset.y   // บน/ล่าง
+                + playerTransform.forward * item.skillSpawnOffset.z;  // หน้า/หลัง
+
+            // คำนวณองศาการเกิด โดยอ้างอิงจากมุมที่ Player หันหน้าอยู่ และบวกด้วยองศาที่ตั้งไว้ใน ItemData
+            Quaternion spawnRot = playerTransform.rotation * Quaternion.Euler(item.skillSpawnEulerAngles);
+
+            GameObject skillObj = Instantiate(item.itemSkill, spawnPos, spawnRot);
+            
+            BaseItemSkill skill = skillObj.GetComponent<BaseItemSkill>();
+            if (skill != null)
+            {
+                skill.Activate(playerTransform);
+            }
+        }
+        
+        PlaySFX(releaseSFX);
+        SpawnVFX(releaseVFXPrefab, playerTransform.position);
+
+        Debug.Log($"Released: {item.itemName}");
+
+        // ทำลายไอเทมที่ลอยอยู่ (ไม่ต้องวางลงพื้น)
+        Destroy(obj);
+        
+        // ล้างสถานะ
+        item = null;
+        obj = null;
     }
 
     public void OpenTyping()
@@ -351,8 +569,27 @@ public class TypingSystem : MonoBehaviour
         if (isSlowed && inputField != null)
         {
             inputField.text = "";
-            inputField.Select();
-            inputField.ActivateInputField();
+            needsFocus = true; // เริ่มกระบวนการบังคับโฟกัสใน Update
+            
+            // ถ้ามี CanvasGroup ให้เปิดให้หมด
+            CanvasGroup cg = typingUI.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.alpha = 1f;
+                cg.blocksRaycasts = true;
+                cg.interactable = true;
+            }
+
+            // ไม่ต้องปลดล็อกเมาส์ (ซ่อนไว้ตามเดิมตามที่ต้องการ)
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            needsFocus = false;
+            // ล็อกเมาส์ไว้ปกติ
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
     }
 
@@ -365,6 +602,82 @@ public class TypingSystem : MonoBehaviour
         }
     }
 
+    private void OnInputValueChanged(string newValue)
+    {
+        // Don't trigger feedback if the field is empty or if we aren't in typing mode
+        if (string.IsNullOrEmpty(newValue) || !isSlowed) return;
+
+        bool hasPossibleMatch = false;
+
+        if (itemData != null)
+        {
+            foreach (var item in itemData.items)
+            {
+                // Only consider unlocked items
+                if (item.isUnlocked && item.itemName.StartsWith(newValue, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    hasPossibleMatch = true;
+                    break;
+                }
+            }
+        }
+
+        if (hasPossibleMatch)
+        {
+            // Trigger success feedback
+            PlaySFX(typingSuccessSFX);
+            SpawnVFX(typingSuccessVFXPrefab, playerTransform.position);
+        }
+        else
+        {
+            // Trigger failure feedback
+            PlaySFX(typingFailureSFX);
+            SpawnVFX(typingFailureVFXPrefab, playerTransform.position);
+        }
+    }
+
+    // Right-click the TypingSystem component and select "Test Shake" to trigger this manually
+    [ContextMenu("Test Shake")]
+    public void TestShake()
+    {
+        if (Application.isPlaying) StartCoroutine(ShakeScreen(0.5f, 0.5f));
+        else Debug.LogWarning("You can only test the shake while in Play Mode.");
+    }
+
+    private IEnumerator ShakeScreen(float duration, float magnitude)
+    {
+        Debug.Log($"<color=yellow>[TypingSystem] SHAKE START! Duration: {duration}, Magnitude: {magnitude}</color>");
+        
+        Camera cam = Camera.main;
+        Rect originalRect = cam != null ? cam.rect : new Rect(0, 0, 1, 1);
+        float elapsed = 0.0f;
+
+        while (elapsed < duration)
+        {
+            float xOffset = Random.Range(-1f, 1f) * magnitude;
+            float yOffset = Random.Range(-1f, 1f) * magnitude;
+
+            // Method 1: Transform Offset (Applied in LateUpdate)
+            currentShakeOffset = new Vector3(xOffset, yOffset, 0);
+
+            // Method 2: Viewport Rect (Shifts the actual rendered image - Impossible to override)
+            if (cam != null)
+            {
+                float rectX = originalRect.x + (xOffset * 0.05f);
+                float rectY = originalRect.y + (yOffset * 0.05f);
+                cam.rect = new Rect(rectX, rectY, originalRect.width, originalRect.height);
+            }
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        currentShakeOffset = Vector3.zero;
+        if (cam != null) cam.rect = originalRect;
+
+        Debug.Log("<color=yellow>[TypingSystem] SHAKE FINISHED.</color>");
+    }
+
     private void SpawnVFX(GameObject prefab, Vector3 position)
     {
         if (prefab != null)
@@ -375,7 +688,7 @@ public class TypingSystem : MonoBehaviour
         }
     }
 
-    public void MatchItem(string input) => TryMatchItem(input);
+
 
     public void ClearMatch()
     {

@@ -5,6 +5,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float walkSpeed = 5f;
+    public float gravity = -19.62f;
 
     [Header("Cinemachine Settings")]
     [Tooltip("ลาก Main Camera จากหน้าต่าง Hierarchy มาใส่ตรงนี้ (หรือปล่อยว่างไว้ระบบจะหาเอง)")]
@@ -15,7 +16,6 @@ public class PlayerController : MonoBehaviour
     public Animator animator;
     public string horizontalParam = "Horizontal"; // แกน X สำหรับ Blend Tree
     public string verticalParam = "Vertical";     // แกน Y สำหรับ Blend Tree
-    public string speedParam = "Speed";           // ค่าความเร็วรวม
     public string hitTrigger = "Hit";             // ชื่อ Trigger ตอนโดนตี
     
     [Tooltip("ความเร็วในการเปลี่ยนท่าทาง (Animation Smoothing)")]
@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
     public int currentHealth;
 
     private CharacterController controller;
+    private Vector3 velocity;
+    private bool isGrounded;
 
     void Start()
     {
@@ -78,37 +80,38 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
+        // เช็คว่าเท้าแตะพื้นหรือไม่
+        isGrounded = controller.isGrounded;
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f; // กดลงเล็กน้อยเพื่อให้ติดพื้นแน่นๆ
+        }
+
         // รับค่า Input
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
+        // ป้องกันความเร็วเพิ่มขึ้นเมื่อเดินทะแยง
+        Vector2 inputDir = Vector2.ClampMagnitude(new Vector2(x, z), 1f);
+        x = inputDir.x;
+        z = inputDir.y;
+
         // คำนวณทิศทางโดยอิงจากตัวละคร (ซึ่งหันหน้าตามกล้อง)
         Vector3 move = transform.right * x + transform.forward * z;
 
-        // เคลื่อนที่ (ตัดแกน Y ออกเพราะไม่ต้องใช้แรงโน้มถ่วง/กระโดด)
+        // เคลื่อนที่ตามแนวราบ
         controller.Move(move * walkSpeed * Time.deltaTime);
+
+        // แรงโน้มถ่วง
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
 
         // --- อัปเดต Animation สำหรับ 2D Blend Tree ---
         if (animator != null)
         {
-            if (HasParameter(horizontalParam)) animator.SetFloat(horizontalParam, x, animationDampTime, Time.deltaTime);
-            if (HasParameter(verticalParam)) animator.SetFloat(verticalParam, z, animationDampTime, Time.deltaTime);
-            
-            if (HasParameter(speedParam))
-            {
-                float inputMagnitude = new Vector2(x, z).magnitude;
-                animator.SetFloat(speedParam, inputMagnitude * walkSpeed, animationDampTime, Time.deltaTime);
-            }
+            // ใช้แค่ Horizontal และ Vertical ก็เพียงพอสำหรับ 2D Blend Tree แล้วครับ
+            animator.SetFloat(horizontalParam, x, animationDampTime, Time.deltaTime);
+            animator.SetFloat(verticalParam, z, animationDampTime, Time.deltaTime);
         }
-    }
-
-    private bool HasParameter(string paramName)
-    {
-        if (string.IsNullOrEmpty(paramName) || animator == null) return false;
-        foreach (AnimatorControllerParameter param in animator.parameters)
-        {
-            if (param.name == paramName) return true;
-        }
-        return false;
     }
 }
