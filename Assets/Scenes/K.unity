@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 10884401}
   - component: {fileID: 10884400}
   - component: {fileID: 10884399}
+  - component: {fileID: 10884405}
   - component: {fileID: 10884398}
   - component: {fileID: 10884397}
   m_Layer: 0
@@ -327,6 +328,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1851412123}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &10884405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 10884396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cae0528dd6ea4d4990e09f4c096366b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 50
+  currentHealth: 50
+  deathVFX: {fileID: 0}
 --- !u!1 &36701757
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,6 +432,7 @@ GameObject:
   - component: {fileID: 45921858}
   - component: {fileID: 45921857}
   - component: {fileID: 45921856}
+  - component: {fileID: 45921862}
   - component: {fileID: 45921855}
   - component: {fileID: 45921854}
   m_Layer: 0
@@ -610,6 +627,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1851412123}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &45921862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 45921853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cae0528dd6ea4d4990e09f4c096366b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 50
+  currentHealth: 50
+  deathVFX: {fileID: 0}
 --- !u!1 &50702894
 GameObject:
   m_ObjectHideFlags: 0
@@ -2783,6 +2815,7 @@ Transform:
   - {fileID: 2053667652}
   - {fileID: 45921861}
   - {fileID: 10884404}
+  - {fileID: 1503426198405966}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1876432255
@@ -3004,6 +3037,7 @@ GameObject:
   - component: {fileID: 2053667649}
   - component: {fileID: 2053667648}
   - component: {fileID: 2053667647}
+  - component: {fileID: 2053667653}
   - component: {fileID: 2053667646}
   - component: {fileID: 2053667645}
   m_Layer: 0
@@ -3198,6 +3232,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1851412123}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2053667653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053667644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cae0528dd6ea4d4990e09f4c096366b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 50
+  currentHealth: 50
+  deathVFX: {fileID: 0}
 --- !u!114 &2088983660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3264,12 +3313,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6756294879558538694}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.185613, y: 1, z: 8.91}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.6140132, y: 1, z: -1.8203106}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1851412123}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &36854050026142417
 GameObject:
@@ -8564,6 +8613,7 @@ GameObject:
   - component: {fileID: 3829232131128226144}
   - component: {fileID: 3912209411224610993}
   - component: {fileID: 6001106361720463602}
+  - component: {fileID: 7000075365261765194}
   - component: {fileID: 2447935749354427468}
   - component: {fileID: 2483802726546747228}
   m_Layer: 0
@@ -8874,6 +8924,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6756294879558538694}
   m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &7000075365261765194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6756294879558538694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cae0528dd6ea4d4990e09f4c096366b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 50
+  currentHealth: 50
+  deathVFX: {fileID: 0}
 --- !u!1 &7055930544559239610
 GameObject:
   m_ObjectHideFlags: 0
@@ -10677,7 +10742,6 @@ SceneRoots:
   - {fileID: 8148156641368541185}
   - {fileID: 5484546773562811651}
   - {fileID: 1430337493}
-  - {fileID: 1503426198405966}
   - {fileID: 117162328}
   - {fileID: 1851412123}
   - {fileID: 1578138681}

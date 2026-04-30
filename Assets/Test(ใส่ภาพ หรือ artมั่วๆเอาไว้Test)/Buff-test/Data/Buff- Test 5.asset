@@ -19,5 +19,5 @@ MonoBehaviour:
   baseWeight: 100
   maxLevel: 3
   codeForBuff:
-  - {fileID: 11400000, guid: c47f4db468c79d34ab4e3fcd74cc992a, type: 2}
-  runtimeWeight: 100
+  - {fileID: 11400000, guid: e7004d7170bab3842b29afab617d131c, type: 2}
+  runtimeWeight: 250

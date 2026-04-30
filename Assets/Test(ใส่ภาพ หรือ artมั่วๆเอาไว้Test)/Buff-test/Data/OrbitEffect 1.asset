@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0f7b1a50d0980a4d98a1a2dd3f47527, type: 3}
+  m_Name: OrbitEffect 1
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitEffect
+  projectilePrefab: {fileID: 8803381490548804211, guid: fbd2a2924972fd845adaf088975ab0cf, type: 3}
+  levels:
+  - damage: 25
+    radius: 2
+    rotationSpeed: 20
+  - damage: 50
+    radius: 3
+    rotationSpeed: 25
+  - damage: 50
+    radius: 4
+    rotationSpeed: 200
