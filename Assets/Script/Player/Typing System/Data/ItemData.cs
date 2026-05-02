@@ -5,6 +5,8 @@ using UnityEngine;
 public class ItemInfo
 {
     public string itemName;
+    [TextArea] public string description;
+    public Texture2D icon;
     public GameObject itemPrefab;
     public Vector3 itemSize;
     public bool isUnlocked = true; // เก็บสถานะว่าผู้เล่นเคยแตะเพื่อปลดล็อคแล้วหรือยัง
