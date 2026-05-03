@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
 public class TypingSystem : MonoBehaviour
@@ -58,6 +59,17 @@ public class TypingSystem : MonoBehaviour
     [Header("Real-time SFX")]
     [SerializeField] private AudioClip typingSuccessSFX;
     [SerializeField] private AudioClip typingFailureSFX;
+
+    [Header("Flow State Settings")]
+    [SerializeField] private int wordsToTriggerFlow = 5;
+    [SerializeField] private float flowTriggerWindow = 30f;
+    [SerializeField] private float flowDuration = 10f;
+    [SerializeField] private int lettersToAutoComplete = 3;
+    [SerializeField] private AudioClip flowStateStartSFX;
+
+    private List<float> typedWordTimestamps = new List<float>();
+    private float flowStateEndTime = -1f;
+    private bool isFlowStateActive => Time.time < flowStateEndTime;
 
     [Header("Item Spawning Settings")]
     [SerializeField] private Transform playerTransform; // ลาก Player มาใส่ตรงนี้ (ถ้าไม่ใส่จะหา Tag "Player" อัตโนมัติ)
@@ -334,6 +346,10 @@ public class TypingSystem : MonoBehaviour
                     }
 
                     SpawnVFX(correctTypingVFXPrefab, playerTransform.position);
+                    
+                    // Track for Flow State (Success)
+                    RecordTypedWord();
+
                     ProcessItemMatch(item);
                     SetSlowMotion(false);
                     return true;
@@ -607,6 +623,28 @@ public class TypingSystem : MonoBehaviour
         // Don't trigger feedback if the field is empty or if we aren't in typing mode
         if (string.IsNullOrEmpty(newValue) || !isSlowed) return;
 
+        // Flow State Auto-Completion
+        if (isFlowStateActive && newValue.Length >= lettersToAutoComplete)
+        {
+            if (itemData != null)
+            {
+                foreach (var item in itemData.items)
+                {
+                    // Only consider unlocked items that start with the input
+                    if (item.isUnlocked && item.itemName.Length >= newValue.Length &&
+                        string.Equals(item.itemName.Substring(0, newValue.Length), newValue, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        Debug.Log($"<color=magenta>[TypingSystem] Flow State Auto-Match: {item.itemName}</color>");
+                        
+                        // Update UI and trigger match
+                        inputField.text = item.itemName;
+                        TryMatchItem(item.itemName);
+                        return; // Exit as TryMatchItem handles the rest
+                    }
+                }
+            }
+        }
+
         bool hasPossibleMatch = false;
 
         if (itemData != null)
@@ -633,6 +671,23 @@ public class TypingSystem : MonoBehaviour
             // Trigger failure feedback
             PlaySFX(typingFailureSFX);
             SpawnVFX(typingFailureVFXPrefab, playerTransform.position);
+        }
+    }
+
+    private void RecordTypedWord()
+    {
+        float currentTime = Time.time;
+        typedWordTimestamps.Add(currentTime);
+
+        // Remove timestamps older than the window
+        typedWordTimestamps.RemoveAll(t => t < currentTime - flowTriggerWindow);
+
+        if (typedWordTimestamps.Count >= wordsToTriggerFlow && !isFlowStateActive)
+        {
+            flowStateEndTime = currentTime + flowDuration;
+            Debug.Log($"<color=magenta>[TypingSystem] FLOW STATE ACTIVATED! Duration: {flowDuration}s</color>");
+            PlaySFX(flowStateStartSFX);
+            // You could also trigger a special VFX here if desired
         }
     }
 

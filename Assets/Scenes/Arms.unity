@@ -822,7 +822,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1284422478}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999755
+  m_Size: 0.99820375
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1640,7 +1640,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000018983083}
+  m_AnchoredPosition: {x: 0, y: -0.000040390576}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1748002757
@@ -3014,6 +3014,11 @@ MonoBehaviour:
   typingFailureVFXPrefab: {fileID: 0}
   typingSuccessSFX: {fileID: 0}
   typingFailureSFX: {fileID: 0}
+  wordsToTriggerFlow: 5
+  flowTriggerWindow: 30
+  flowDuration: 10
+  lettersToAutoComplete: 3
+  flowStateStartSFX: {fileID: 0}
   playerTransform: {fileID: 0}
   firstSlotOffset: {x: -0.6, y: 1.8, z: -1}
   secondSlotOffset: {x: 0.6, y: 1.8, z: -1}
@@ -3614,6 +3619,11 @@ MonoBehaviour:
   typingFailureVFXPrefab: {fileID: 0}
   typingSuccessSFX: {fileID: 0}
   typingFailureSFX: {fileID: 0}
+  wordsToTriggerFlow: 5
+  flowTriggerWindow: 30
+  flowDuration: 10
+  lettersToAutoComplete: 3
+  flowStateStartSFX: {fileID: 0}
   playerTransform: {fileID: 8429800218802003325}
   firstSlotOffset: {x: 1.5, y: 0.5, z: 1}
   secondSlotOffset: {x: -1.5, y: 0.5, z: 1}
