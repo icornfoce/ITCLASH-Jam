@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a83e5280702e89a4bad0c9449b3b532f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 252177
+  packageName: Korea Craft & Design - Furniture Item
+  packageVersion: 1.0
+  assetPath: Assets/KCDF/Furniture/Models/Jang_L2/Animation/Anim_Jang_L2.controller
+  uploadId: 580677
