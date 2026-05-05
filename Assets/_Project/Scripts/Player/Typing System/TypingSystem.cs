@@ -57,6 +57,7 @@ public class TypingSystem : MonoBehaviour
     [SerializeField] private GameObject typingFailureVFXPrefab;
 
     [Header("Real-time SFX")]
+    [SerializeField] private AudioClip[] typingSFXPool;
     [SerializeField] private AudioClip typingSuccessSFX;
     [SerializeField] private AudioClip typingFailureSFX;
 
@@ -154,18 +155,25 @@ public class TypingSystem : MonoBehaviour
         // ตรวจสอบการกด Enter เพื่อส่งคำศัพท์ (ส่งเฉพาะตอนที่เปิดหน้าต่างพิมพ์อยู่)
         if (isSlowed && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
         {
-            Debug.Log("[TypingSystem] Enter key detected!");
             if (inputField != null)
             {
                 if (!string.IsNullOrEmpty(inputField.text))
                 {
-                    Debug.Log($"[TypingSystem] Submitting: {inputField.text}");
-                    TryMatchItem(inputField.text.Trim());
+                    string textToSubmit = inputField.text;
+
+                    // If not in Flow State, only count what was NOT selected (actually typed)
+                    if (!isFlowStateActive)
+                    {
+                        // The typed length is where the selection starts
+                        int typedLength = Mathf.Min(inputField.selectionAnchorPosition, inputField.selectionFocusPosition);
+                        textToSubmit = inputField.text.Substring(0, typedLength);
+                    }
+
+                    Debug.Log($"[TypingSystem] Submitting: {textToSubmit}");
+                    TryMatchItem(textToSubmit.Trim());
                 }
                 else
                 {
-                    Debug.Log("[TypingSystem] Input field is empty, closing UI.");
-                    // ถ้าช่องว่างแล้วกด Enter ก็ปิดหน้าต่างพิมพ์ (เหมือนกด ESC)
                     SetSlowMotion(false);
                 }
                 
@@ -637,52 +645,46 @@ public class TypingSystem : MonoBehaviour
 
     private void OnInputValueChanged(string newValue)
     {
-        // Don't trigger feedback if the field is empty or if we aren't in typing mode
-        if (string.IsNullOrEmpty(newValue) || !isSlowed) return;
+        // Don't trigger feedback if we are in the middle of an internal update
+        if (isInternalUpdate || !isSlowed) return;
 
-        // Flow State Auto-Completion
-        if (isFlowStateActive && newValue.Length >= lettersToAutoComplete && !isInternalUpdate)
+        // Play random typing sound if pool is available
+        if (typingSFXPool != null && typingSFXPool.Length > 0 && !string.IsNullOrEmpty(newValue))
         {
-            // Detect if we are deleting (don't re-predict while backspacing)
-            bool isDeleting = !string.IsNullOrEmpty(lastInput) && newValue.Length < lastInput.Length;
-            lastInput = newValue;
+            if (audioSource != null) audioSource.PlayOneShot(typingSFXPool[Random.Range(0, typingSFXPool.Length)]);
+        }
 
-            if (!isDeleting && itemData != null)
+        if (string.IsNullOrEmpty(newValue)) return;
+
+        // Unified Prediction Logic
+        bool isDeleting = !string.IsNullOrEmpty(lastInput) && newValue.Length < lastInput.Length;
+        lastInput = newValue;
+
+        if (!isDeleting && itemData != null)
+        {
+            foreach (var item in itemData.items)
             {
-                foreach (var item in itemData.items)
+                // Only consider unlocked items that start with the input
+                if (item.isUnlocked && item.itemName.Length > newValue.Length &&
+                    item.itemName.StartsWith(newValue, System.StringComparison.OrdinalIgnoreCase))
                 {
-                    // Only consider unlocked items that start with the input
-                    if (item.isUnlocked && item.itemName.Length > newValue.Length &&
-                        string.Equals(item.itemName.Substring(0, newValue.Length), newValue, System.StringComparison.OrdinalIgnoreCase))
-                    {
-                        Debug.Log($"<color=magenta>[TypingSystem] Flow State Prediction: {item.itemName}</color>");
-                        
-                        // Update UI with the full word but select the "predicted" part
-                        isInternalUpdate = true;
-                        int originalLength = newValue.Length;
-                        inputField.text = item.itemName;
-                        inputField.selectionAnchorPosition = originalLength;
-                        inputField.selectionFocusPosition = item.itemName.Length;
-                        isInternalUpdate = false;
-                        
-                        // We don't call TryMatchItem here anymore. The player must press Enter.
-                        return; 
-                    }
+                    isInternalUpdate = true;
+                    int typedLength = newValue.Length;
+                    inputField.text = item.itemName;
+                    inputField.selectionAnchorPosition = typedLength;
+                    inputField.selectionFocusPosition = item.itemName.Length;
+                    isInternalUpdate = false;
+                    break; // Found first match
                 }
             }
         }
-        else if (!isInternalUpdate)
-        {
-            lastInput = newValue;
-        }
 
+        // Keep the VFX feedback (using same text matching logic)
         bool hasPossibleMatch = false;
-
         if (itemData != null)
         {
             foreach (var item in itemData.items)
             {
-                // Only consider unlocked items
                 if (item.isUnlocked && item.itemName.StartsWith(newValue, System.StringComparison.OrdinalIgnoreCase))
                 {
                     hasPossibleMatch = true;
@@ -693,14 +695,10 @@ public class TypingSystem : MonoBehaviour
 
         if (hasPossibleMatch)
         {
-            // Trigger success feedback
-            PlaySFX(typingSuccessSFX);
             SpawnVFX(typingSuccessVFXPrefab, playerTransform.position);
         }
         else
         {
-            // Trigger failure feedback
-            PlaySFX(typingFailureSFX);
             SpawnVFX(typingFailureVFXPrefab, playerTransform.position);
         }
     }
