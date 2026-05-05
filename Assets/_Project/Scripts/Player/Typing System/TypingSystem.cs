@@ -66,10 +66,13 @@ public class TypingSystem : MonoBehaviour
     [SerializeField] private float flowDuration = 10f;
     [SerializeField] private int lettersToAutoComplete = 3;
     [SerializeField] private AudioClip flowStateStartSFX;
+    [SerializeField] private ComboSystem comboSystem;
 
     private List<float> typedWordTimestamps = new List<float>();
     private float flowStateEndTime = -1f;
     private bool isFlowStateActive => Time.time < flowStateEndTime;
+    private bool isInternalUpdate = false;
+    private string lastInput = "";
 
     [Header("Item Spawning Settings")]
     [SerializeField] private Transform playerTransform; // ลาก Player มาใส่ตรงนี้ (ถ้าไม่ใส่จะหา Tag "Player" อัตโนมัติ)
@@ -151,14 +154,17 @@ public class TypingSystem : MonoBehaviour
         // ตรวจสอบการกด Enter เพื่อส่งคำศัพท์ (ส่งเฉพาะตอนที่เปิดหน้าต่างพิมพ์อยู่)
         if (isSlowed && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
         {
+            Debug.Log("[TypingSystem] Enter key detected!");
             if (inputField != null)
             {
                 if (!string.IsNullOrEmpty(inputField.text))
                 {
+                    Debug.Log($"[TypingSystem] Submitting: {inputField.text}");
                     TryMatchItem(inputField.text.Trim());
                 }
                 else
                 {
+                    Debug.Log("[TypingSystem] Input field is empty, closing UI.");
                     // ถ้าช่องว่างแล้วกด Enter ก็ปิดหน้าต่างพิมพ์ (เหมือนกด ESC)
                     SetSlowMotion(false);
                 }
@@ -347,7 +353,16 @@ public class TypingSystem : MonoBehaviour
 
                     SpawnVFX(correctTypingVFXPrefab, playerTransform.position);
                     
-                    // Track for Flow State (Success)
+                    // Track for Combo and Flow State (Success)
+                    if (comboSystem != null) 
+                    {
+                        comboSystem.AddCombo();
+                    }
+                    else
+                    {
+                        Debug.LogError("[TypingSystem] CRITICAL: ComboSystem is NOT assigned in the Inspector!");
+                    }
+                    
                     RecordTypedWord();
 
                     ProcessItemMatch(item);
@@ -567,6 +582,7 @@ public class TypingSystem : MonoBehaviour
 
     public void OpenTyping()
     {
+        Debug.Log("[TypingSystem] Opening Typing UI (Slow Motion Active)");
         SetSlowMotion(true);
         PlaySFX(openSFX);
     }
@@ -585,6 +601,7 @@ public class TypingSystem : MonoBehaviour
         if (isSlowed && inputField != null)
         {
             inputField.text = "";
+            lastInput = "";
             needsFocus = true; // เริ่มกระบวนการบังคับโฟกัสใน Update
             
             // ถ้ามี CanvasGroup ให้เปิดให้หมด
@@ -624,25 +641,39 @@ public class TypingSystem : MonoBehaviour
         if (string.IsNullOrEmpty(newValue) || !isSlowed) return;
 
         // Flow State Auto-Completion
-        if (isFlowStateActive && newValue.Length >= lettersToAutoComplete)
+        if (isFlowStateActive && newValue.Length >= lettersToAutoComplete && !isInternalUpdate)
         {
-            if (itemData != null)
+            // Detect if we are deleting (don't re-predict while backspacing)
+            bool isDeleting = !string.IsNullOrEmpty(lastInput) && newValue.Length < lastInput.Length;
+            lastInput = newValue;
+
+            if (!isDeleting && itemData != null)
             {
                 foreach (var item in itemData.items)
                 {
                     // Only consider unlocked items that start with the input
-                    if (item.isUnlocked && item.itemName.Length >= newValue.Length &&
+                    if (item.isUnlocked && item.itemName.Length > newValue.Length &&
                         string.Equals(item.itemName.Substring(0, newValue.Length), newValue, System.StringComparison.OrdinalIgnoreCase))
                     {
-                        Debug.Log($"<color=magenta>[TypingSystem] Flow State Auto-Match: {item.itemName}</color>");
+                        Debug.Log($"<color=magenta>[TypingSystem] Flow State Prediction: {item.itemName}</color>");
                         
-                        // Update UI and trigger match
+                        // Update UI with the full word but select the "predicted" part
+                        isInternalUpdate = true;
+                        int originalLength = newValue.Length;
                         inputField.text = item.itemName;
-                        TryMatchItem(item.itemName);
-                        return; // Exit as TryMatchItem handles the rest
+                        inputField.selectionAnchorPosition = originalLength;
+                        inputField.selectionFocusPosition = item.itemName.Length;
+                        isInternalUpdate = false;
+                        
+                        // We don't call TryMatchItem here anymore. The player must press Enter.
+                        return; 
                     }
                 }
             }
+        }
+        else if (!isInternalUpdate)
+        {
+            lastInput = newValue;
         }
 
         bool hasPossibleMatch = false;
@@ -677,17 +708,15 @@ public class TypingSystem : MonoBehaviour
     private void RecordTypedWord()
     {
         float currentTime = Time.time;
-        typedWordTimestamps.Add(currentTime);
+        
+        // Use combo count to trigger Flow State
+        int currentCount = comboSystem != null ? comboSystem.CurrentCombo : 0;
 
-        // Remove timestamps older than the window
-        typedWordTimestamps.RemoveAll(t => t < currentTime - flowTriggerWindow);
-
-        if (typedWordTimestamps.Count >= wordsToTriggerFlow && !isFlowStateActive)
+        if (currentCount >= wordsToTriggerFlow && !isFlowStateActive)
         {
             flowStateEndTime = currentTime + flowDuration;
-            Debug.Log($"<color=magenta>[TypingSystem] FLOW STATE ACTIVATED! Duration: {flowDuration}s</color>");
+            Debug.Log($"<color=magenta>[TypingSystem] FLOW STATE ACTIVATED! Combo: {currentCount}</color>");
             PlaySFX(flowStateStartSFX);
-            // You could also trigger a special VFX here if desired
         }
     }
 
