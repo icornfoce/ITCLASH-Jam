@@ -1,0 +1,109 @@
+using UnityEngine;
+
+namespace ITCLASH.Enemies
+{
+    /// <summary>
+    /// Straight-line magic orb fired by RangedCastState.
+    /// Uses a SphereCast over each frame's movement to avoid tunnelling. On hitting
+    /// the player it deals <c>damage</c> via <see cref="PlayerHealth.TakeDamage(float)"/>;
+    /// any solid hit spawns the impact VFX/SFX and destroys the orb.
+    /// </summary>
+    public sealed class EnemyProjectile : MonoBehaviour
+    {
+        [Header("Collision")]
+        [Tooltip("Layers the projectile collides with — should include Default + Player layers.")]
+        [SerializeField] LayerMask hitMask = ~0;
+
+        [Tooltip("Sphere-cast radius for hit detection.")]
+        [Range(0f, 2f)] [SerializeField] float castRadius = 0.25f;
+
+        [Header("Presentation")]
+        [Tooltip("VFX prefab spawned at impact (leave empty for none).")]
+        [SerializeField] GameObject hitVFX;
+
+        [Tooltip("SFX played at impact.")]
+        [SerializeField] AudioCue impactSFX = new AudioCue();
+
+        [Tooltip("AudioSource used for impact SFX. Auto-added if null.")]
+        [SerializeField] AudioSource audioSource;
+
+        [Header("Trail / Body (optional)")]
+        [Tooltip("Optional trail GO disabled at impact for a clean fade.")]
+        [SerializeField] GameObject trail;
+
+        // ── Runtime values set by Launch() ────────────────────────
+        float speed;
+        float damage;
+        float lifetimeRemaining;
+        Vector3 direction;
+        bool launched;
+
+        public void Launch(Vector3 direction, float speed, float damage, float lifetime)
+        {
+            this.direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : transform.forward;
+            this.speed = speed;
+            this.damage = damage;
+            this.lifetimeRemaining = lifetime;
+            transform.rotation = Quaternion.LookRotation(this.direction);
+            launched = true;
+        }
+
+        void Awake()
+        {
+            if (audioSource == null)
+            {
+                audioSource = GetComponent<AudioSource>();
+                if (audioSource == null)
+                {
+                    audioSource = gameObject.AddComponent<AudioSource>();
+                    audioSource.playOnAwake = false;
+                    audioSource.spatialBlend = 1f;
+                }
+            }
+        }
+
+        void Update()
+        {
+            if (!launched) return;
+
+            float step = speed * Time.deltaTime;
+
+            if (Physics.SphereCast(transform.position, castRadius, direction, out var hit, step + 0.05f, hitMask, QueryTriggerInteraction.Ignore))
+            {
+                ResolveHit(hit);
+                return;
+            }
+
+            transform.position += direction * step;
+
+            lifetimeRemaining -= Time.deltaTime;
+            if (lifetimeRemaining <= 0f) Despawn(transform.position);
+        }
+
+        void ResolveHit(RaycastHit hit)
+        {
+            // Damage only the player; ignore other enemies / environment besides FX.
+            if (hit.collider.CompareTag("Player"))
+            {
+                var hp = hit.collider.GetComponent<PlayerHealth>();
+                if (hp == null) hp = hit.collider.GetComponentInParent<PlayerHealth>();
+                if (hp != null) hp.TakeDamage(damage);
+            }
+            Despawn(hit.point);
+        }
+
+        void Despawn(Vector3 atPosition)
+        {
+            if (hitVFX != null) Instantiate(hitVFX, atPosition, Quaternion.LookRotation(-direction));
+            impactSFX.Play(audioSource);
+
+            // Detach and let the trail finish on its own.
+            if (trail != null)
+            {
+                trail.transform.SetParent(null, true);
+                Destroy(trail, 2f);
+            }
+            Destroy(gameObject);
+        }
+    }
+}
