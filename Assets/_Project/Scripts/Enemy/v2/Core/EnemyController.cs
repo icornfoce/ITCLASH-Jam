@@ -16,7 +16,7 @@ namespace ITCLASH.Enemies
     /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(Animator))]
-    public abstract class EnemyController : MonoBehaviour, IDamageable
+    public abstract class EnemyController : MonoBehaviour, IDamageable, IKnockbackable
     {
         // ── Stats ────────────────────────────────────────────────
         [Header("Data")]
@@ -72,6 +72,10 @@ namespace ITCLASH.Enemies
         public Transform Transform => transform;
 
         bool isDead;
+
+        // ── Knockback ─────────────────────────────────────────────
+        Vector3 knockbackVelocity = Vector3.zero;
+        float   knockbackTimer    = 0f;
 
         // ── Cooldowns (shared between states) ────────────────────
         public bool MeleeReady  => Time.time >= nextMeleeReady;
@@ -139,6 +143,32 @@ namespace ITCLASH.Enemies
             if (PlayerTransform == null) CacheReferences();
 
             if (!isDead) StateMachine?.Tick(Time.deltaTime);
+
+            // ── ประมวลผล Knockback ──
+            HandleKnockback();
+        }
+
+        void HandleKnockback()
+        {
+            if (knockbackTimer <= 0f) return;
+
+            // หยุด NavMesh ชั่วคราวตอนกำลังกระเด็น
+            Agent.isStopped = true;
+            Agent.velocity  = Vector3.zero;
+
+            // เคลื่อนด้วย knockback velocity
+            transform.position += knockbackVelocity * Time.deltaTime;
+
+            // ลด velocity และ timer
+            knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.deltaTime * 8f);
+            knockbackTimer   -= Time.deltaTime;
+
+            // หยุดแล้ว → คืน NavMesh
+            if (knockbackTimer <= 0f)
+            {
+                knockbackVelocity = Vector3.zero;
+                Agent.isStopped   = false;
+            }
         }
 
         // ── Damage / Heal ────────────────────────────────────────
@@ -157,6 +187,17 @@ namespace ITCLASH.Enemies
             OnDamaged?.Invoke(amount);
 
             if (CurrentHealth <= 0f) Die();
+        }
+
+        /// <summary>
+        /// Knockback โดยไม่ต้องใช้ Rigidbody — ใช้ได้กับทุก Enemy ที่มี NavMeshAgent
+        /// เรียกจาก ScanBullet ตอนกระสุนชน
+        /// </summary>
+        public void ApplyKnockback(Vector3 force, float duration = 0.35f)
+        {
+            if (isDead) return;
+            knockbackVelocity = force;
+            knockbackTimer    = duration;
         }
 
         public void Heal(float amount)

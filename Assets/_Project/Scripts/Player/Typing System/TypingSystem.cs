@@ -10,6 +10,10 @@ public class TypingSystem : MonoBehaviour
     [SerializeField] private GameObject typingUI; 
     [SerializeField] private TMP_InputField inputField;
 
+    [Header("─── Aim Typing Guard ───")]
+    [Tooltip("ลาก AimTypingSystem มาใส่ — ป้องกัน TypingUI โผล่ตอนกำลัง Aim อยู่")]
+    [SerializeField] private AimTypingSystem aimTypingSystem;
+
     [Header("Vignette Effects")]
     [Tooltip("ลาก Q_Vignette_Base (ตั้งเป็นสีโทนมืด) มาใส่ช่องนี้")]
     [SerializeField] private Q_Vignette_Base typingVignette;
@@ -95,12 +99,13 @@ public class TypingSystem : MonoBehaviour
 
     private void Awake()
     {
-        // รีเซ็ตสถานะการปลดล็อคทั้งหมดเมื่อเริ่มเกมใหม่
+        // รีเซ็ตสถานะการปลดล็อคทั้งหมดเมื่อเริ่มเกมใหม่ (ล็อคทุกอย่างไว้ก่อน)
+        // ผู้เล่นจะต้องไป Scan (AimTypingSystem) หรือเดินชนไอเทม (Item.cs) เพื่อปลดล็อค
         if (itemData != null)
         {
             foreach (var item in itemData.items)
             {
-                item.isUnlocked = true;
+                item.isUnlocked = false;
             }
         }
 
@@ -131,18 +136,22 @@ public class TypingSystem : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(1))
+        // ยิงด้วยคลิกซ้าย และห้ามยิงตอนที่กำลังเล็ง (Zooming) อยู่
+        bool isAiming = aimTypingSystem != null && aimTypingSystem.IsZooming;
+        if (Input.GetMouseButtonDown(0) && !isAiming)
         {
             ReleaseItem();
             
-            // ให้คลิกขวาปิดหน้าต่างพิมพ์และค่อยๆ จาง Vignette เหมือนการกด ESC
+            // ให้คลิกซ้ายปิดหน้าต่างพิมพ์และค่อยๆ จาง Vignette เหมือนการกด ESC
             if (isSlowed)
             {
                 SetSlowMotion(false);
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.E) && !isSlowed)
+        // ป้องกัน TypingSystem เปิดตอน AimTypingSystem กำลังทำงานอยู่
+        bool aimActive = aimTypingSystem != null && aimTypingSystem.IsAimTyping;
+        if (Input.GetKeyDown(KeyCode.E) && !isSlowed && !aimActive)
         {
             OpenTyping();
         }
@@ -535,7 +544,13 @@ public class TypingSystem : MonoBehaviour
         // ไม่ต้องทำอะไร ปล่อยให้มันลอยอยู่คนละฝั่งตามปกติ
     }
 
-    private void ReleaseItem()
+    public void SetSpawnedItemsVisibility(bool isVisible)
+    {
+        if (spawnedFirst != null) spawnedFirst.SetActive(isVisible);
+        if (spawnedSecond != null) spawnedSecond.SetActive(isVisible);
+    }
+
+    public void ReleaseItem()
     {
         // ปล่อยชิ้นที่สองก่อน (ถ้ามี)
         if (secondItem != null && spawnedSecond != null)

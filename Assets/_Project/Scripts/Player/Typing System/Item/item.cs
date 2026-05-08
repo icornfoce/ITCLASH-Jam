@@ -58,6 +58,12 @@ public class Item : MonoBehaviour
                             statusText.text = "You get\n[ " + item.itemName + " ]";
                         }
                         
+                        // สั่งอัปเดต UI หน้าจอ Dictionary
+                        if (DictionaryManager.Instance != null)
+                        {
+                            DictionaryManager.Instance.RefreshDictionary();
+                        }
+                        
                         Debug.Log("You get\n[ " + item.itemName + " ]");
                         break; // เจอแล้วหยุดค้นหา
                     }

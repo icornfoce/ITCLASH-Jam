@@ -13,6 +13,20 @@ public class DictionaryManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private bool refreshOnEnable = true;
 
+    // ─── Global Instance ───
+    public static DictionaryManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        // Setup Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
     private void OnEnable()
     {
         if (refreshOnEnable)
