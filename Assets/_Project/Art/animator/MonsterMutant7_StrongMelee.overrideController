@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MonsterMutant7_StrongMelee
+  m_Controller: {fileID: 9100000, guid: 8133e5c129157b14ba7034502d55d7da, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 464b335870daed84c93852ffd3f1c6fd, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: c1fab1f73c368b0499af28bc4aa0c3df, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: ea4c7e3c91bc38d44bd77f69982ade97, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: be93d5210f8f3df459fa596215107c11, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: cca54101b69f3f24d941610aefa7cf76, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 073100417d4c0c84295a324ade734c85, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: f02b18f634aa3e44790bc7e9057ad291, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 5e9c7b53cee4eec47a9e0381343a0e25, type: 3}
+  - m_OriginalClip: {fileID: 7400000, guid: 488b8a33cdb39b246a26e227d7b70196, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: f79914c57a551874ea2cd694cfc58c72, type: 3}
