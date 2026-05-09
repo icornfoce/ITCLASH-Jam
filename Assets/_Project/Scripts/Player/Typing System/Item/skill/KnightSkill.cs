@@ -1,61 +1,32 @@
 using UnityEngine;
 using System.Collections;
-using ITCLASH.Enemies;
 
 public class KnightSkill : BaseBuffSkill
 {
     [Header("Knight Settings")]
-    public float dashSpeed = 30f;
-    public float dashDuration = 0.5f;
-    public float damage = 40f;
-    public float knockback = 20f;
-    public LayerMask enemyLayer;
+    public float speedMultiplier = 1.5f;
+    
+    // อ้างอิงถึง FirstPersonController หรือสคริปต์เดินของผู้เล่น
+    private FirstPersonController fpc;
+    private float originalSpeed;
 
     protected override void ApplyBuff(Transform playerTransform)
     {
-        Debug.Log("[KnightSkill] พุ่งชนศัตรูเหมือนอัศวิน!");
-        StartCoroutine(DashRoutine(playerTransform));
-    }
-
-    private IEnumerator DashRoutine(Transform playerTransform)
-    {
-        float timer = 0f;
-        CharacterController cc = playerTransform.GetComponent<CharacterController>();
-
-        while (timer < dashDuration)
+        fpc = playerTransform.GetComponent<FirstPersonController>();
+        if (fpc != null)
         {
-            if (cc != null)
-            {
-                cc.Move(playerTransform.forward * dashSpeed * Time.deltaTime);
-            }
-            else
-            {
-                playerTransform.position += playerTransform.forward * dashSpeed * Time.deltaTime;
-            }
-
-            // ชนศัตรูระหว่างทาง
-            Collider[] hits = Physics.OverlapSphere(playerTransform.position, 2f, enemyLayer);
-            foreach (Collider hit in hits)
-            {
-                EnemyController enemy = hit.GetComponentInParent<EnemyController>();
-                if (enemy != null)
-                {
-                    enemy.ApplyDamage(damage);
-                    IKnockbackable knockable = enemy.GetComponentInParent<IKnockbackable>();
-                    if (knockable != null)
-                    {
-                        knockable.ApplyKnockback(playerTransform.forward * knockback, 0.3f);
-                    }
-                }
-            }
-
-            timer += Time.deltaTime;
-            yield return null;
+            originalSpeed = fpc.walkSpeed;
+            fpc.walkSpeed *= speedMultiplier;
+            Debug.Log($"[KnightSkill] วิ่งเร็วขึ้น! ความเร็วปัจจุบัน: {fpc.walkSpeed}");
         }
     }
 
     protected override void RemoveBuff(Transform playerTransform)
     {
-        Debug.Log("[KnightSkill] หยุดพุ่ง");
+        if (fpc != null)
+        {
+            fpc.walkSpeed = originalSpeed;
+            Debug.Log("[KnightSkill] ความเร็วกลับเป็นปกติ");
+        }
     }
 }
