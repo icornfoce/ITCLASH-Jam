@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -208,7 +208,9 @@ namespace kTools.Mirrors
 
             // Profiling command
             CommandBuffer cmd = CommandBufferPool.Get($"Mirror {gameObject.GetInstanceID()}");
+#pragma warning disable 0618
             using (new ProfilingSample(cmd, $"Mirror {gameObject.GetInstanceID()}"))
+#pragma warning restore 0618
             {
                 ExecuteCommand(context, cmd);
 
@@ -254,7 +256,9 @@ namespace kTools.Mirrors
 
             // Render reflection camera with inverse culling
             GL.invertCulling = true;
+#pragma warning disable 0618
             UniversalRenderPipeline.RenderSingleCamera(context, reflectionCamera);
+#pragma warning restore 0618
             GL.invertCulling = false;
         }
 #endregion

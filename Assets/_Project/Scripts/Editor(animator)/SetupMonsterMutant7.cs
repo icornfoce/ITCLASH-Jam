@@ -8,7 +8,6 @@ public class SetupMonsterMutant7 : EditorWindow
     [MenuItem("Tools/Setup MonsterMutant7 Strong Melee")]
     public static void Setup()
     {
-        string fbxPath = "Assets/Imports/MonsterMutant 7/Base mesh/Base mesh MonsterMutant7.fbx";
         string baseControllerPath = "Assets/_Project/Art/animator/Monster10_EnemyV2.controller";
         string overridePath = "Assets/_Project/Art/animator/MonsterMutant7_StrongMelee.overrideController";
         string prefabPath = "Assets/Imports/MonsterMutant 7/Prefab/Base mesh MonsterMutant7 skin3.prefab";

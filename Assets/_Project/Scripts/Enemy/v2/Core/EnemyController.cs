@@ -25,9 +25,9 @@ namespace ITCLASH.Enemies
 
         // ── Presentation ─────────────────────────────────────────
         [Header("Presentation")]
-        [SerializeField] EnemyAnimationConfig animation = new EnemyAnimationConfig();
-        [SerializeField] EnemyAudioConfig     audio     = new EnemyAudioConfig();
-        [SerializeField] EnemyVFXConfig       vfx       = new EnemyVFXConfig();
+        [SerializeField] EnemyAnimationConfig animConfig  = new EnemyAnimationConfig();
+        [SerializeField] EnemyAudioConfig     audioConfig = new EnemyAudioConfig();
+        [SerializeField] EnemyVFXConfig       vfxConfig   = new EnemyVFXConfig();
 
         // ── Optional anchors ─────────────────────────────────────
         [Header("Anchors (optional)")]
@@ -52,9 +52,9 @@ namespace ITCLASH.Enemies
         public EnemyStatsSO Stats               => stats;
         public NavMeshAgent Agent               { get; private set; }
         public Animator Anim                    { get; private set; }
-        public EnemyAnimationConfig Animation   => animation;
-        public EnemyAudioConfig Audio           => audio;
-        public EnemyVFXConfig VFX               => vfx;
+        public EnemyAnimationConfig Animation   => animConfig;
+        public EnemyAudioConfig Audio           => audioConfig;
+        public EnemyVFXConfig VFX               => vfxConfig;
         public EnemyStateMachine StateMachine   { get; private set; }
 
         public Transform PlayerTransform        { get; private set; }
@@ -107,8 +107,8 @@ namespace ITCLASH.Enemies
             Agent.speed = stats.moveSpeed;
             Agent.angularSpeed = stats.turnSpeedDeg;
 
-            animation.Initialize(Anim);
-            audio.Initialize(gameObject);
+            animConfig.Initialize(Anim);
+            audioConfig.Initialize(gameObject);
 
             // Force the tag so skills' CompareTag("Enemy") always works on new prefabs.
             if (!CompareTag("Enemy")) gameObject.tag = "Enemy";
@@ -119,8 +119,8 @@ namespace ITCLASH.Enemies
         protected virtual void Start()
         {
             CacheReferences();
-            vfx.SpawnSpawnFx(transform);
-            audio.PlaySpawn();
+            vfxConfig.SpawnSpawnFx(transform);
+            audioConfig.PlaySpawn();
             BuildStateMachine();
         }
 
@@ -181,9 +181,9 @@ namespace ITCLASH.Enemies
             if (isDead || amount <= 0f) return;
 
             CurrentHealth = Mathf.Max(0f, CurrentHealth - amount);
-            animation.TriggerHit();
-            audio.PlayGetHit();
-            vfx.SpawnHitImpact(transform);
+            animConfig.TriggerHit();
+            audioConfig.PlayGetHit();
+            vfxConfig.SpawnHitImpact(transform);
             OnDamaged?.Invoke(amount);
 
             if (CurrentHealth <= 0f) Die();

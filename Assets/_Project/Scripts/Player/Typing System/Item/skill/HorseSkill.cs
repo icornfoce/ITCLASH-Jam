@@ -17,7 +17,6 @@ public class HorseSkill : BaseBuffSkill
         {
             originalSpeed = fpc.walkSpeed;
             fpc.walkSpeed *= speedMultiplier;
-            fpc.sprintSpeed *= speedMultiplier;
             Debug.Log($"[HorseSkill] วิ่งเร็วขึ้น! ความเร็วปัจจุบัน: {fpc.walkSpeed}");
         }
     }
@@ -27,7 +26,6 @@ public class HorseSkill : BaseBuffSkill
         if (fpc != null)
         {
             fpc.walkSpeed = originalSpeed;
-            fpc.sprintSpeed = originalSpeed * 2f; // สมมติค่าดั้งเดิม
             Debug.Log("[HorseSkill] ความเร็วกลับเป็นปกติ");
         }
     }

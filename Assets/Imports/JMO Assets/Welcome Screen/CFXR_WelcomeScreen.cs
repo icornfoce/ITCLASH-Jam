@@ -42,14 +42,19 @@ namespace CartoonFX
 
             // UXML
             var uxmlDocument = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(AssetDatabase.GUIDToAssetPath("bfd03f272fe010b4ba558a3bc456ffeb"));
-            root.Add(uxmlDocument.Instantiate());
+            if (uxmlDocument != null)
+            {
+                root.Add(uxmlDocument.Instantiate());
+            }
             // USS
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(AssetDatabase.GUIDToAssetPath("f8b971f10a610844f968f582415df874"));
             root.styleSheets.Add(styleSheet);
 
             // Background image
             root.style.backgroundImage = new StyleBackground(AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath("fed1b64fd853f994c8d504720a0a6d44")));
+#pragma warning disable 0618
             root.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+#pragma warning restore 0618
 
             // Logo image
             var titleImage = root.Q<Image>("img_title");

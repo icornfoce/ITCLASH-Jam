@@ -67,9 +67,9 @@ public class TypingSystem : MonoBehaviour
 
     [Header("Flow State Settings")]
     [SerializeField] private int wordsToTriggerFlow = 5;
-    [SerializeField] private float flowTriggerWindow = 30f;
+    // [SerializeField] private float flowTriggerWindow = 30f;
     [SerializeField] private float flowDuration = 10f;
-    [SerializeField] private int lettersToAutoComplete = 3;
+    // [SerializeField] private int lettersToAutoComplete = 3;
     [SerializeField] private AudioClip flowStateStartSFX;
     [SerializeField] private ComboSystem comboSystem;
 

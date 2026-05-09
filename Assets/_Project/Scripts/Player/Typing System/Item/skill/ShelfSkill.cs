@@ -8,7 +8,7 @@ public class ShelfSkill : BaseProjectileSkill
         
         // 1. หยุดชะงักและกลายเป็นสิ่งกีดขวางนิ่งๆ
         rb.isKinematic = true;
-        rb.velocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
 
         // 2. ปล่อยเอฟเฟกต์
         SpawnHitVFX(collision.contacts[0].point);
