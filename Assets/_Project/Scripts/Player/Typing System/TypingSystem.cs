@@ -79,6 +79,10 @@ public class TypingSystem : MonoBehaviour
     private bool isInternalUpdate = false;
     private string lastInput = "";
 
+    // เก็บตำแหน่งเป้าหมายล่าสุดสำหรับแต่ละช่อง
+    private Vector3? firstItemTargetPos;
+    private Vector3? secondItemTargetPos;
+
     [Header("Item Spawning Settings")]
     [SerializeField] private Transform playerTransform; // ลาก Player มาใส่ตรงนี้ (ถ้าไม่ใส่จะหา Tag "Player" อัตโนมัติ)
     [SerializeField] private Vector3 firstSlotOffset = new Vector3(-0.6f, 1.8f, -1.0f);
@@ -179,7 +183,7 @@ public class TypingSystem : MonoBehaviour
                     }
 
                     Debug.Log($"[TypingSystem] Submitting: {textToSubmit}");
-                    TryMatchItem(textToSubmit.Trim());
+                    TryMatchItem(textToSubmit.Trim(), null);
                 }
                 else
                 {
@@ -194,7 +198,6 @@ public class TypingSystem : MonoBehaviour
         if (typingVignette != null)
         {
             float targetAlpha = isSlowed ? maxOverlayAlpha : 0f;
-            // ใช้ Time.unscaledDeltaTime เพราะเกมถูก slow อยู่
             currentOverlayAlpha = Mathf.MoveTowards(currentOverlayAlpha, targetAlpha, overlayFadeSpeed * Time.unscaledDeltaTime);
             SetTypingVignetteAlpha(currentOverlayAlpha);
 
@@ -240,6 +243,23 @@ public class TypingSystem : MonoBehaviour
 
         // ทำให้ไอเทมที่ลอยอยู่มีการขยับขึ้นลง (Bobbing Effect)
         ApplyFloatingEffect();
+    }
+
+    private Vector3? GetCameraLookPosition()
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return null;
+
+        // ยิง Ray จากกึ่งกลางหน้าจอ (เป้าเล็ง)
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        
+        // ระยะสูงสุด 50 เมตร
+        if (Physics.Raycast(ray, out RaycastHit hit, 50f))
+        {
+            return hit.point;
+        }
+        
+        return null;
     }
 
     void LateUpdate()
@@ -313,7 +333,7 @@ public class TypingSystem : MonoBehaviour
         }
     }
 
-    public bool TryMatchItem(string input)
+    public bool TryMatchItem(string input, Vector3? targetPos = null)
     {
         Debug.Log($"<color=white>[TypingSystem] Attempting to match: '{input}'</color>");
         
@@ -382,7 +402,7 @@ public class TypingSystem : MonoBehaviour
                     
                     RecordTypedWord();
 
-                    ProcessItemMatch(item);
+                    ProcessItemMatch(item, targetPos);
                     SetSlowMotion(false);
                     return true;
                 }
@@ -403,26 +423,30 @@ public class TypingSystem : MonoBehaviour
         return false;
     }
 
-    private void ProcessItemMatch(ItemInfo matchedItem)
+    private void ProcessItemMatch(ItemInfo matchedItem, Vector3? targetPos)
     {
         // ถ้าช่องแรกว่าง ให้ใส่ช่องแรก
         if (firstItem == null || string.IsNullOrEmpty(firstItem.itemName))
         {
             firstItem = matchedItem;
+            firstItemTargetPos = targetPos; // จำตำแหน่งเป้าหมาย
             spawnedFirst = SpawnItemAtOffset(firstItem, firstSlotOffset);
             
             PlaySFX(matchSFX);
-            SpawnVFX(matchVFXPrefab, spawnedFirst.transform.position);
+            Vector3 vfxPos = spawnedFirst != null ? spawnedFirst.transform.position : playerTransform.position;
+            SpawnVFX(matchVFXPrefab, vfxPos);
             Debug.Log($"<color=cyan>First Item: {firstItem.itemName}</color>");
         }
         // ถ้าช่องสองว่าง ให้ใส่ช่องสอง
         else if (secondItem == null || string.IsNullOrEmpty(secondItem.itemName))
         {
             secondItem = matchedItem;
+            secondItemTargetPos = targetPos; // จำตำแหน่งเป้าหมาย
             spawnedSecond = SpawnItemAtOffset(secondItem, secondSlotOffset);
             
             PlaySFX(matchSFX);
-            SpawnVFX(matchVFXPrefab, spawnedSecond.transform.position);
+            Vector3 vfxPos = spawnedSecond != null ? spawnedSecond.transform.position : playerTransform.position;
+            SpawnVFX(matchVFXPrefab, vfxPos);
             Debug.Log($"<color=cyan>Second Item: {secondItem.itemName}</color>");
             CheckCombination();
         }
@@ -431,10 +455,12 @@ public class TypingSystem : MonoBehaviour
         {
             if (spawnedSecond != null) Destroy(spawnedSecond);
             secondItem = matchedItem;
+            secondItemTargetPos = targetPos; // จำตำแหน่งเป้าหมาย
             spawnedSecond = SpawnItemAtOffset(secondItem, secondSlotOffset);
             
             PlaySFX(matchSFX);
-            SpawnVFX(matchVFXPrefab, spawnedSecond.transform.position);
+            Vector3 vfxPos = spawnedSecond != null ? spawnedSecond.transform.position : playerTransform.position;
+            SpawnVFX(matchVFXPrefab, vfxPos);
             CheckCombination();
         }
     }
@@ -553,30 +579,41 @@ public class TypingSystem : MonoBehaviour
     public void ReleaseItem()
     {
         // ปล่อยชิ้นที่สองก่อน (ถ้ามี)
-        if (secondItem != null && spawnedSecond != null)
+        if (secondItem != null)
         {
-            PerformRelease(ref secondItem, ref spawnedSecond);
+            PerformRelease(ref secondItem, ref spawnedSecond, secondItemTargetPos);
+            secondItemTargetPos = null; // ล้างตำแหน่ง
         }
         // ถ้าไม่มีชิ้นที่สอง ให้ปล่อยชิ้นแรก
-        else if (firstItem != null && spawnedFirst != null)
+        else if (firstItem != null)
         {
-            PerformRelease(ref firstItem, ref spawnedFirst);
+            PerformRelease(ref firstItem, ref spawnedFirst, firstItemTargetPos);
+            firstItemTargetPos = null; // ล้างตำแหน่ง
         }
     }
 
-    private void PerformRelease(ref ItemInfo item, ref GameObject obj)
+    private void PerformRelease(ref ItemInfo item, ref GameObject obj, Vector3? targetPos = null)
     {
-        if (item == null || obj == null) return;
+        if (item == null) return;
 
         // ── เรียกใช้ Skill ของไอเทมนี้ (ถ้ามี) ──
         if (item.itemSkill != null)
         {
-            // คำนวณจุดเกิดสกิล โดยใช้ค่า Offset ที่ตั้งไว้ใน ItemData
-            // แปลง Local Offset ให้เป็น World Position (คำนึงถึงทิศทางที่ Player หันหน้าอยู่)
-            Vector3 spawnPos = playerTransform.position
-                + playerTransform.right   * item.skillSpawnOffset.x   // ซ้าย/ขวา
-                + playerTransform.up      * item.skillSpawnOffset.y   // บน/ล่าง
-                + playerTransform.forward * item.skillSpawnOffset.z;  // หน้า/หลัง
+            Vector3 spawnPos;
+
+            // ถ้ามีตำแหน่งเป้าหมาย (จากการ Aim) ให้ใช้ตำแหน่งนั้นเลย!
+            if (targetPos.HasValue)
+            {
+                spawnPos = targetPos.Value;
+            }
+            else
+            {
+                // ถ้าไม่มีเป้าหมาย ให้เกิดหน้า Player ตามปกติ
+                spawnPos = playerTransform.position
+                    + playerTransform.right * item.skillSpawnOffset.x
+                    + playerTransform.up * item.skillSpawnOffset.y
+                    + playerTransform.forward * item.skillSpawnOffset.z;
+            }
 
             // คำนวณองศาการเกิด โดยอ้างอิงจากมุมที่ Player หันหน้าอยู่ และบวกด้วยองศาที่ตั้งไว้ใน ItemData
             Quaternion spawnRot = playerTransform.rotation * Quaternion.Euler(item.skillSpawnEulerAngles);
@@ -586,6 +623,7 @@ public class TypingSystem : MonoBehaviour
             BaseItemSkill skill = skillObj.GetComponent<BaseItemSkill>();
             if (skill != null)
             {
+                skill.TargetPosition = targetPos; // ส่งตำแหน่งเป้าหมายไปให้ Skill
                 skill.Activate(playerTransform);
             }
         }
@@ -595,8 +633,8 @@ public class TypingSystem : MonoBehaviour
 
         Debug.Log($"Released: {item.itemName}");
 
-        // ทำลายไอเทมที่ลอยอยู่ (ไม่ต้องวางลงพื้น)
-        Destroy(obj);
+        // ทำลายไอเทมที่ลอยอยู่ (ถ้ามี)
+        if (obj != null) Destroy(obj);
         
         // ล้างสถานะ
         item = null;

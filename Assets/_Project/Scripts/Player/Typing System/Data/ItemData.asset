@@ -67,4 +67,58 @@ MonoBehaviour:
     itemSkill: {fileID: 3038915894166018805, guid: eaa667d878ac6ae4fab14f2b78d6c3dc, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: instantiate
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 6938046711563528409, guid: 02cda267d84a26a42927e1911b4d2f5b, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 1479012500418606609, guid: 8533ea4432cb5ce49858405f242c023f, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Romantic
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 919132149155446097, guid: a4f97055a8900694c86fafd9345194f7, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 919132149155446097, guid: a4f97055a8900694c86fafd9345194f7, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: lantern
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 5254228696994893900, guid: e04f25c69d9d69342b0c1a5b4d5dd009, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 5254228696994893900, guid: e04f25c69d9d69342b0c1a5b4d5dd009, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Window
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 8447924231176442907, guid: ed01403282be16944a9563c5d0f7a9d1, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 8447924231176442907, guid: ed01403282be16944a9563c5d0f7a9d1, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Shelf
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 3716898443640795280, guid: 3aa5281aec313c043b3e82745af1ae17, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 3716898443640795280, guid: 3aa5281aec313c043b3e82745af1ae17, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Bench
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 919132149155446097, guid: 0b4bf56ae7a96e845b802ca0614301f1, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 919132149155446097, guid: 0b4bf56ae7a96e845b802ca0614301f1, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []

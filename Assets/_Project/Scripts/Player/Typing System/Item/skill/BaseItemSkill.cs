@@ -7,6 +7,9 @@ using UnityEngine;
 /// </summary>
 public abstract class BaseItemSkill : MonoBehaviour
 {
+    // ตำแหน่งเป้าหมาย (ถ้ามี เช่น จากการ Aim)
+    [HideInInspector] public Vector3? TargetPosition;
+
     [Header("Voice / Announcement")]
     [Tooltip("เสียงพูดตอนปล่อย Skill (เช่น ตะโกนชื่อท่า)")]
     public AudioClip voiceClip;

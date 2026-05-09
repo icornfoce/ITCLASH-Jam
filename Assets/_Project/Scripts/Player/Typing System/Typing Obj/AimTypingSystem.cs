@@ -400,10 +400,10 @@ public class AimTypingSystem : MonoBehaviour
 
         Debug.Log($"[AimTyping] ✅ พิมพ์สำเร็จ: '{currentTargetWord}' | คำใหม่: {isNewWord}");
 
-        // ส่งคำไปให้ TypingSystem ใช้งาน (เสกขึ้นมาข้างตัว พร้อมใช้)
+        // ส่งคำไปให้ TypingSystem ใช้งาน (พร้อมระบุตำแหน่งเป้าหมาย)
         if (typingSystem != null)
         {
-            typingSystem.TryMatchItem(currentTargetWord);
+            typingSystem.TryMatchItem(currentTargetWord, lockedTarget != null ? lockedTarget.transform.position : (Vector3?)null);
         }
 
         // ออกจาก Aim mode ทันทีที่พิมพ์ถูก
