@@ -44,7 +44,7 @@ public abstract class BaseBuffSkill : BaseItemSkill
         ApplyBuff(playerTransform);
         
         // 3. รอจนหมดเวลาบัฟ
-        yield return new WaitForSeconds(buffDuration);
+        yield return new WaitForSecondsRealtime(buffDuration);
         
         // 4. ลบบัฟออก (คืนค่าเดิมให้ตัวละคร)
         RemoveBuff(playerTransform);

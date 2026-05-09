@@ -26,9 +26,9 @@ public class FirstPersonCamera : MonoBehaviour
     {
         if (playerBody == null) return;
 
-        // Get Mouse Input
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        // Get Mouse Input (ใช้ unscaledDeltaTime เพื่อให้ความเร็วเมาส์ไม่ช้าลงตามเวลาที่ถูกสโลว์)
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.unscaledDeltaTime;
 
         // Rotate Player Body (Yaw)
         playerBody.Rotate(Vector3.up * mouseX);

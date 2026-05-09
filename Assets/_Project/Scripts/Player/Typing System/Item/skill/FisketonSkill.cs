@@ -8,19 +8,48 @@ public class FisketonSkill : BaseBuffSkill
     public float damage = 20f;
     public float knockback = 15f;
     public float aoeRadius = 5f;
-    public float hitInterval = 0.5f; // ตีรัวๆ รอบตัว
+    public float hitInterval = 0.5f; 
+    public float rotationSpeed = 360f; // ความเร็วในการหมุนรอบตัว
+    public float orbitRadius = 2f;     // ระยะห่างจากตัวผู้เล่น
     public LayerMask enemyLayer;
 
     private bool isSpinning = false;
+    private float currentAngle = 0f;
 
     protected override void ApplyBuff(Transform playerTransform)
     {
+        // เปิดการแสดงผล Mesh (เพราะคลาสเบสสั่งปิดไว้)
+        foreach (Renderer r in GetComponentsInChildren<Renderer>())
+        {
+            r.enabled = true;
+        }
+
         isSpinning = true;
         StartCoroutine(SpinRoutine(playerTransform));
-        Debug.Log("[FisketonSkill] ปลาหมุนเริ่มทำงาน! AoE รอบตัว!");
+        StartCoroutine(DamageRoutine(playerTransform));
+        Debug.Log("[FisketonSkill] ปลาหมุนเริ่มทำงาน! หมุนรอบตัวจริง!");
     }
 
     private IEnumerator SpinRoutine(Transform playerTransform)
+    {
+        while (isSpinning)
+        {
+            // คำนวณมุมหมุนตามเวลา
+            currentAngle += rotationSpeed * Time.deltaTime;
+            float rad = currentAngle * Mathf.Deg2Rad;
+            
+            // คำนวณตำแหน่ง Orbit รอบผู้เล่น
+            Vector3 offset = new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)) * orbitRadius;
+            transform.position = playerTransform.position + offset + Vector3.up * 1f;
+            
+            // หมุนให้หน้าปลาหันไปตามทิศทางการเคลื่อนที่
+            transform.rotation = Quaternion.LookRotation(new Vector3(-Mathf.Sin(rad), 0, Mathf.Cos(rad)));
+
+            yield return null;
+        }
+    }
+
+    private IEnumerator DamageRoutine(Transform playerTransform)
     {
         while (isSpinning)
         {
