@@ -1,9 +1,6 @@
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Minimal state machine: holds the current state, swaps via <see cref="ChangeState"/>,
-    /// ticks each frame, and forwards animation events.
-    /// </summary>
+    /// Minimal state machine — holds current state, swaps, ticks, and forwards anim events.
     public sealed class EnemyStateMachine
     {
         public EnemyState Current { get; private set; }

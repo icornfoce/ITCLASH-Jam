@@ -1,10 +1,6 @@
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Base class for any AI state. Subclasses override only the lifecycle hooks they need.
-    /// Animation-event hooks are routed here from <see cref="EnemyAnimationEventRelay"/>
-    /// via <see cref="EnemyController"/>, so attack/cast frames land at the exact animation moment.
-    /// </summary>
+    /// Base class for AI states. Override lifecycle hooks as needed.
     public abstract class EnemyState
     {
         protected readonly EnemyController owner;
@@ -16,11 +12,27 @@ namespace ITCLASH.Enemies
         public virtual void OnExit() { }
         public virtual void Tick(float dt) { }
 
-        // ── Animation-event hooks (Unity → AnimationEventRelay → EnemyController → here) ──
+        // ── Animation-event hooks ──
         public virtual void OnAnimAttackHit() { }
         public virtual void OnAnimDashImpact() { }
         public virtual void OnAnimRangedFire() { }
         public virtual void OnAnimHealOrbFire() { }
         public virtual void OnAnimFootstep() { }
+
+        // ── Agent helpers (reduces null-check boilerplate) ──
+        protected void StopAgent()
+        {
+            if (owner.Agent != null && owner.Agent.isOnNavMesh)
+            {
+                owner.Agent.isStopped = true;
+                owner.Agent.velocity = UnityEngine.Vector3.zero;
+            }
+        }
+
+        protected void ResumeAgent()
+        {
+            if (owner.Agent != null && owner.Agent.isOnNavMesh)
+                owner.Agent.isStopped = false;
+        }
     }
 }

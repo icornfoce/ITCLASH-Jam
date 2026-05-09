@@ -2,16 +2,13 @@ using UnityEngine;
 
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Picks the lowest-HP ally in <c>healCastRange</c> at OnEnter, plays the cast
-    /// animation, and on the <c>Anim_HealOrbFire</c> event (or fallback timer) spawns
-    /// <c>orbsPerCast</c> healing orbs that home onto that ally.
-    ///
-    /// If no wounded ally exists, the state immediately exits without consuming the
-    /// cooldown so the healer can try again next tick.
-    /// </summary>
+    /// Pick lowest-HP ally, cast heal animation, spawn homing orbs.
+    /// If no wounded ally, exits immediately without consuming cooldown.
     public sealed class HealCastState : EnemyState
     {
+        const float RECOVER      = 0.8f;
+        const float ORB_LIFETIME = 8f;
+
         readonly EnemyState returnState;
         readonly bool retargetEachFrame;
 
@@ -40,29 +37,20 @@ namespace ITCLASH.Enemies
             if (target == null)
             {
                 aborted = true;
-                exitAt = Time.time; // exit ASAP next tick
+                exitAt = Time.time;
                 return;
             }
 
-            if (owner.Agent != null && owner.Agent.isOnNavMesh)
-            {
-                owner.Agent.isStopped = true;
-                owner.Agent.velocity = Vector3.zero;
-            }
-
+            StopAgent();
             owner.Animation.TriggerHealCast();
             owner.Audio.PlayCast();
 
-            exitAt = Time.time + owner.Stats.healRecoverySeconds + 0.1f;
+            exitAt = Time.time + RECOVER + 0.1f;
         }
 
         public override void OnExit()
         {
-            if (owner.Agent != null && owner.Agent.isOnNavMesh)
-                owner.Agent.isStopped = false;
-
-            // Only consume cooldown if we actually fired — abandoning early should let
-            // the healer try again immediately when allies need help.
+            ResumeAgent();
             if (didFire) owner.ConsumeHeal();
         }
 
@@ -70,7 +58,7 @@ namespace ITCLASH.Enemies
         {
             if (aborted) { owner.StateMachine.ChangeState(returnState); return; }
 
-            // Face the ally so the cast animation reads naturally.
+            // Face the ally.
             if (target != null && target.IsAlive)
             {
                 Vector3 to = target.transform.position - owner.transform.position;
@@ -84,7 +72,7 @@ namespace ITCLASH.Enemies
             }
 
             // Fallback firing if no animation event arrives.
-            if (!didFire && Time.time >= enterTime + owner.Stats.healRecoverySeconds * 0.4f)
+            if (!didFire && Time.time >= enterTime + RECOVER * 0.4f)
                 Fire();
 
             if (Time.time >= exitAt) owner.StateMachine.ChangeState(returnState);
@@ -100,7 +88,7 @@ namespace ITCLASH.Enemies
             var prefab = owner.Stats.healingOrbPrefab;
             if (prefab == null) return;
 
-            // Re-pick if the original target is gone now.
+            // Re-pick if the original target is gone.
             if (target == null || !target.IsAlive)
             {
                 target = EnemyRegistry.FindLowestHpInRange(
@@ -112,7 +100,6 @@ namespace ITCLASH.Enemies
             Vector3 origin = owner.OrbSpawnPoint.position;
             for (int i = 0; i < n; i++)
             {
-                // Slight directional spread so orbs visibly fan out.
                 Quaternion spread = Quaternion.AngleAxis(
                     UnityEngine.Random.Range(-25f, 25f), Vector3.up);
                 Vector3 launchDir = spread * owner.transform.forward;
@@ -128,7 +115,7 @@ namespace ITCLASH.Enemies
                         searchRange: owner.Stats.healCastRange,
                         homingSpeed: owner.Stats.orbHomingSpeed,
                         healAmount: owner.Stats.healPerOrb,
-                        maxLifetime: owner.Stats.orbMaxLifetime,
+                        maxLifetime: ORB_LIFETIME,
                         retargetEachFrame: retargetEachFrame,
                         caster: owner);
                 }

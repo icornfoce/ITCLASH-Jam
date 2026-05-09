@@ -4,23 +4,14 @@ using UnityEngine.Events;
 
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Base for every enemy archetype. Owns HP, navigation, animation/audio/VFX dispatch,
-    /// player tracking, the state machine, and cooldown bookkeeping. Subclasses implement
-    /// <see cref="BuildStateMachine"/> to wire archetype-specific behaviour.
-    ///
-    /// Compatibility contract for the existing skill pipeline:
-    ///   • Public <c>TakeDamage(int)</c> — invoked via SendMessage from typing-system skills.
-    ///   • Tag must be "Enemy" — every skill filters by it.
-    ///   • On death, the GameObject is destroyed so Spawner.cs's null-cleanup keeps working.
-    /// </summary>
+    /// Base for every enemy archetype. Owns HP, nav, anim/audio/VFX, player tracking,
+    /// state machine, and cooldowns. Subclasses implement BuildStateMachine().
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(Animator))]
     public abstract class EnemyController : MonoBehaviour, IDamageable, IKnockbackable
     {
         // ── Stats ────────────────────────────────────────────────
         [Header("Data")]
-        [Tooltip("ScriptableObject containing all gameplay numbers.")]
         [SerializeField] protected EnemyStatsSO stats;
 
         // ── Presentation ─────────────────────────────────────────
@@ -31,11 +22,8 @@ namespace ITCLASH.Enemies
 
         // ── Optional anchors ─────────────────────────────────────
         [Header("Anchors (optional)")]
-        [Tooltip("Where projectiles are spawned (Ranged Mage). If null, transform.position is used.")]
         [SerializeField] Transform muzzlePoint;
-        [Tooltip("Where healing orbs spawn (Healer). If null, transform.position is used.")]
         [SerializeField] Transform orbSpawnPoint;
-        [Tooltip("Center of the dash hit sphere (Heavy Dasher). If null, transform.position is used.")]
         [SerializeField] Transform dashImpactPoint;
 
         // ── Events ───────────────────────────────────────────────
@@ -139,12 +127,8 @@ namespace ITCLASH.Enemies
 
         protected virtual void Update()
         {
-            // Re-acquire the player if the cached reference was destroyed (level reload, etc.)
             if (PlayerTransform == null) CacheReferences();
-
             if (!isDead) StateMachine?.Tick(Time.deltaTime);
-
-            // ── ประมวลผล Knockback ──
             HandleKnockback();
         }
 
@@ -152,18 +136,13 @@ namespace ITCLASH.Enemies
         {
             if (knockbackTimer <= 0f) return;
 
-            // หยุด NavMesh ชั่วคราวตอนกำลังกระเด็น
             Agent.isStopped = true;
             Agent.velocity  = Vector3.zero;
-
-            // เคลื่อนด้วย knockback velocity
             transform.position += knockbackVelocity * Time.deltaTime;
 
-            // ลด velocity และ timer
             knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, Time.deltaTime * 8f);
             knockbackTimer   -= Time.deltaTime;
 
-            // หยุดแล้ว → คืน NavMesh
             if (knockbackTimer <= 0f)
             {
                 knockbackVelocity = Vector3.zero;
@@ -173,7 +152,7 @@ namespace ITCLASH.Enemies
 
         // ── Damage / Heal ────────────────────────────────────────
 
-        /// <summary>Public entry point for typing-system skills (SendMessage("TakeDamage", int)).</summary>
+        /// Public entry point for typing-system skills (SendMessage("TakeDamage", int)).
         public void TakeDamage(int amount) => ApplyDamage(amount);
 
         public void ApplyDamage(float amount)
@@ -189,10 +168,7 @@ namespace ITCLASH.Enemies
             if (CurrentHealth <= 0f) Die();
         }
 
-        /// <summary>
-        /// Knockback โดยไม่ต้องใช้ Rigidbody — ใช้ได้กับทุก Enemy ที่มี NavMeshAgent
-        /// เรียกจาก ScanBullet ตอนกระสุนชน
-        /// </summary>
+        /// Knockback without Rigidbody — works with any NavMeshAgent enemy.
         public void ApplyKnockback(Vector3 force, float duration = 0.35f)
         {
             if (isDead) return;
@@ -227,10 +203,9 @@ namespace ITCLASH.Enemies
         public void OnAnimFootstep()    => StateMachine?.RaiseFootstep();
 
         // ── State machine setup ──────────────────────────────────
-        /// <summary>Subclasses build their initial states here and call <c>StateMachine.ChangeState(...)</c>.</summary>
+        /// Subclasses build their initial states here and call StateMachine.ChangeState(...).
         protected abstract void BuildStateMachine();
 
-        /// <summary>Helper used by states for diagnostic logging.</summary>
         public void DebugState(string msg)
         {
             if (debugLogStates) Debug.Log($"[{name}] {msg}", this);
@@ -243,7 +218,7 @@ namespace ITCLASH.Enemies
             return Vector3.Distance(transform.position, PlayerTransform.position);
         }
 
-        /// <summary>Smoothly rotate the body to face the player (Y-axis only).</summary>
+        /// Smoothly rotate to face the player (Y-axis only).
         public void FacePlayer(float dt)
         {
             if (PlayerTransform == null || stats == null) return;

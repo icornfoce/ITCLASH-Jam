@@ -2,13 +2,12 @@ using UnityEngine;
 
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Stops, faces the player, plays the cast animation. Spawns the projectile at the
-    /// muzzle on the <c>Anim_RangedFire</c> event (or after a fallback delay if no event
-    /// is wired). Returns to <see cref="returnState"/> after recovery.
-    /// </summary>
+    /// Stop, face player, cast animation, spawn projectile at muzzle. Returns to returnState after recovery.
     public sealed class RangedCastState : EnemyState
     {
+        const float RECOVER  = 0.8f;
+        const float LIFETIME = 6f;
+
         readonly EnemyState returnState;
         float enterTime;
         float exitAt;
@@ -25,21 +24,16 @@ namespace ITCLASH.Enemies
             enterTime = Time.time;
             didFire = false;
 
-            if (owner.Agent != null && owner.Agent.isOnNavMesh)
-            {
-                owner.Agent.isStopped = true;
-                owner.Agent.velocity = Vector3.zero;
-            }
+            StopAgent();
             owner.Animation.TriggerCast();
             owner.Audio.PlayCast();
 
-            exitAt = Time.time + owner.Stats.rangedRecoverySeconds + 0.1f;
+            exitAt = Time.time + RECOVER + 0.1f;
         }
 
         public override void OnExit()
         {
-            if (owner.Agent != null && owner.Agent.isOnNavMesh)
-                owner.Agent.isStopped = false;
+            ResumeAgent();
             owner.ConsumeRanged();
         }
 
@@ -48,7 +42,7 @@ namespace ITCLASH.Enemies
             owner.FacePlayer(dt);
 
             // Fallback firing if no animation event arrives.
-            if (!didFire && Time.time >= enterTime + owner.Stats.rangedRecoverySeconds * 0.4f)
+            if (!didFire && Time.time >= enterTime + RECOVER * 0.4f)
                 Fire();
 
             if (Time.time >= exitAt) owner.StateMachine.ChangeState(returnState);
@@ -66,8 +60,7 @@ namespace ITCLASH.Enemies
 
             Vector3 muzzlePos = owner.MuzzlePoint.position;
             Vector3 toPlayer  = owner.PlayerTransform.position - muzzlePos;
-            // Aim slightly toward upper torso so flat ground shots don't undershoot.
-            toPlayer.y += 1.0f;
+            toPlayer.y += 1.0f; // aim slightly toward upper torso
             Quaternion rot = Quaternion.LookRotation(toPlayer.normalized);
 
             var go = Object.Instantiate(prefab, muzzlePos, rot);
@@ -77,7 +70,7 @@ namespace ITCLASH.Enemies
                     direction: toPlayer.normalized,
                     speed: owner.Stats.projectileSpeed,
                     damage: owner.Stats.projectileDamage,
-                    lifetime: owner.Stats.projectileLifetime);
+                    lifetime: LIFETIME);
             }
 
             owner.VFX.SpawnMuzzleFlash(owner.transform);

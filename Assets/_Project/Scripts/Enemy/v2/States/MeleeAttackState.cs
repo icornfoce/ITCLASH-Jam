@@ -2,13 +2,12 @@ using UnityEngine;
 
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Faces the player, plays the attack animation, and applies damage on the
-    /// <c>Anim_AttackHit</c> animation event (or after the configured wind-up if no
-    /// event is wired). Returns to <see cref="returnState"/> after recovery.
-    /// </summary>
+    /// Face player, play attack anim, deal damage on hit event. Returns to returnState after recovery.
     public sealed class MeleeAttackState : EnemyState
     {
+        const float WINDUP  = 0.15f;
+        const float RECOVER = 0.6f;
+
         readonly EnemyState returnState;
         float enterTime;
         float exitAt;
@@ -25,23 +24,17 @@ namespace ITCLASH.Enemies
             enterTime = Time.time;
             didHit = false;
 
-            if (owner.Agent != null && owner.Agent.isOnNavMesh)
-            {
-                owner.Agent.isStopped = true;
-                owner.Agent.velocity = Vector3.zero;
-            }
-
+            StopAgent();
             owner.Animation.TriggerAttack();
             owner.Audio.PlayAttackSwing();
             owner.VFX.SpawnAttackTrail(owner.transform);
 
-            exitAt = Time.time + owner.Stats.meleeWindupSeconds + owner.Stats.meleeRecoverySeconds;
+            exitAt = Time.time + WINDUP + RECOVER;
         }
 
         public override void OnExit()
         {
-            if (owner.Agent != null && owner.Agent.isOnNavMesh)
-                owner.Agent.isStopped = false;
+            ResumeAgent();
             owner.ConsumeMelee();
         }
 
@@ -49,11 +42,9 @@ namespace ITCLASH.Enemies
         {
             owner.FacePlayer(dt);
 
-            // Fallback: if no animation event fires within wind-up + 0.1s, deal damage anyway.
-            if (!didHit && Time.time >= enterTime + owner.Stats.meleeWindupSeconds + 0.1f)
-            {
+            // Fallback: if no animation event fires within wind-up, deal damage anyway.
+            if (!didHit && Time.time >= enterTime + WINDUP + 0.1f)
                 ResolveHit();
-            }
 
             if (Time.time >= exitAt) owner.StateMachine.ChangeState(returnState);
         }

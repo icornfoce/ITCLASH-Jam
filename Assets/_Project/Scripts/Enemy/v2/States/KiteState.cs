@@ -3,17 +3,11 @@ using UnityEngine;
 
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Maintains a preferred distance from the player:
-    ///   • Closer than <c>tooCloseRange</c> → back away.
-    ///   • Farther than <c>preferredRange</c> → close in.
-    ///   • Otherwise → hold position and face the player.
-    ///
-    /// Each Tick the owner is given a chance to transition (e.g. into RangedCast or
-    /// HealCast) via <see cref="DecideTransition"/>.
-    /// </summary>
+    /// Maintain preferred distance from player. Transition out via DecideTransition delegate.
     public sealed class KiteState : EnemyState
     {
+        const float BACKOFF_SPEED_MUL = 1.1f;
+
         public Func<EnemyState> DecideTransition;
 
         public KiteState(EnemyController owner) : base(owner) { }
@@ -21,8 +15,7 @@ namespace ITCLASH.Enemies
         public override void OnEnter()
         {
             owner.DebugState("Kite → Enter");
-            if (owner.Agent != null && owner.Agent.isOnNavMesh)
-                owner.Agent.isStopped = false;
+            ResumeAgent();
         }
 
         public override void Tick(float dt)
@@ -44,7 +37,7 @@ namespace ITCLASH.Enemies
                 Vector3 awayPoint = self - dir * (preferred - dist);
                 if (owner.Agent != null && owner.Agent.isOnNavMesh)
                 {
-                    owner.Agent.speed = owner.Stats.moveSpeed * owner.Stats.kiteBackoffSpeedMul;
+                    owner.Agent.speed = owner.Stats.moveSpeed * BACKOFF_SPEED_MUL;
                     owner.Agent.SetDestination(awayPoint);
                 }
                 owner.Animation.SetWalking(true);
@@ -61,7 +54,7 @@ namespace ITCLASH.Enemies
             }
             else
             {
-                // Hold
+                // Hold position
                 if (owner.Agent != null && owner.Agent.isOnNavMesh)
                 {
                     owner.Agent.SetDestination(self);

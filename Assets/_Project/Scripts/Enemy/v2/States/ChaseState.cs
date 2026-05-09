@@ -3,17 +3,10 @@ using UnityEngine;
 
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Pursues the player via NavMeshAgent. Each Tick the owning enemy is given a chance
-    /// to break out via <see cref="DecideTransition"/> — typically into Melee, Dash,
-    /// Ranged, or HealCast — based on cooldowns/ranges its archetype cares about.
-    /// </summary>
+    /// Chase the player. Transition out via DecideTransition delegate.
     public sealed class ChaseState : EnemyState
     {
-        /// <summary>
-        /// Called every frame after destination is set. Return a non-null state to switch.
-        /// Set this in the enemy subclass's BuildStateMachine.
-        /// </summary>
+        /// Called every frame after nav update. Return non-null to switch state.
         public Func<EnemyState> DecideTransition;
 
         public ChaseState(EnemyController owner) : base(owner) { }
@@ -21,11 +14,9 @@ namespace ITCLASH.Enemies
         public override void OnEnter()
         {
             owner.DebugState("Chase → Enter");
+            ResumeAgent();
             if (owner.Agent != null && owner.Agent.isOnNavMesh)
-            {
-                owner.Agent.isStopped = false;
                 owner.Agent.speed = owner.Stats.moveSpeed;
-            }
             owner.Animation.SetWalking(true);
         }
 
@@ -42,14 +33,13 @@ namespace ITCLASH.Enemies
             {
                 if (owner.DistanceToPlayer() <= owner.Stats.meleeRange)
                 {
-                    // Already in range but on cooldown. Hold position and face player.
+                    // In range but on cooldown — hold position.
                     owner.Agent.isStopped = true;
                     owner.Animation.SetWalking(false);
                     owner.FacePlayer(dt);
                 }
                 else
                 {
-                    // Out of range, keep chasing.
                     owner.Agent.isStopped = false;
                     owner.Agent.SetDestination(owner.PlayerTransform.position);
                     owner.Animation.SetWalking(true);

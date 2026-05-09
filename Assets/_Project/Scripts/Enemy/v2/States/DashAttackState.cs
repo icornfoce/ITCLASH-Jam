@@ -2,17 +2,14 @@ using UnityEngine;
 
 namespace ITCLASH.Enemies
 {
-    /// <summary>
-    /// Three-phase dash:
-    ///   1. Wind-up — face the player while telegraphing.
-    ///   2. Dash    — NavMeshAgent disabled; transform translates forward at dashSpeed.
-    ///   3. Recover — agent re-enabled, brief delay before returning to <see cref="returnState"/>.
-    ///
-    /// Damage is dealt either by an <c>Anim_DashImpact</c> event or by an automatic
-    /// proximity check at the end of the dash phase, whichever fires first.
-    /// </summary>
+    /// Three-phase dash: Windup → Dash (transform translate) → Recover.
+    /// Damage via Anim_DashImpact event or auto proximity check.
     public sealed class DashAttackState : EnemyState
     {
+        const float WINDUP     = 0.4f;
+        const float RECOVER    = 0.5f;
+        const float HIT_RADIUS = 1.5f;
+
         enum Phase { Windup, Dashing, Recover }
 
         readonly EnemyState returnState;
@@ -31,13 +28,9 @@ namespace ITCLASH.Enemies
             owner.DebugState("DashAttack → Enter (Windup)");
             phase = Phase.Windup;
             didDamage = false;
-            phaseEndTime = Time.time + owner.Stats.dashWindupSeconds;
+            phaseEndTime = Time.time + WINDUP;
 
-            if (owner.Agent != null && owner.Agent.isOnNavMesh)
-            {
-                owner.Agent.isStopped = true;
-                owner.Agent.velocity = Vector3.zero;
-            }
+            StopAgent();
             owner.Animation.TriggerDash();
             owner.Audio.PlayDash();
         }
@@ -47,7 +40,7 @@ namespace ITCLASH.Enemies
             if (owner.Agent != null)
             {
                 owner.Agent.enabled = true;
-                if (owner.Agent.isOnNavMesh) owner.Agent.isStopped = false;
+                ResumeAgent();
             }
             owner.ConsumeDash();
         }
@@ -66,7 +59,7 @@ namespace ITCLASH.Enemies
                     if (!didDamage) CheckDashHit();
                     if (Time.time >= phaseEndTime)
                     {
-                        if (!didDamage) CheckDashHit(); // last-frame chance
+                        if (!didDamage) CheckDashHit();
                         EnterRecover();
                     }
                     break;
@@ -87,29 +80,25 @@ namespace ITCLASH.Enemies
             phase = Phase.Dashing;
             phaseEndTime = Time.time + owner.Stats.dashDuration;
 
-            // Lock direction at dash start so we don't track-and-stick to the player.
+            // Lock direction at dash start.
             Vector3 to = owner.PlayerTransform != null
                 ? owner.PlayerTransform.position - owner.transform.position
                 : owner.transform.forward;
             to.y = 0f;
             dashDirection = to.sqrMagnitude > 0.0001f ? to.normalized : owner.transform.forward;
 
-            if (owner.Agent != null) owner.Agent.enabled = false; // free transform during dash
+            if (owner.Agent != null) owner.Agent.enabled = false;
         }
 
         void EnterRecover()
         {
             phase = Phase.Recover;
-            phaseEndTime = Time.time + owner.Stats.dashRecoverySeconds;
+            phaseEndTime = Time.time + RECOVER;
 
             if (owner.Agent != null)
             {
                 owner.Agent.enabled = true;
-                if (owner.Agent.isOnNavMesh)
-                {
-                    owner.Agent.isStopped = true;
-                    owner.Agent.velocity = Vector3.zero;
-                }
+                StopAgent();
             }
         }
 
@@ -119,7 +108,7 @@ namespace ITCLASH.Enemies
 
             Vector3 center = owner.DashImpactPoint.position;
             float dist = Vector3.Distance(center, owner.PlayerTransform.position);
-            if (dist <= owner.Stats.dashHitRadius + 0.5f)
+            if (dist <= HIT_RADIUS + 0.5f)
             {
                 didDamage = true;
                 owner.PlayerHealth.TakeDamage(owner.Stats.dashDamage);
