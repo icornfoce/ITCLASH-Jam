@@ -140,6 +140,7 @@ public class AimTypingSystem : MonoBehaviour
     private bool isZooming;        // กำลัง Scope/Zoom อยู่ (กดคลิกขวา)
     private bool isAimTyping;      // Text Input เปิดอยู่ (เจอ Bullet แล้ว)
     private GameObject lockedTarget;
+    private Vector3 lockedHitPoint; // บันทึกจุดที่กระสุนชนจริงๆ ไม่ใช่แค่กึ่งกลางวัตถุ
     private string currentTargetWord;
 
     // Internal
@@ -234,7 +235,7 @@ public class AimTypingSystem : MonoBehaviour
             {
                 // เจอ Bullet → ล็อกเป้าอัตโนมัติ + เปิด Input
                 if (hit.collider.gameObject != lockedTarget)
-                    LockTarget(hit.collider.gameObject);
+                    LockTarget(hit.collider.gameObject, hit.point);
                 return;
             }
         }
@@ -325,9 +326,10 @@ public class AimTypingSystem : MonoBehaviour
     // LOCK TARGET & START TYPING
     // ============================================================
 
-    private void LockTarget(GameObject target)
+    private void LockTarget(GameObject target, Vector3 hitPoint)
     {
         lockedTarget        = target;
+        lockedHitPoint      = hitPoint;
         currentTargetWord   = GetWordFromObject(target);
         isAimTyping         = true;
 
@@ -403,7 +405,7 @@ public class AimTypingSystem : MonoBehaviour
         // ส่งคำไปให้ TypingSystem ใช้งาน (พร้อมระบุตำแหน่งเป้าหมาย)
         if (typingSystem != null)
         {
-            typingSystem.TryMatchItem(currentTargetWord, lockedTarget != null ? lockedTarget.transform.position : (Vector3?)null);
+            typingSystem.TryMatchItem(currentTargetWord, lockedTarget != null ? lockedHitPoint : (Vector3?)null);
         }
 
         // ออกจาก Aim mode ทันทีที่พิมพ์ถูก

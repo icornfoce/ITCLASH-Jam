@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public abstract class BaseSummonSkill : BaseItemSkill
 {
@@ -30,8 +31,17 @@ public abstract class BaseSummonSkill : BaseItemSkill
         // คำนวณจุดเกิดครั้งเดียว เพื่อให้ Pos และ Rot ตรงกัน
         (Vector3 pos, Quaternion rot) spawnPoint = GetFinalSpawnPoint();
 
-        // ย้ายตัวเองไปที่จุดเกิดทันที เพื่อให้ VFX หรือลูกๆ อยู่ถูกที่
-        transform.position = spawnPoint.pos;
+        // ย้ายตัวเองไปที่จุดเกิดทันที
+        // ถ้ามี NavMeshAgent ต้องใช้ Warp เท่านั้น ไม่เช่นนั้นตำแหน่งจะไม่เปลี่ยน
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        if (agent != null)
+        {
+            agent.Warp(spawnPoint.pos);
+        }
+        else
+        {
+            transform.position = spawnPoint.pos;
+        }
         transform.rotation = spawnPoint.rot;
 
         Vector3 spawnPos = transform.position;
@@ -98,78 +108,134 @@ public abstract class BaseSummonSkill : BaseItemSkill
 
     private (Vector3 pos, Quaternion rot) GetFinalSpawnPoint()
     {
-        // 1. ถ้าเป็นการ Aim (TargetPosition มีค่า) ให้ใช้ตำแหน่งนั้นเลย
-        if (TargetPosition.HasValue)
-        {
-            Debug.Log($"[BaseSummonSkill] >>> MODE: Aimed Target | Pos: {TargetPosition.Value}");
-            return (TargetPosition.Value, transform.rotation);
-        }
+        // รายงานจำนวนชื่อใน List เพื่อเช็คว่า Unity เห็นข้อมูลไหม
+        int rawCount = (spawnPointNames != null) ? spawnPointNames.Count : 0;
+        Debug.Log($"[BaseSummonSkill] >>> Checking Spawn Point Names List... Found {rawCount} entries.");
 
-        // 2. ถ้าเป็นการพิมพ์เอง (Manual) ให้สุ่มจากรายชื่อใน List
-        int listCount = (spawnPointNames != null) ? spawnPointNames.Count : 0;
-        if (listCount > 0)
+        // กรองหารายชื่อ Portal ทั้งหมดที่มีอยู่จริงในฉากก่อน
+        List<GameObject> activePortals = new List<GameObject>();
+        if (spawnPointNames != null)
         {
-            List<string> validNames = spawnPointNames.FindAll(s => !string.IsNullOrEmpty(s));
-            
-            if (validNames.Count > 0)
+            foreach (string pName in spawnPointNames)
             {
-                string randomName = validNames[Random.Range(0, validNames.Count)];
-                GameObject obj = FindObjectByName(randomName);
-
-                if (obj != null)
+                if (string.IsNullOrEmpty(pName)) continue;
+                GameObject pObj = FindObjectByName(pName);
+                if (pObj != null) 
                 {
-                    Debug.Log($"[BaseSummonSkill] >>> MODE: Manual (List) | Found Portal: '{randomName}' at {obj.transform.position}");
-                    return (obj.transform.position, obj.transform.rotation);
+                    activePortals.Add(pObj);
                 }
                 else
                 {
-                    Debug.LogWarning($"[BaseSummonSkill] ⚠️ Could not find any object named '{randomName}' in the Hierarchy! (Mode: Manual)");
+                    Debug.LogWarning($"[BaseSummonSkill] ⚠️ Could not find portal named '{pName}' in the Hierarchy! (Please check for typos)");
                 }
             }
-            else
+        }
+
+        // 1. ถ้าเป็นการ Aim (มีตำแหน่งเป้าหมาย)
+        if (TargetPosition.HasValue)
+        {
+            Vector3 targetPos = TargetPosition.Value;
+
+            // ถ้ามี Portal ใน List ให้เลือกตัวที่ใกล้เป้าหมายที่สุด
+            if (activePortals.Count > 0)
             {
-                Debug.LogWarning("[BaseSummonSkill] ⚠️ The Spawn Point Names list exists but all entries are empty!");
+                GameObject closestPortal = activePortals[0];
+                float minDistance = Vector3.Distance(targetPos, closestPortal.transform.position);
+
+                foreach (GameObject portal in activePortals)
+                {
+                    float dist = Vector3.Distance(targetPos, portal.transform.position);
+                    if (dist < minDistance)
+                    {
+                        minDistance = dist;
+                        closestPortal = portal;
+                    }
+                }
+
+                Debug.Log($"[BaseSummonSkill] >>> MODE: Aimed | Target at {targetPos} | Picking NEAREST portal: '{closestPortal.name}'");
+                // เกิดด้านหน้า Portal 1.5 เมตร เพื่อไม่ให้ค้างข้างใน
+                Vector3 spawnPos = closestPortal.transform.position + closestPortal.transform.forward * 1.5f;
+                return (spawnPos, closestPortal.transform.rotation);
             }
+
+            // ถ้าไม่มี Portal เลย ให้ใช้จุดเป้าหมายเดิม (Aimed Target)
+            Debug.Log($"[BaseSummonSkill] >>> MODE: Aimed | No portals found, spawning directly at target: {targetPos}");
+            return (targetPos, transform.rotation);
+        }
+
+        // 2. ถ้าเป็นการพิมพ์เอง (Manual) ให้สุ่มจาก Portal ที่หาเจอ
+        if (activePortals.Count > 0)
+        {
+            GameObject randomPortal = activePortals[Random.Range(0, activePortals.Count)];
+            Vector3 spawnPos = randomPortal.transform.position + randomPortal.transform.forward * 1.5f;
+            
+            Debug.Log($"[BaseSummonSkill] >>> MODE: Manual (List) | Target Portal: '{randomPortal.name}' | Final Pos: {spawnPos}");
+            return (spawnPos, randomPortal.transform.rotation);
         }
 
         // 3. Fallback: Custom Spawn Point
         if (customSpawnPoint != null)
         {
-            Debug.Log($"[BaseSummonSkill] >>> MODE: Manual (Fallback) | Using Custom Spawn Point: {customSpawnPoint.name}");
-            return (customSpawnPoint.position, customSpawnPoint.rotation);
+            Vector3 spawnPos = customSpawnPoint.position + customSpawnPoint.forward * 1.5f;
+            Debug.Log($"[BaseSummonSkill] >>> MODE: Manual (Fallback) | Target Point: '{customSpawnPoint.name}' | Final Pos: {spawnPos}");
+            return (spawnPos, customSpawnPoint.rotation);
         }
 
         // 4. Default: Spawning near player
-        Debug.Log("[BaseSummonSkill] >>> MODE: Manual (Default) | No portals or custom points found. Spawning at player offset.");
+        string searchedNames = (spawnPointNames != null) ? string.Join(", ", spawnPointNames) : "None";
+        Debug.LogWarning($"[BaseSummonSkill] >>> MODE: Manual (Default) | No Portals found in Hierarchy! (Searched for: {searchedNames}) | Spawning at Player position: {transform.position}");
+        
+        // สแกนหาความผิดพลาดในชื่อให้ User ดูทาง Console
+        LogHierarchyDebug();
+        
         return (transform.position, transform.rotation);
     }
 
     private GameObject FindObjectByName(string name)
     {
-        // ลองหาแบบปกติ (เร็ว)
+        if (string.IsNullOrEmpty(name)) return null;
+
+        // 1. ลองหาแบบตรงตัวก่อน (เร็ว)
         GameObject obj = GameObject.Find(name);
         if (obj != null) return obj;
 
-        // ถ้าไม่เจอ ลองหาแบบรวม Inactive (ช้ากว่านิดหน่อยแต่ชัวร์)
+        // 2. ถ้าไม่เจอ ให้ลองหาแบบไม่สนตัวพิมพ์เล็ก-ใหญ่ (Case-Insensitive) และรวม Inactive
+        string targetLower = name.ToLower().Trim();
         foreach (GameObject root in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
         {
-            if (root.name == name) return root;
-            GameObject child = FindChildRecursive(root, name);
+            if (root.name.ToLower().Trim() == targetLower) return root;
+            GameObject child = FindChildRecursive(root, targetLower);
             if (child != null) return child;
         }
 
         return null;
     }
 
-    private GameObject FindChildRecursive(GameObject parent, string name)
+    private GameObject FindChildRecursive(GameObject parent, string lowerName)
     {
         foreach (Transform child in parent.transform)
         {
-            if (child.name == name) return child.gameObject;
-            GameObject found = FindChildRecursive(child.gameObject, name);
+            if (child.name.ToLower().Trim() == lowerName) return child.gameObject;
+            GameObject found = FindChildRecursive(child.gameObject, lowerName);
             if (found != null) return found;
         }
         return null;
+    }
+
+    private void LogHierarchyDebug()
+    {
+        Debug.Log("[BaseSummonSkill] 🔍 --- Hierarchy Portal Scanner ---");
+        int foundCount = 0;
+        foreach (GameObject root in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+        {
+            // พิมพ์ชื่อวัตถุที่มีคำว่า 'Portal' หรือ 'Spawn' เพื่อช่วย User หาชื่อที่ถูกต้อง
+            if (root.name.Contains("Portal") || root.name.Contains("Spawn"))
+            {
+                Debug.Log($"[BaseSummonSkill] Found potential portal: '{root.name}'");
+                foundCount++;
+            }
+        }
+        if (foundCount == 0) Debug.Log("[BaseSummonSkill] No objects with 'Portal' or 'Spawn' in their name found.");
     }
 
     /// <summary>

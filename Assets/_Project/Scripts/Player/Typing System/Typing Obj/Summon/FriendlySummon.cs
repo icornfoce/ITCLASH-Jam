@@ -21,6 +21,7 @@ public class FriendlySummon : MonoBehaviour
     private NavMeshAgent agent;
     private Animator anim;
     private Transform targetEnemy;
+    private float scanTimer = 0f;
 
     void Awake()
     {
@@ -41,13 +42,31 @@ public class FriendlySummon : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        // Warp ให้ลงไปอยู่บน NavMesh ทันทีที่เกิด (ป้องกันการค้างที่ประตูมิติ)
+        if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 3.0f, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+        }
+    }
+
     void Update()
     {
-        FindNearestEnemy();
+        // สแกนหาศัตรูทุกๆ 0.5 วินาที (เพื่อประหยัดพลังงานและอัปเดตเป้าหมาย)
+        scanTimer -= Time.deltaTime;
+        if (scanTimer <= 0f)
+        {
+            FindNearestEnemy();
+            scanTimer = 0.5f;
+        }
 
         if (targetEnemy != null)
         {
             float distance = Vector3.Distance(transform.position, targetEnemy.position);
+            
+            // Log เป้าหมายปัจจุบัน (เอาออกทีหลังได้)
+            // Debug.Log($"[{name}] Chasing: {targetEnemy.name} (Dist: {distance:F1})");
 
             if (distance <= detectionRange)
             {
