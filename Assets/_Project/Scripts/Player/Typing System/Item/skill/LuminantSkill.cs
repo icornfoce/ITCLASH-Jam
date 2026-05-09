@@ -5,7 +5,9 @@ public class LuminantSkill : BaseBuffSkill
 {
     [Header("Luminant Settings")]
     public GameObject firePuddlePrefab;
-    public float dropInterval = 0.5f;
+    public float dropInterval = 0.35f;
+    [Tooltip("ระยะเวลาที่แอ่งไฟอยู่บนพื้น (วินาที)")]
+    public float puddleLifetime = 8f;
 
     private bool isWalking = false;
 
@@ -22,10 +24,8 @@ public class LuminantSkill : BaseBuffSkill
         {
             if (firePuddlePrefab != null)
             {
-                // เสกแอ่งไฟลงพื้น
                 GameObject puddle = Instantiate(firePuddlePrefab, playerTransform.position, Quaternion.identity);
-                // ตั้งเวลาลบแอ่งไฟ
-                Destroy(puddle, 5f);
+                Destroy(puddle, puddleLifetime);
             }
             yield return new WaitForSeconds(dropInterval);
         }

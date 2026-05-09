@@ -4,35 +4,77 @@ using ITCLASH.Enemies;
 public class ImpressionismSkill : BaseProjectileSkill
 {
     [Header("Impressionism Settings")]
+    [Tooltip("Red: ดาเมจระเบิดใส่ศัตรูที่โดน")]
     public float burstDamage = 50f;
+
+    [Tooltip("Blue: เปอร์เซ็นต์ความเร็วที่ลด (0..1)")]
+    [Range(0f, 1f)]
+    public float slowPercent = 0.6f;
+
+    [Tooltip("Blue: ระยะเวลาชะลอ (วินาที)")]
+    public float slowDuration = 4f;
+
+    [Tooltip("Green: ปริมาณ HP ที่ฮีลให้ผู้เล่น")]
     public float healAmount = 30f;
+
+    [Tooltip("Yellow: แรงดันศัตรูออกจากผู้เล่น")]
+    public float yellowKnockbackForce = 25f;
+
+    protected Transform cachedPlayerTransform;
+
+    public override void Activate(Transform playerTransform)
+    {
+        cachedPlayerTransform = playerTransform;
+        base.Activate(playerTransform);
+    }
 
     protected override void OnHit(Collision collision)
     {
-        int randomEffect = Random.Range(0, 3); // 0, 1, 2
-
         EnemyController enemy = collision.gameObject.GetComponentInParent<EnemyController>();
-        if (enemy != null)
-        {
-            if (randomEffect == 0)
-            {
-                // 0 = สีแดง (DMG Burst)
-                enemy.ApplyDamage(burstDamage);
-                Debug.Log("[Impressionism] สีแดง! DMG Burst!");
-            }
-            else if (randomEffect == 1)
-            {
-                // 1 = สีน้ำเงิน (Slow)
-                // enemy.ApplySlow(0.2f, 5f);
-                Debug.Log("[Impressionism] สีน้ำเงิน! Slow!");
-            }
-        }
+        int randomEffect = Random.Range(0, 4);
 
-        if (randomEffect == 2)
+        switch (randomEffect)
         {
-            // 2 = สีเขียว (Heal ผู้เล่น)
-            // PlayerHealth.Instance.Heal(healAmount);
-            Debug.Log("[Impressionism] สีเขียว! Heal ผู้เล่น!");
+            case 0: // Red - Burst DMG
+                if (enemy != null) enemy.ApplyDamage(burstDamage);
+                Debug.Log("[Impressionism] สีแดง! Burst DMG!");
+                break;
+
+            case 1: // Blue - Slow
+                if (enemy != null && enemy.Agent != null)
+                {
+                    var slow = enemy.GetComponent<SlowEffect>();
+                    if (slow != null) slow.RefreshSlow(slowPercent, slowDuration);
+                    else enemy.gameObject.AddComponent<SlowEffect>().Setup(enemy.Agent, slowPercent, slowDuration);
+                }
+                Debug.Log("[Impressionism] สีน้ำเงิน! Slow!");
+                break;
+
+            case 2: // Green - Heal player
+                if (cachedPlayerTransform != null)
+                {
+                    var ph = cachedPlayerTransform.GetComponent<PlayerHealth>();
+                    if (ph != null) ph.Heal(healAmount);
+                }
+                Debug.Log("[Impressionism] สีเขียว! Heal ผู้เล่น!");
+                break;
+
+            case 3: // Yellow - Forward knockback (push away from player)
+                if (enemy != null && cachedPlayerTransform != null)
+                {
+                    IKnockbackable knockable = enemy.GetComponentInParent<IKnockbackable>();
+                    if (knockable != null)
+                    {
+                        Vector3 dir = collision.transform.position - cachedPlayerTransform.position;
+                        dir.y = 0f;
+                        if (dir.sqrMagnitude > 0.0001f)
+                        {
+                            knockable.ApplyKnockback(dir.normalized * yellowKnockbackForce, 0.4f);
+                        }
+                    }
+                }
+                Debug.Log("[Impressionism] สีเหลือง! Knockback!");
+                break;
         }
 
         SpawnHitVFX(collision.contacts[0].point);

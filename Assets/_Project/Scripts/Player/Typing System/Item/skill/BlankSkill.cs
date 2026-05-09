@@ -8,13 +8,19 @@ public class BlankSkill : BaseAoESkill
 
     protected override void ApplyAoEEffect(GameObject enemyObj)
     {
-        // ศัตรูในระยะจะโดนทำให้มองไม่เห็น (Stun / Blind)
         EnemyController enemy = enemyObj.GetComponentInParent<EnemyController>();
-        if (enemy != null)
+        if (enemy == null) return;
+
+        var existing = enemy.GetComponent<BlindEffect>();
+        if (existing != null)
         {
-            // ถ้ามีระบบสถานะตาบอด/สตั้น
-            // enemy.ApplyStun(blindDuration);
-            Debug.Log($"[BlankSkill] {enemyObj.name} โดนลบการมองเห็น! (Stun {blindDuration} วิ)");
+            existing.Refresh(blindDuration);
         }
+        else
+        {
+            enemy.gameObject.AddComponent<BlindEffect>().Setup(enemy, blindDuration);
+        }
+
+        Debug.Log($"[BlankSkill] {enemyObj.name} โดนลบการมองเห็น! (Stun {blindDuration} วิ)");
     }
 }
