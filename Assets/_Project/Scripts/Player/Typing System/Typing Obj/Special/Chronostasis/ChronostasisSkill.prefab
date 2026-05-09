@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 9111137681112556603}
   - component: {fileID: 6725437352767424453}
   - component: {fileID: 5063779086093868784}
+  - component: {fileID: 2259265304199790878}
   m_Layer: 0
   m_Name: ChronostasisSkill
   m_TagString: Untagged
@@ -108,3 +109,24 @@ MonoBehaviour:
   buffDuration: 5
   buffAuraVFX: {fileID: 0}
   timeScaleMultiplier: 0.1
+--- !u!65 &2259265304199790878
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3038915894166018805}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

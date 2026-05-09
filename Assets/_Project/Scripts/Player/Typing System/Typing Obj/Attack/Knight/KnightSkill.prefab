@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 1389205263516041408}
   - component: {fileID: 3835916946219836268}
   - component: {fileID: 4552165877460201882}
-  - component: {fileID: 3363029890711382436}
+  - component: {fileID: 2690503109377054611}
+  - component: {fileID: 6945534837688879300}
   m_Layer: 0
   m_Name: KnightSkill
   m_TagString: Untagged
@@ -91,7 +92,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3363029890711382436
+--- !u!114 &2690503109377054611
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -100,11 +101,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 5249720232495533051}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 834d559bf1014d64283c4a0627dd9cb8, type: 3}
+  m_Script: {fileID: 11500000, guid: 4d9715066d4190247936b039096385ca, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChronostasisSkill
+  m_EditorClassIdentifier: Assembly-CSharp::KnightSkill
   voiceClip: {fileID: 0}
   voiceVolume: 1
   buffDuration: 5
   buffAuraVFX: {fileID: 0}
-  timeScaleMultiplier: 0.1
+  speedMultiplier: 1.5
+--- !u!65 &6945534837688879300
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5249720232495533051}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

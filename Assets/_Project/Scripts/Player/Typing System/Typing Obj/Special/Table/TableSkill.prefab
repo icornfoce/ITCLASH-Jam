@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 7304308570059766095}
   - component: {fileID: 7791542592456332253}
   - component: {fileID: 5623778552300617411}
-  - component: {fileID: 9036147073848738537}
+  - component: {fileID: 4273956450392979730}
+  - component: {fileID: 6239521275448368668}
   m_Layer: 0
   m_Name: TableSkill
   m_TagString: Untagged
@@ -91,7 +92,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &9036147073848738537
+--- !u!114 &4273956450392979730
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -100,11 +101,32 @@ MonoBehaviour:
   m_GameObject: {fileID: 5016790441462794692}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 834d559bf1014d64283c4a0627dd9cb8, type: 3}
+  m_Script: {fileID: 11500000, guid: 3f2d6c15baf52cb4f8a290ab3fb7416f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChronostasisSkill
+  m_EditorClassIdentifier: Assembly-CSharp::TableSkill
   voiceClip: {fileID: 0}
   voiceVolume: 1
-  buffDuration: 5
-  buffAuraVFX: {fileID: 0}
-  timeScaleMultiplier: 0.1
+  duration: 10
+  actionInterval: 1
+  targetingRange: 10
+--- !u!65 &6239521275448368668
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5016790441462794692}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
