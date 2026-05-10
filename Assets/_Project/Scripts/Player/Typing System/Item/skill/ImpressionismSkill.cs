@@ -3,21 +3,24 @@ using ITCLASH.Enemies;
 
 public class ImpressionismSkill : BaseProjectileSkill
 {
-    [Header("Impressionism Settings")]
+    [Header("─── Impressionism Settings ───")]
     [Tooltip("Red: ดาเมจระเบิดใส่ศัตรูที่โดน")]
     public float burstDamage = 50f;
 
-    [Tooltip("Blue: เปอร์เซ็นต์ความเร็วที่ลด (0..1)")]
+    [Space]
+    [Tooltip("Blue: เปอร์เซ็นต์ความเร็วที่ลด (0 = หยุดนิ่ง, 1 = ปกติ)")]
     [Range(0f, 1f)]
     public float slowPercent = 0.6f;
 
-    [Tooltip("Blue: ระยะเวลาชะลอ (วินาที)")]
+    [Tooltip("Blue: ระยะเวลาชะลอความเร็ว (วินาที)")]
     public float slowDuration = 4f;
 
-    [Tooltip("Green: ปริมาณ HP ที่ฮีลให้ผู้เล่น")]
+    [Space]
+    [Tooltip("Green: ปริมาณ HP ที่ฟื้นฟูให้กับผู้เล่น")]
     public float healAmount = 30f;
 
-    [Tooltip("Yellow: แรงดันศัตรูออกจากผู้เล่น")]
+    [Space]
+    [Tooltip("Yellow: แรงกระเด็นที่ผลักศัตรูออกห่างจากผู้เล่น")]
     public float yellowKnockbackForce = 25f;
 
     protected Transform cachedPlayerTransform;

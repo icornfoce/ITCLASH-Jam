@@ -2,9 +2,14 @@ using UnityEngine;
 
 public class DumplingsSkill : BaseTurretSkill
 {
-    [Header("Dumplings Turret Settings")]
+    [Header("─── Dumplings Turret Settings ───")]
+    [Tooltip("ความเสียหายที่ยิงออกไปแต่ละนัด")]
     public float damagePerShot = 10f;
-    public GameObject bulletPrefab; // กระสุนป้อมปืน (ถ้ามี)
+    
+    [Tooltip("พรีแฟบกระสุนที่จะยิงออกไป (ถ้าไม่ใส่จะยิงเข้าเป้าทันที)")]
+    public GameObject bulletPrefab;
+    
+    [Tooltip("จุดที่จะให้กระสุนพุ่งออกไป (ปลายกระบอกปืน)")]
     public Transform shootPoint;
 
     protected override void PerformTurretAction()

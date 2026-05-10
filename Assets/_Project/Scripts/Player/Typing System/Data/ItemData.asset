@@ -18,7 +18,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 2586486145827764099, guid: a1d66aef03ac3b94c8a278d20fb2271d, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 0
+    isUnlocked: 1
     itemSkill: {fileID: 2586486145827764099, guid: a1d66aef03ac3b94c8a278d20fb2271d, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -27,7 +27,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 2382775708128415278, guid: a8ede9ebbaff6d543b0b31e6ace1b433, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 6526245219535097824, guid: f37ca0ae1996d5c439aa6837dbdf9f23, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -36,7 +36,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 8399180940168999868, guid: 3d472489793431e478849d0aeac4d4cd, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 1518875515259967886, guid: d4ebdec5c20a95c44aaac261eda4826d, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -45,7 +45,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 5633482166150168689, guid: da849afe09185964c9fa542f8b54912c, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 8385957914922811955, guid: 6cc09d6460680694f917302e0f3a7c02, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -54,7 +54,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 8469319177981613583, guid: 84b5ea5d96248bf408b55a87899cab65, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 2025049196510947349, guid: c8e6a3112fddd77459e383d064b81f45, type: 3}
     skillSpawnOffset: {x: 0, y: 2, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -63,7 +63,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 3038915894166018805, guid: eaa667d878ac6ae4fab14f2b78d6c3dc, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 3038915894166018805, guid: eaa667d878ac6ae4fab14f2b78d6c3dc, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -120,5 +120,41 @@ MonoBehaviour:
     isUnlocked: 0
     itemSkill: {fileID: 4239615998007709096, guid: b04c3384bf1085e4180c737041ce6399, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: luminant
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 8029616680622951557, guid: 5035704acde36d64581f943eb0df5c6f, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 8029616680622951557, guid: 5b79bd486d53d7a48ae4991b83b613d2, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: dumplings
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 1854454774246952120, guid: ff140be1615b5d240a17ff397e99a5d6, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 1854454774246952120, guid: c49ca04dd62cfff4d8458c14e2d5f45f, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: horse
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 4533211047531823541, guid: c2b00cc02020f6e4c94438280c2eeff0, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 4533211047531823541, guid: 69208d6dc1183b54598570a5d2b5e066, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Impressionism
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 8753506051229858113, guid: 5b9110b78a759784bbf20ecf5bdb4ffb, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 4533211047531823541, guid: 69208d6dc1183b54598570a5d2b5e066, type: 3}
+    skillSpawnOffset: {x: 0, y: 0.79, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []

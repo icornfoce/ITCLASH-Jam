@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class HorseSkill : BaseBuffSkill
 {
-    [Header("Horse Settings")]
+    [Header("─── Horse Settings ───")]
     [Tooltip("ตัวคูณความเร็วเดิน (เช่น 2 = เดินเร็ว 2 เท่า)")]
     public float speedMultiplier = 2f;
 

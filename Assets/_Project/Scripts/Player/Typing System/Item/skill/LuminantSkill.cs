@@ -3,9 +3,13 @@ using System.Collections;
 
 public class LuminantSkill : BaseBuffSkill
 {
-    [Header("Luminant Settings")]
+    [Header("─── Luminant Settings ───")]
+    [Tooltip("พรีแฟบแอ่งไฟที่จะถูกวางลงบนพื้น")]
     public GameObject firePuddlePrefab;
+    
+    [Tooltip("ความถี่ในการวางแอ่งไฟแต่ละรอบ (วินาที)")]
     public float dropInterval = 0.35f;
+    
     [Tooltip("ระยะเวลาที่แอ่งไฟอยู่บนพื้น (วินาที)")]
     public float puddleLifetime = 8f;
 
