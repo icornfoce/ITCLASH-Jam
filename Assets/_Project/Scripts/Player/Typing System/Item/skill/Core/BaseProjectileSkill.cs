@@ -16,6 +16,7 @@ public abstract class BaseProjectileSkill : BaseItemSkill
 
     protected Rigidbody rb;
     protected bool hasHit = false;
+    protected Transform shooterRoot;
 
     protected virtual void Awake()
     {
@@ -26,6 +27,7 @@ public abstract class BaseProjectileSkill : BaseItemSkill
 
     public override void Activate(Transform playerTransform)
     {
+        shooterRoot = playerTransform.root;
         PlayVoice(transform.position);
         transform.SetParent(null);
 
@@ -89,6 +91,12 @@ public abstract class BaseProjectileSkill : BaseItemSkill
 
     protected virtual void OnCollisionEnter(Collision collision)
     {
+        // ป้องกันไม่ให้ชนกับคนที่ยิงมันออกมา (เช่น Player) ทันทีที่เกิด
+        if (shooterRoot != null && collision.transform.root == shooterRoot)
+        {
+            return;
+        }
+
         if (hasHit) return;
         hasHit = true;
         

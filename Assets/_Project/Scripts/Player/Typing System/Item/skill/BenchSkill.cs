@@ -10,17 +10,18 @@ public class BenchSkill : BaseProjectileSkill
     protected override void OnHit(Collision collision)
     {
         // สร้างความเสียหาย
-        EnemyController enemy = collision.gameObject.GetComponentInParent<EnemyController>();
-        if (enemy != null)
+        IDamageable damageable = collision.gameObject.GetComponentInParent<IDamageable>();
+        if (damageable != null)
         {
-            enemy.ApplyDamage(damage);
-            
-            IKnockbackable knockable = enemy.GetComponentInParent<IKnockbackable>();
-            if (knockable != null)
-            {
-                Vector3 knockDir = (enemy.transform.position - transform.position).normalized;
-                knockable.ApplyKnockback(knockDir * knockback, 0.3f);
-            }
+            damageable.ApplyDamage(damage);
+        }
+
+        IKnockbackable knockable = collision.gameObject.GetComponentInParent<IKnockbackable>();
+        if (knockable != null)
+        {
+            Transform enemyTransform = ((MonoBehaviour)knockable).transform;
+            Vector3 knockDir = (enemyTransform.position - transform.position).normalized;
+            knockable.ApplyKnockback(knockDir * knockback, 0.3f);
         }
 
         SpawnHitVFX(collision.contacts[0].point);

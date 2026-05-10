@@ -607,9 +607,18 @@ public class TypingSystem : MonoBehaviour
             {
                 spawnPos = targetPos.Value;
             }
+            else if (isProjectile && Camera.main != null)
+            {
+                // ถ้าเป็น Projectile ให้เกิดจากกล้องเพื่อให้ออกมาจากมุมมองผู้เล่นตรงๆ
+                Transform camTransform = Camera.main.transform;
+                spawnPos = camTransform.position
+                    + camTransform.right * item.skillSpawnOffset.x
+                    // ข้ามการบวกแกน Y เพราะกล้องอยู่ที่ระดับสายตาแล้ว ถ้าบวกอีกเดี๋ยวจะทะลุหัว
+                    + camTransform.forward * (item.skillSpawnOffset.z > 0 ? item.skillSpawnOffset.z : 1f);
+            }
             else
             {
-                // ถ้าไม่มีเป้าหมาย หรือเป็น Projectile ให้เกิดหน้า Player ตามปกติ
+                // ถ้าไม่มีเป้าหมาย หรือไม่ใช่ Projectile ให้เกิดหน้า Player ตามปกติ
                 spawnPos = playerTransform.position
                     + playerTransform.right * item.skillSpawnOffset.x
                     + playerTransform.up * item.skillSpawnOffset.y
