@@ -402,10 +402,24 @@ public class AimTypingSystem : MonoBehaviour
 
         Debug.Log($"[AimTyping] ✅ พิมพ์สำเร็จ: '{currentTargetWord}' | คำใหม่: {isNewWord}");
 
-        // ส่งคำไปให้ TypingSystem ใช้งาน (พร้อมระบุตำแหน่งเป้าหมาย)
+        // ตรวจสอบว่าสิ่งที่แสกนเป็นศัตรูหรือไม่ (มี NavMeshAgent, IDamageable หรือ Tag Enemy)
+        bool isEnemy = false;
+        if (lockedTarget != null)
+        {
+            if (lockedTarget.CompareTag("Enemy") || 
+                lockedTarget.GetComponentInParent<UnityEngine.AI.NavMeshAgent>() != null || 
+                lockedTarget.GetComponentInParent<ITCLASH.Enemies.IDamageable>() != null)
+            {
+                isEnemy = true;
+            }
+        }
+
+        // ส่งคำไปให้ TypingSystem ใช้งาน
+        // ถ้ายิงใส่ศัตรู ให้ส่งตำแหน่งเป้าหมายไป (เพื่อให้ยิงติดตามเป้า)
+        // แต่ถ้าสแกนสิ่งของรอบตัว (เช่น ตะเกียงบนโต๊ะ) ให้ส่ง null เพื่อให้ยิงตามเป้าเล็ง (Crosshair) ตามปกติ
         if (typingSystem != null)
         {
-            typingSystem.TryMatchItem(currentTargetWord, lockedTarget != null ? lockedHitPoint : (Vector3?)null);
+            typingSystem.TryMatchItem(currentTargetWord, isEnemy ? lockedHitPoint : (Vector3?)null);
         }
 
         // ออกจาก Aim mode ทันทีที่พิมพ์ถูก

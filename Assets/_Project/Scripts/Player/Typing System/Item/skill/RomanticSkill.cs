@@ -10,23 +10,27 @@ public class RomanticSkill : BaseProjectileSkill
 
     protected override void OnHit(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        NavMeshAgent agent = collision.gameObject.GetComponentInParent<NavMeshAgent>();
+        if (agent != null)
         {
-            NavMeshAgent agent = collision.gameObject.GetComponentInParent<NavMeshAgent>();
-            if (agent != null)
+            // Attach a stun effect to handle stopping the agent
+            StunEffect stun = agent.gameObject.GetComponent<StunEffect>();
+            if (stun == null)
             {
-                // Attach a stun effect to handle stopping the agent
-                StunEffect stun = agent.gameObject.AddComponent<StunEffect>();
-                stun.Initialize(agent, stunDuration);
+                stun = agent.gameObject.AddComponent<StunEffect>();
             }
+            stun.Initialize(agent, stunDuration);
+        }
 
-            // Also check for IDamageable just in case they still use it for health
-            IDamageable damageable = collision.gameObject.GetComponentInParent<IDamageable>();
-            if (damageable != null)
-            {
-                damageable.ApplyDamage(dpsDamage);
-            }
+        // Also check for IDamageable just in case they still use it for health
+        IDamageable damageable = collision.gameObject.GetComponentInParent<IDamageable>();
+        if (damageable != null)
+        {
+            damageable.ApplyDamage(dpsDamage);
+        }
 
+        if (agent != null || damageable != null)
+        {
             Debug.Log($"[RomanticSkill] ศัตรู {collision.gameObject.name} โดน Stun {stunDuration} วินาที และโดนดาเมจ DPS!");
         }
 
