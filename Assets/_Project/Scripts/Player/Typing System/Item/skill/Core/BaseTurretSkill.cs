@@ -3,7 +3,7 @@ using UnityEngine;
 public abstract class BaseTurretSkill : BaseItemSkill
 {
     [Header("─── Turret Settings ───")]
-    [Tooltip("ระยะเวลาที่ป้อมจะอยู่บนสนาม")]
+    [Tooltip("ระยะเวลาที่ป้อมจะอยู่บนสนาม (วินาที)")]
     public float duration = 10f;
     [Tooltip("ความถี่ในการทำงาน (เช่น ยิงทุกๆ 1 วินาที)")]
     public float actionInterval = 1f;
@@ -12,6 +12,7 @@ public abstract class BaseTurretSkill : BaseItemSkill
     
     protected bool isActive = false;
     private float timer = 0f;
+    private float destroyAt = -1f; // ใช้ timer แทน Destroy เพื่อให้ยกเลิกได้
 
     public override void Activate(Transform playerTransform)
     {
@@ -26,13 +27,21 @@ public abstract class BaseTurretSkill : BaseItemSkill
         }
 
         isActive = true;
-        if (duration > 0f) Destroy(gameObject, duration);
+        if (duration > 0f) destroyAt = Time.time + duration;
         
         OnTurretDeployed(playerTransform);
     }
 
     protected virtual void Update()
     {
+        // เช็คว่าถึงเวลาหมดอายุหรือยัง
+        if (destroyAt > 0f && Time.time >= destroyAt)
+        {
+            destroyAt = -1f; // ป้องกันเรียกซ้ำ
+            OnDurationExpired();
+            return;
+        }
+
         if (!isActive) return;
         
         timer += Time.deltaTime;
@@ -41,6 +50,22 @@ public abstract class BaseTurretSkill : BaseItemSkill
             timer = 0f;
             PerformTurretAction();
         }
+    }
+
+    /// <summary>
+    /// ยกเลิก timer หมดอายุ (เช่น ตอนป้อมตายก่อนเวลา)
+    /// </summary>
+    protected void CancelDurationTimer()
+    {
+        destroyAt = -1f;
+    }
+
+    /// <summary>
+    /// เรียกเมื่อ duration หมดเวลา — override ได้เพื่อเล่น death animation ก่อน Destroy
+    /// </summary>
+    protected virtual void OnDurationExpired()
+    {
+        Destroy(gameObject);
     }
 
     /// <summary>

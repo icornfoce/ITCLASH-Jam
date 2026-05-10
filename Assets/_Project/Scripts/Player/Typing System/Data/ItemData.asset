@@ -18,7 +18,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 2586486145827764099, guid: a1d66aef03ac3b94c8a278d20fb2271d, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 2586486145827764099, guid: a1d66aef03ac3b94c8a278d20fb2271d, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -135,8 +135,8 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 1854454774246952120, guid: ff140be1615b5d240a17ff397e99a5d6, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 0
-    itemSkill: {fileID: 1854454774246952120, guid: c49ca04dd62cfff4d8458c14e2d5f45f, type: 3}
+    isUnlocked: 1
+    itemSkill: {fileID: 9205513415571773846, guid: 0dd3fc492e7e8b246960879c45b7c914, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: horse
@@ -154,7 +154,7 @@ MonoBehaviour:
     itemPrefab: {fileID: 8753506051229858113, guid: 5b9110b78a759784bbf20ecf5bdb4ffb, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 0
-    itemSkill: {fileID: 4533211047531823541, guid: 69208d6dc1183b54598570a5d2b5e066, type: 3}
+    itemSkill: {fileID: 8753506051229858113, guid: 638157cfa452c214fb0e80c759d577a4, type: 3}
     skillSpawnOffset: {x: 0, y: 0.79, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []
