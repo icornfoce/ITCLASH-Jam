@@ -47,8 +47,8 @@ public class Item : MonoBehaviour
             {
                 foreach (var item in itemData.items)
                 {
-                    // ค้นหาไอเทมใน Data ที่ชื่อตรงกัน
-                    if (item.itemName == targetItemName)
+                    // ค้นหาไอเทมใน Data ที่ชื่อตรงกัน (ไม่สนใจตัวพิมพ์เล็กพิมพ์ใหญ่)
+                    if (string.Equals(item.itemName, targetItemName, System.StringComparison.OrdinalIgnoreCase))
                     {
                         item.isUnlocked = true; // ปลดล็อคให้เป็น true เลยตลอด
                         

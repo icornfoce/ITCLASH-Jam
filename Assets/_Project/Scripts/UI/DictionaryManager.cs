@@ -12,6 +12,8 @@ public class DictionaryManager : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private bool refreshOnEnable = true;
+    [SerializeField] private float itemHeight = 100f;
+    [SerializeField] private bool forceStretchWidth = true;
 
     // ─── Global Instance ───
     public static DictionaryManager Instance { get; private set; }
@@ -59,34 +61,49 @@ public class DictionaryManager : MonoBehaviour
         int unlockedCount = 0;
         foreach (var item in itemDataSO.items)
         {
+            Debug.Log($"[DictionaryManager] Checking item: {item.itemName} | Unlocked: {item.isUnlocked}");
             if (item.isUnlocked)
             {
                 unlockedCount++;
                 GameObject newObj = Instantiate(itemPrefab, container);
+                newObj.name = "Word_" + item.itemName;
                 
                 // FORCE the UI to be visible and correctly scaled
                 newObj.SetActive(true);
+                
+                // Basic UI reset - allowing the Prefab and Layout Groups to control the look
                 RectTransform rt = newObj.GetComponent<RectTransform>();
                 if (rt != null)
                 {
-                    // Force the item to stretch horizontally and align to the top
-                    rt.anchorMin = new Vector2(0, 1);
-                    rt.anchorMax = new Vector2(1, 1);
-                    rt.pivot = new Vector2(0.5f, 1);
-                    
                     rt.localScale = Vector3.one;
-                    rt.localPosition = Vector3.zero;
-                    rt.anchoredPosition3D = Vector3.zero;
                     
-                    // Force a default height since width is now handled by anchors
-                    rt.sizeDelta = new Vector2(0, 100); 
+                    // AUTO-SPACING: Offset each item vertically based on its index
+                    // If you add a VerticalLayoutGroup to the container, it will automatically override this!
+                    float yOffset = -(unlockedCount - 1) * itemHeight;
+                    rt.anchoredPosition = new Vector2(0, yOffset);
+
+                    // Force the height and width stretching logic
+                    if (forceStretchWidth)
+                    {
+                        rt.anchorMin = new Vector2(0, 1);
+                        rt.anchorMax = new Vector2(1, 1);
+                        rt.pivot = new Vector2(0.5f, 1);
+                        // In stretch mode, sizeDelta.x = 0 means "match parent width"
+                        rt.sizeDelta = new Vector2(0, itemHeight);
+                    }
+                    else
+                    {
+                        // If not stretching, just ensure the height is set
+                        rt.sizeDelta = new Vector2(rt.sizeDelta.x, itemHeight);
+                    }
+                    
+                    Debug.Log($"[DictionaryManager] Successfully Spawned: {item.itemName} at {rt.anchoredPosition} with size {rt.sizeDelta}");
                 }
                 
                 Dictionary display = newObj.GetComponent<Dictionary>();
                 if (display != null)
                 {
                     display.Setup(item);
-                    Debug.Log($"[DictionaryManager] Spawned and Displayed: {item.itemName}");
                 }
                 else
                 {
