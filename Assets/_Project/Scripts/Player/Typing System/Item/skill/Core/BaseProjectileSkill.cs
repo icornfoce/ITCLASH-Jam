@@ -43,31 +43,39 @@ public abstract class BaseProjectileSkill : BaseItemSkill
     /// </summary>
     protected virtual Vector3 CalculateAimDirection(Transform playerTransform)
     {
-        Camera mainCam = Camera.main;
         Vector3 targetPoint = playerTransform.position + playerTransform.forward * 100f;
 
-        if (mainCam != null)
+        if (TargetPosition.HasValue)
         {
-            Ray ray = mainCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-            targetPoint = ray.GetPoint(100f);
-
-            RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
-            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
-
-            foreach (var hit in hits)
+            targetPoint = TargetPosition.Value;
+        }
+        else
+        {
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
             {
-                if (hit.collider.transform.root == playerTransform.root) continue;
-                if (hit.collider.transform == transform || hit.collider.transform.IsChildOf(transform)) continue;
-                
-                targetPoint = hit.point;
-                break;
+                Ray ray = mainCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+                targetPoint = ray.GetPoint(100f);
+
+                RaycastHit[] hits = Physics.RaycastAll(ray, 100f);
+                System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+                foreach (var hit in hits)
+                {
+                    if (hit.collider.transform.root == playerTransform.root) continue;
+                    if (hit.collider.transform == transform || hit.collider.transform.IsChildOf(transform)) continue;
+                    
+                    targetPoint = hit.point;
+                    break;
+                }
             }
         }
 
         Vector3 shootDir = (targetPoint - transform.position).normalized;
-        if (mainCam != null && Vector3.Dot(shootDir, mainCam.transform.forward) < 0f)
+        Camera cam = Camera.main;
+        if (!TargetPosition.HasValue && cam != null && Vector3.Dot(shootDir, cam.transform.forward) < 0f)
         {
-            shootDir = mainCam.transform.forward;
+            shootDir = cam.transform.forward;
         }
 
         shootDir += Vector3.up * (upwardForce / launchForce);

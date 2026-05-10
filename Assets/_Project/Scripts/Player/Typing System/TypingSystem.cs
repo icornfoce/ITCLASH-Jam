@@ -600,15 +600,16 @@ public class TypingSystem : MonoBehaviour
         if (item.itemSkill != null)
         {
             Vector3 spawnPos;
+            bool isProjectile = item.itemSkill.GetComponent<BaseProjectileSkill>() != null;
 
-            // ถ้ามีตำแหน่งเป้าหมาย (จากการ Aim) ให้ใช้ตำแหน่งนั้นเลย!
-            if (targetPos.HasValue)
+            // ถ้ามีตำแหน่งเป้าหมาย (จากการ Aim) และไม่ใช่ Projectile ให้ใช้ตำแหน่งนั้นเลย!
+            if (targetPos.HasValue && !isProjectile)
             {
                 spawnPos = targetPos.Value;
             }
             else
             {
-                // ถ้าไม่มีเป้าหมาย ให้เกิดหน้า Player ตามปกติ
+                // ถ้าไม่มีเป้าหมาย หรือเป็น Projectile ให้เกิดหน้า Player ตามปกติ
                 spawnPos = playerTransform.position
                     + playerTransform.right * item.skillSpawnOffset.x
                     + playerTransform.up * item.skillSpawnOffset.y
