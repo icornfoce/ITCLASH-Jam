@@ -78,7 +78,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: ea8c8ebd7094e774f9f7d8ba0629f460, type: 2}
     - target: {fileID: 919132149155446097, guid: 4709c772a10c3e04c94905dc4bcaf7ec, type: 3}
       propertyPath: m_Name
-      value: Park-Lamp1
+      value: Park-Lampskill
       objectReference: {fileID: 0}
     - target: {fileID: 960997651672352474, guid: 4709c772a10c3e04c94905dc4bcaf7ec, type: 3}
       propertyPath: m_LocalScale.x
@@ -183,6 +183,10 @@ MonoBehaviour:
   firePuddlePrefab: {fileID: 0}
   dropInterval: 0.35
   puddleLifetime: 8
+  fireDamagePerTick: 1000
+  fireDamageInterval: 0.5
+  puddleRadius: 1.5
+  minMoveDistance: 0.3
 --- !u!64 &1044096905194114602
 MeshCollider:
   m_ObjectHideFlags: 0

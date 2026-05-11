@@ -13,6 +13,12 @@ public class DumplingsSkill : BaseTurretSkill
     [Tooltip("จุดที่จะให้กระสุนพุ่งออกไป (ปลายกระบอกปืน)")]
     public Transform shootPoint;
 
+    [Tooltip("ความเร็วกระสุน (m/s)")]
+    public float bulletSpeed = 30f;
+
+    [Tooltip("ทำลายกระสุนหลังจากกี่วินาที")]
+    public float bulletLifetime = 5f;
+
     [Header("─── Aiming / Pivot ───")]
     [Tooltip("จุดหมุนของป้อมที่จะหมุนเล็งไปหาศัตรู (ถ้าไม่ใส่จะใช้ตัวเองเป็นจุดหมุน)")]
     public Transform aimPivot;
@@ -38,13 +44,16 @@ public class DumplingsSkill : BaseTurretSkill
     private Transform currentTarget;
     private bool isDying = false;
     private Vector3 originalScale;
-    private bool isAnimating = false;
 
     protected override void OnTurretDeployed(Transform playerTransform)
     {
         Debug.Log("[DumplingsSkill] OnTurretDeployed called!");
         currentHealth = maxHealth;
         originalScale = transform.localScale;
+
+        // ตั้งป้อมให้ตรง — เอาเฉพาะแกน Y (หันซ้ายขวา) ลบ X, Z (เอียง) ออก
+        Vector3 euler = transform.eulerAngles;
+        transform.rotation = Quaternion.Euler(0f, euler.y, 0f);
 
         // ปิด Rigidbody ระหว่าง spawn animation
         Rigidbody rb = GetComponent<Rigidbody>();
@@ -119,13 +128,32 @@ public class DumplingsSkill : BaseTurretSkill
 
         if (bulletPrefab != null && shootPoint != null)
         {
-            GameObject bullet = Instantiate(bulletPrefab, shootPoint.position, Quaternion.identity);
-            bullet.transform.LookAt(currentTarget.position + Vector3.up);
+            // คำนวณทิศทางจาก shootPoint ไปหาศัตรู
+            Vector3 direction = (currentTarget.position + Vector3.up - shootPoint.position).normalized;
+
+            GameObject bullet = Instantiate(bulletPrefab, shootPoint.position, Quaternion.LookRotation(direction));
+
+            // ถ้ากระสุนไม่มี Rigidbody → เพิ่มให้อัตโนมัติ
             Rigidbody bulletRb = bullet.GetComponent<Rigidbody>();
-            if (bulletRb != null) bulletRb.AddForce(bullet.transform.forward * 30f, ForceMode.VelocityChange);
+            if (bulletRb == null)
+            {
+                bulletRb = bullet.AddComponent<Rigidbody>();
+                Debug.Log("[DumplingsSkill] กระสุนไม่มี Rigidbody → เพิ่มให้อัตโนมัติ");
+            }
+
+            bulletRb.useGravity = false;
+            bulletRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            bulletRb.linearVelocity = direction * bulletSpeed;
+
+            // ทำลายกระสุนหลังหมดเวลา
+            Destroy(bullet, bulletLifetime);
+
+            Debug.Log($"[DumplingsSkill] กระสุนเกิดที่ {shootPoint.position}, ทิศทาง {direction}, ความเร็ว {bulletSpeed}");
         }
         else
         {
+            // Hitscan — ไม่มีกระสุน ยิงตรงเลย
+            Debug.Log($"[DumplingsSkill] Hitscan mode (bulletPrefab={bulletPrefab}, shootPoint={shootPoint})");
             ITCLASH.Enemies.EnemyController enemy = currentTarget.GetComponentInParent<ITCLASH.Enemies.EnemyController>();
             if (enemy != null) enemy.ApplyDamage(damagePerShot);
         }
@@ -161,9 +189,11 @@ public class DumplingsSkill : BaseTurretSkill
     private IEnumerator SpawnAnimation()
     {
         Debug.Log("[DumplingsSkill] SpawnAnimation started!");
-        isAnimating = true;
         float elapsed = 0f;
         transform.localScale = Vector3.zero;
+
+        // จำ rotation เดิมไว้ → คืนค่าหลัง animation จบ
+        Quaternion originalRotation = transform.rotation;
 
         while (elapsed < spawnDuration)
         {
@@ -175,8 +205,9 @@ public class DumplingsSkill : BaseTurretSkill
             yield return null;
         }
 
+        // คืนค่า scale และ rotation กลับเป็นเดิม
         transform.localScale = originalScale;
-        isAnimating = false;
+        transform.rotation = originalRotation;
 
         // เปิด Rigidbody หลัง animation จบ
         Rigidbody rb = GetComponent<Rigidbody>();

@@ -74,7 +74,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 47c8a087b24bd45439708c5ed9bfd962, type: 2}
     - target: {fileID: 919132149155446097, guid: 3bbee1e40e0274c44ba5a3eb03f9f9af, type: 3}
       propertyPath: m_Name
-      value: Painting_1
+      value: Painting_1skill
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -106,16 +106,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ImpressionismSkill
   voiceClip: {fileID: 0}
   voiceVolume: 1
-  launchForce: 20
-  upwardForce: 2
-  lifetime: 5
-  hitVFXPrefab: {fileID: 0}
-  hitSFX: {fileID: 0}
   burstDamage: 50
   slowPercent: 0.6
   slowDuration: 4
   healAmount: 30
   yellowKnockbackForce: 25
+  beamRange: 50
+  beamDuration: 0.4
+  beamWidth: 0.15
+  hitVFXPrefab: {fileID: 0}
+  hitSFX: {fileID: 0}
+  lightIntensity: 8
+  lightRange: 8
+  hitLightIntensity: 5
+  hitLightRange: 5
 --- !u!64 &3605786433555684648
 MeshCollider:
   m_ObjectHideFlags: 0

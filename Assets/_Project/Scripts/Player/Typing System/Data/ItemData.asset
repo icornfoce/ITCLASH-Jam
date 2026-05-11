@@ -124,10 +124,10 @@ MonoBehaviour:
   - itemName: luminant
     description: 
     icon: {fileID: 0}
-    itemPrefab: {fileID: 8029616680622951557, guid: 5035704acde36d64581f943eb0df5c6f, type: 3}
+    itemPrefab: {fileID: 8029616680622951557, guid: 5b79bd486d53d7a48ae4991b83b613d2, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 0
-    itemSkill: {fileID: 8029616680622951557, guid: 5b79bd486d53d7a48ae4991b83b613d2, type: 3}
+    isUnlocked: 1
+    itemSkill: {fileID: 8029616680622951557, guid: 5035704acde36d64581f943eb0df5c6f, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: dumplings
@@ -135,7 +135,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 1854454774246952120, guid: ff140be1615b5d240a17ff397e99a5d6, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 9205513415571773846, guid: 0dd3fc492e7e8b246960879c45b7c914, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
