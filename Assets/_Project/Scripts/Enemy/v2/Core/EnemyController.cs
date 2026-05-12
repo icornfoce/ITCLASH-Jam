@@ -71,8 +71,8 @@ namespace ITCLASH.Enemies
         [Tooltip("เวลาที่มอนสเตอร์จะ 'เกิด' (อยู่นิ่งๆ) ก่อนจะเริ่มทำงาน")]
         [SerializeField] float spawnDelay = 1.5f;
 
-        bool isDead;
-        bool isSpawning = true;
+        protected bool isDead;
+        protected bool isSpawning = true;
 
         // ── Knockback ─────────────────────────────────────────────
         Vector3 knockbackVelocity = Vector3.zero;

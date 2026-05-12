@@ -40,7 +40,7 @@ namespace ITCLASH.Enemies
                     owner.Agent.speed = owner.Stats.moveSpeed * BACKOFF_SPEED_MUL;
                     owner.Agent.SetDestination(awayPoint);
                 }
-                owner.Animation.SetWalking(true);
+                if (owner.Anim != null) owner.Anim.SetBool("IsWalking", true);
             }
             else if (dist > preferred)
             {
@@ -50,7 +50,7 @@ namespace ITCLASH.Enemies
                     owner.Agent.speed = owner.Stats.moveSpeed;
                     owner.Agent.SetDestination(owner.PlayerTransform.position);
                 }
-                owner.Animation.SetWalking(true);
+                if (owner.Anim != null) owner.Anim.SetBool("IsWalking", true);
             }
             else
             {
@@ -60,7 +60,7 @@ namespace ITCLASH.Enemies
                     owner.Agent.SetDestination(self);
                     owner.Agent.velocity = Vector3.zero;
                 }
-                owner.Animation.SetWalking(false);
+                if (owner.Anim != null) owner.Anim.SetBool("IsWalking", false);
                 owner.FacePlayer(dt);
             }
 
@@ -70,7 +70,7 @@ namespace ITCLASH.Enemies
 
         public override void OnExit()
         {
-            owner.Animation.SetWalking(false);
+            if (owner.Anim != null) owner.Anim.SetBool("IsWalking", false);
         }
     }
 }

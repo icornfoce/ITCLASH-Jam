@@ -113,5 +113,20 @@ public class PlayerController : MonoBehaviour
             animator.SetFloat(horizontalParam, x, animationDampTime, Time.deltaTime);
             animator.SetFloat(verticalParam, z, animationDampTime, Time.deltaTime);
         }
+
+        // --- ระบบแรงกระแทก (Knockback) ---
+        if (impactForce.magnitude > 0.2f)
+        {
+            controller.Move(impactForce * Time.deltaTime);
+            impactForce = Vector3.Lerp(impactForce, Vector3.zero, Time.deltaTime * 5f);
+        }
+    }
+
+    private Vector3 impactForce = Vector3.zero;
+
+    public void ApplyKnockback(Vector3 force)
+    {
+        // เพิ่มแรงกระแทกเข้าไป
+        impactForce += force;
     }
 }

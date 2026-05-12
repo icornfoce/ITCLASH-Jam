@@ -35,7 +35,7 @@ namespace ITCLASH.Enemies
                 {
                     // In range but on cooldown — hold position.
                     owner.Agent.isStopped = true;
-                    owner.Animation.SetWalking(false);
+                    if (owner.Anim != null) owner.Anim.SetBool("IsWalking", false);
                     owner.FacePlayer(dt);
                 }
                 else
