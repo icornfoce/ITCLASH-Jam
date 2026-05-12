@@ -38,13 +38,21 @@ namespace ITCLASH.Enemies
         Vector3 direction;
         bool launched;
 
-        public void Launch(Vector3 direction, float speed, float damage, float lifetime)
+        public void Launch(Vector3 direction, float speed, float damage, float lifetime, Collider ownerCollider = null)
         {
             this.direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : transform.forward;
             this.speed = speed;
             this.damage = damage;
             this.lifetimeRemaining = lifetime;
             transform.rotation = Quaternion.LookRotation(this.direction);
+            
+            if (ownerCollider != null)
+            {
+                // ป้องกันกระสุนชนตัวคนยิงเอง
+                Collider myCollider = GetComponent<Collider>();
+                if (myCollider != null) Physics.IgnoreCollision(myCollider, ownerCollider);
+            }
+
             launched = true;
         }
 
@@ -82,12 +90,17 @@ namespace ITCLASH.Enemies
 
         void ResolveHit(RaycastHit hit)
         {
+            Debug.Log($"[Projectile] Hit: {hit.collider.name} (Tag: {hit.collider.tag})");
             // Damage only the player; ignore other enemies / environment besides FX.
             if (hit.collider.CompareTag("Player"))
             {
                 var hp = hit.collider.GetComponent<PlayerHealth>();
                 if (hp == null) hp = hit.collider.GetComponentInParent<PlayerHealth>();
-                if (hp != null) hp.TakeDamage(damage);
+                if (hp != null)
+                {
+                    hp.TakeDamage(damage);
+                    Debug.Log($"[Projectile] Damage {damage} applied to Player.");
+                }
             }
             Despawn(hit.point);
         }

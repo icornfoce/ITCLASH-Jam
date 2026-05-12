@@ -17,9 +17,20 @@ public class PlayerHealthUI : MonoBehaviour
     [Tooltip("ความเร็วในการเลื่อนหลอดเลือด (ยิ่งเยอะยิ่งเร็ว)")]
     public float animationSpeed = 5f;
 
+    [Header("Pulse Settings (Low Health)")]
+    [Tooltip("เลือดต่ำกว่ากี่ % ถึงจะเริ่มกระพริบ")]
+    public float pulseThreshold = 0.3f;
+    [Tooltip("ความเร็วในการกระพริบ")]
+    public float pulseSpeed = 8f;
+    [Tooltip("ความแรงของการกระพริบ (ปรับขนาด/สี)")]
+    public float pulseAmount = 0.15f;
+    public Color lowHealthColor = Color.red;
+
     private float maxRawWidth;
     private Rect originalUV;
     private Vector2 originalAnchoredPosition;
+    private Color originalFillColor;
+    private Vector3 originalScale;
 
     private float targetHealth = 1f;
     private float currentVisualHealth = 1f;
@@ -31,6 +42,12 @@ public class PlayerHealthUI : MonoBehaviour
             maxRawWidth = healthRawImage.rectTransform.sizeDelta.x;
             originalUV = healthRawImage.uvRect;
             originalAnchoredPosition = healthRawImage.rectTransform.anchoredPosition;
+        }
+
+        if (healthFillImage != null)
+        {
+            originalFillColor = healthFillImage.color;
+            originalScale = healthFillImage.rectTransform.localScale;
         }
     }
 
@@ -53,6 +70,43 @@ public class PlayerHealthUI : MonoBehaviour
             // ปัดเศษให้เท่ากันพอดีเมื่อใกล้เคียงมากๆ
             currentVisualHealth = targetHealth;
             ApplyVisualUpdate(currentVisualHealth);
+        }
+
+        // เพิ่มระบบกระพริบเมื่อเลือดต่ำ
+        HandleLowHealthPulse();
+    }
+
+    private void HandleLowHealthPulse()
+    {
+        if (currentVisualHealth <= pulseThreshold && currentVisualHealth > 0)
+        {
+            float pulse = (Mathf.Sin(Time.time * pulseSpeed) + 1f) / 2f; // 0 to 1
+            
+            // 1. ปรับสีและ Scale ของหลอดเลือด
+            if (healthFillImage != null)
+            {
+                healthFillImage.color = Color.Lerp(originalFillColor, lowHealthColor, pulse);
+                healthFillImage.rectTransform.localScale = originalScale * (1f + pulse * pulseAmount);
+            }
+            
+            // 2. ปรับ Scale ของ Text ให้กระพริบตามไปด้วย
+            if (healthText != null)
+            {
+                healthText.transform.localScale = Vector3.one * (1f + pulse * pulseAmount);
+            }
+        }
+        else
+        {
+            // คืนค่าปกติถ้าเลือดสูงกว่าเกณฑ์
+            if (healthFillImage != null)
+            {
+                healthFillImage.color = originalFillColor;
+                healthFillImage.rectTransform.localScale = originalScale;
+            }
+            if (healthText != null)
+            {
+                healthText.transform.localScale = Vector3.one;
+            }
         }
     }
 

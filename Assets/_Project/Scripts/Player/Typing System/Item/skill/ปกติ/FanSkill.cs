@@ -55,7 +55,7 @@ public class FanSkill : BaseItemSkill
             allEnemies.Add(e.transform);
         foreach (var e in FindObjectsByType<Rangeenemy>(FindObjectsSortMode.None))
             allEnemies.Add(e.transform);
-        foreach (var e in FindObjectsByType<BossEnemy>(FindObjectsSortMode.None))
+        foreach (var e in FindObjectsByType<MiniBoss>(FindObjectsSortMode.None))
             allEnemies.Add(e.transform);
 
         Debug.Log($"[FanSkill] พบศัตรูในฉากทั้งหมด {allEnemies.Count} ตัว");

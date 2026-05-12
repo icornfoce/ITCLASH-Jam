@@ -58,9 +58,8 @@ namespace ITCLASH.Enemies
             var prefab = owner.Stats.projectilePrefab;
             if (prefab == null || owner.PlayerTransform == null) return;
 
-            Vector3 muzzlePos = owner.MuzzlePoint.position;
+            Vector3 muzzlePos = owner.OrbSpawnPoint.position;
             Vector3 toPlayer  = owner.PlayerTransform.position - muzzlePos;
-            toPlayer.y += 1.0f; // aim slightly toward upper torso
             Quaternion rot = Quaternion.LookRotation(toPlayer.normalized);
 
             var go = Object.Instantiate(prefab, muzzlePos, rot);
@@ -70,7 +69,8 @@ namespace ITCLASH.Enemies
                     direction: toPlayer.normalized,
                     speed: owner.Stats.projectileSpeed,
                     damage: owner.Stats.projectileDamage,
-                    lifetime: LIFETIME);
+                    lifetime: LIFETIME,
+                    ownerCollider: owner.GetComponent<Collider>());
             }
 
             owner.VFX.SpawnMuzzleFlash(owner.transform);

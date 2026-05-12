@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 /// <summary>
 /// FirstPersonController — จัดการการเคลื่อนที่ของ Player
@@ -66,13 +68,57 @@ public class FirstPersonController : MonoBehaviour
         float z = Input.GetAxis("Vertical");
 
         Vector3 move = transform.right * x + transform.forward * z;
-        controller.Move(move * walkSpeed * Time.deltaTime);
+        controller.Move(move * (walkSpeed * currentSpeedMultiplier) * Time.deltaTime);
 
         if (Input.GetButtonDown("Jump") && isGrounded)
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
 
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    private List<float> speedMultipliers = new List<float>();
+    public void AddSpeedMultiplier(float multiplier)
+    {
+        speedMultipliers.Add(multiplier);
+        UpdateSpeedMultiplier();
+    }
+
+    public void RemoveSpeedMultiplier(float multiplier)
+    {
+        speedMultipliers.Remove(multiplier);
+        UpdateSpeedMultiplier();
+    }
+
+    public void AddTimedSpeedMultiplier(float multiplier, float duration)
+    {
+        StartCoroutine(TimedSpeedMultiplierRoutine(multiplier, duration));
+    }
+
+    private IEnumerator TimedSpeedMultiplierRoutine(float multiplier, float duration)
+    {
+        AddSpeedMultiplier(multiplier);
+        yield return new WaitForSeconds(duration);
+        RemoveSpeedMultiplier(multiplier);
+    }
+
+    private float currentSpeedMultiplier = 1f;
+    private void UpdateSpeedMultiplier()
+    {
+        if (speedMultipliers.Count == 0)
+        {
+            currentSpeedMultiplier = 1f;
+        }
+        else
+        {
+            // Use the lowest multiplier (strongest slow)
+            float minMultiplier = 1f;
+            foreach (float m in speedMultipliers)
+            {
+                if (m < minMultiplier) minMultiplier = m;
+            }
+            currentSpeedMultiplier = minMultiplier;
+        }
     }
 
     /// <summary>

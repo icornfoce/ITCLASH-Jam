@@ -74,8 +74,8 @@ public class SetupMonsterMutant7 : EditorWindow
         NavMeshAgent agent = instance.GetComponent<NavMeshAgent>();
         if (agent == null) agent = instance.AddComponent<NavMeshAgent>();
 
-        StrongMeleeEnemy enemy = instance.GetComponent<StrongMeleeEnemy>();
-        if (enemy == null) enemy = instance.AddComponent<StrongMeleeEnemy>();
+        HeavyDasherEnemy enemy = instance.GetComponent<HeavyDasherEnemy>();
+        if (enemy == null) enemy = instance.AddComponent<HeavyDasherEnemy>();
         
         // Set stats
         EnemyStatsSO stats = AssetDatabase.LoadAssetAtPath<EnemyStatsSO>(statsPath);

@@ -41,6 +41,52 @@ public class DevPanelController : MonoBehaviour
         if (!_isPanelActive) return;
 
         // ------------------------------------------------
+        // U: Damage ALL enemies 20% Max HP
+        // ------------------------------------------------
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            int count = 0;
+
+            // Old Enemy System
+            Enemy[] allOldEnemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
+            foreach (Enemy e in allOldEnemies)
+            {
+                if (e != null)
+                {
+                    int dmg = Mathf.RoundToInt(e.maxHealth * 0.2f);
+                    e.TakeDamage(dmg);
+                    count++;
+                }
+            }
+
+            // New Enemy System (v2)
+            ITCLASH.Enemies.EnemyController[] allV2Enemies = Object.FindObjectsByType<ITCLASH.Enemies.EnemyController>(FindObjectsSortMode.None);
+            foreach (var e in allV2Enemies)
+            {
+                if (e != null && e.Stats != null)
+                {
+                    float dmg = e.Stats.maxHealth * 0.2f;
+                    e.ApplyDamage(dmg);
+                    count++;
+                }
+            }
+
+            // MiniBoss
+            MiniBoss[] miniBosses = Object.FindObjectsByType<MiniBoss>(FindObjectsSortMode.None);
+            foreach (var b in miniBosses)
+            {
+                if (b != null)
+                {
+                    float dmg = b.maxHealth * 0.2f;
+                    b.ApplyDamage(dmg);
+                    count++;
+                }
+            }
+
+            Debug.Log($"<color=orange>[DEV]</color> Damaged {count} enemies for 20% of their MAX HP!");
+        }
+
+        // ------------------------------------------------
         // G: Level + 1
         // ------------------------------------------------
         if (Input.GetKeyDown(KeyCode.G))
@@ -124,6 +170,65 @@ public class DevPanelController : MonoBehaviour
             {
                 Transform playerT = PlayerExperience.Instance != null ? PlayerExperience.Instance.transform : Camera.main.transform;
                 GemManager.Instance.ForceMergeGems(playerT.position, mergeRadius);
+            }
+        }
+
+        // ------------------------------------------------
+        // V: Force ALL MiniBoss to use Summon Skill
+        // ------------------------------------------------
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            MiniBoss[] bosses = Object.FindObjectsByType<MiniBoss>(FindObjectsSortMode.None);
+            if (bosses.Length == 0)
+            {
+                Debug.Log("<color=orange>[DEV]</color> No MiniBoss found in scene.");
+            }
+            else
+            {
+                foreach (var boss in bosses)
+                {
+                    if (boss != null) boss.ForceUseSummon();
+                }
+                Debug.Log($"<color=orange>[DEV]</color> Forced {bosses.Length} MiniBoss(es) to use Summon!");
+            }
+        }
+
+        // ------------------------------------------------
+        // Y: Force ALL MiniBoss to play a skill then die
+        // ------------------------------------------------
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            MiniBoss[] bosses = Object.FindObjectsByType<MiniBoss>(FindObjectsSortMode.None);
+            if (bosses.Length == 0)
+            {
+                Debug.Log("<color=orange>[DEV]</color> No MiniBoss found in scene.");
+            }
+            else
+            {
+                foreach (var boss in bosses)
+                {
+                    if (boss != null) boss.ForceSkillThenDie();
+                }
+                Debug.Log($"<color=orange>[DEV]</color> Forced {bosses.Length} MiniBoss(es) to play skill then die!");
+            }
+        }
+        // ------------------------------------------------
+        // 1: Force ALL MiniBoss to use Void Zone Skill
+        // ------------------------------------------------
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            MiniBoss[] bosses = Object.FindObjectsByType<MiniBoss>(FindObjectsSortMode.None);
+            if (bosses.Length == 0)
+            {
+                Debug.Log("<color=orange>[DEV]</color> No MiniBoss found in scene.");
+            }
+            else
+            {
+                foreach (var boss in bosses)
+                {
+                    if (boss != null) boss.ForceUseVoidZone();
+                }
+                Debug.Log($"<color=orange>[DEV]</color> Forced {bosses.Length} MiniBoss(es) to use Void Zone!");
             }
         }
     }

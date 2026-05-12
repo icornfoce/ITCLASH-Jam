@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using UnityEngine.AI;
 using UnityEngine.Events;
 
@@ -7,7 +8,6 @@ namespace ITCLASH.Enemies
     /// Base for every enemy archetype. Owns HP, nav, anim/audio/VFX, player tracking,
     /// state machine, and cooldowns. Subclasses implement BuildStateMachine().
     [RequireComponent(typeof(NavMeshAgent))]
-    [RequireComponent(typeof(Animator))]
     public abstract class EnemyController : MonoBehaviour, IDamageable, IKnockbackable
     {
         // ── Stats ────────────────────────────────────────────────
@@ -22,11 +22,19 @@ namespace ITCLASH.Enemies
 
         // ── Optional anchors ─────────────────────────────────────
         [Header("Anchors (optional)")]
+        public Transform visualTransform;
         [SerializeField] Transform muzzlePoint;
         [SerializeField] Transform orbSpawnPoint;
         [SerializeField] Transform dashImpactPoint;
 
         // ── Events ───────────────────────────────────────────────
+        [Header("Floating & Bobbing")]
+        public bool alwaysFacePlayer = true;
+        public bool useFloating = false;
+        public float floatHeight = 2.0f;
+        public float bobSpeed = 1.5f;
+        public float bobAmount = 0.2f;
+
         [Header("Events")]
         public UnityEvent<float> OnDamaged = new UnityEvent<float>();
         public UnityEvent<float> OnHealed  = new UnityEvent<float>();
@@ -59,7 +67,12 @@ namespace ITCLASH.Enemies
         public bool IsAlive => !isDead;
         public Transform Transform => transform;
 
+        [Header("Spawn Settings")]
+        [Tooltip("เวลาที่มอนสเตอร์จะ 'เกิด' (อยู่นิ่งๆ) ก่อนจะเริ่มทำงาน")]
+        [SerializeField] float spawnDelay = 1.5f;
+
         bool isDead;
+        bool isSpawning = true;
 
         // ── Knockback ─────────────────────────────────────────────
         Vector3 knockbackVelocity = Vector3.zero;
@@ -102,6 +115,11 @@ namespace ITCLASH.Enemies
             if (!CompareTag("Enemy")) gameObject.tag = "Enemy";
 
             StateMachine = new EnemyStateMachine();
+            
+            if (Agent != null && alwaysFacePlayer)
+            {
+                Agent.updateRotation = false;
+            }
         }
 
         protected virtual void Start()
@@ -110,6 +128,14 @@ namespace ITCLASH.Enemies
             vfxConfig.SpawnSpawnFx(transform);
             audioConfig.PlaySpawn();
             BuildStateMachine();
+            StartCoroutine(SpawnDelayRoutine());
+        }
+
+        private IEnumerator SpawnDelayRoutine()
+        {
+            isSpawning = true;
+            yield return new WaitForSeconds(spawnDelay);
+            isSpawning = false;
         }
 
         void CacheReferences()
@@ -128,8 +154,40 @@ namespace ITCLASH.Enemies
         protected virtual void Update()
         {
             if (PlayerTransform == null) CacheReferences();
-            if (!isDead) StateMachine?.Tick(Time.deltaTime);
+            if (!isDead && !isSpawning) StateMachine?.Tick(Time.deltaTime);
             HandleKnockback();
+
+            // ── Face Player Always ──
+            if (alwaysFacePlayer && !isDead && PlayerTransform != null)
+            {
+                FacePlayer(Time.deltaTime);
+            }
+
+            // ── Floating & Bobbing ──
+            if (useFloating && !isDead)
+            {
+                HandleFloating();
+            }
+
+            // Update walking animation if animator exists
+            if (Anim != null)
+            {
+                bool isWalking = Agent.velocity.magnitude > 0.1f && !Agent.isStopped;
+                animConfig.SetWalking(isWalking);
+            }
+        }
+
+        private void HandleFloating()
+        {
+            // ปรับความสูงจากพื้นโดยใช้ baseOffset ของ NavMeshAgent
+            Agent.baseOffset = Mathf.Lerp(Agent.baseOffset, floatHeight, Time.deltaTime * 3f);
+
+            // Bobbing (ขยับขึ้นลงนิดๆ) ที่ตัว Visual
+            if (visualTransform != null)
+            {
+                float newY = Mathf.Sin(Time.time * bobSpeed) * bobAmount;
+                visualTransform.localPosition = new Vector3(visualTransform.localPosition.x, newY, visualTransform.localPosition.z);
+            }
         }
 
         void HandleKnockback()

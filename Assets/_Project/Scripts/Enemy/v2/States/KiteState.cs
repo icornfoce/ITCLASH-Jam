@@ -33,8 +33,8 @@ namespace ITCLASH.Enemies
 
             if (dist < tooClose)
             {
-                // Back away
-                Vector3 awayPoint = self - dir * (preferred - dist);
+                // ถอยหนี (Retreat) - สั่งจุดเป้าหมายให้ไกลออกไปเพื่อให้มันเคลื่อนที่ต่อเนื่อง
+                Vector3 awayPoint = self - dir * 5f; 
                 if (owner.Agent != null && owner.Agent.isOnNavMesh)
                 {
                     owner.Agent.speed = owner.Stats.moveSpeed * BACKOFF_SPEED_MUL;
