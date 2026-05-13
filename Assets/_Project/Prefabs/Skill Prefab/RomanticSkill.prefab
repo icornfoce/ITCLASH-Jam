@@ -132,7 +132,7 @@ MonoBehaviour:
   upwardForce: 2
   lifetime: 5
   hitVFXPrefab: {fileID: 0}
-  hitSFX: {fileID: 0}
+  hitSFX: {fileID: 8300000, guid: ded71f882aa0c204c8e7a7d9330dcc7d, type: 3}
   stunDuration: 3
   dpsDamage: 5
 --- !u!54 &361312655087093850

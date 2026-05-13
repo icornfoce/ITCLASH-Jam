@@ -81,7 +81,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d9715066d4190247936b039096385ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KnightSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: 02fa00277764a494aa5461c40d9a92a9, type: 3}
   voiceVolume: 1
   buffDuration: 5
   buffAuraVFX: {fileID: 0}

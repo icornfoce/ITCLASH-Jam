@@ -423,7 +423,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44f0fd842b788c340857f7efa4233fc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoneySkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: 080edcae97657c342a49b487a32672b8, type: 3}
   voiceVolume: 1
   duration: 10
   actionInterval: 1

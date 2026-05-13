@@ -131,10 +131,11 @@ MonoBehaviour:
   launchForce: 20
   upwardForce: 2
   lifetime: 5
-  hitVFXPrefab: {fileID: 0}
-  hitSFX: {fileID: 0}
+  hitVFXPrefab: {fileID: 3226506910322988314, guid: eccbc655050af0b4f81d8db39f84a58e, type: 3}
+  hitSFX: {fileID: 8300000, guid: d0cfefe370b9e8d44b96dc5a03f458d6, type: 3}
   damage: 15
   slowDuration: 3
+  slowPercent: 0.5
   fireVFX: {fileID: 0}
 --- !u!54 &-6727191791846881598
 Rigidbody:

@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94e705caf9b77484aac794d42d8b33db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BerserkSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: 8ed537873c51277449808fd4a7ac2b38, type: 3}
   voiceVolume: 1
   buffDuration: 5
   buffAuraVFX: {fileID: 0}

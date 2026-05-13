@@ -1841,7 +1841,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 604a823bb451ce84195803c4d579be55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DumplingsSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: 8266db9cc50a33e42bb2338365ae8fde, type: 3}
   voiceVolume: 1
   duration: 10
   actionInterval: 1

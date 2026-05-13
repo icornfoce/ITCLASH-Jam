@@ -104,11 +104,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 834d559bf1014d64283c4a0627dd9cb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChronostasisSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: 2466db3c769c7c14dbac4a726e7e2b5f, type: 3}
   voiceVolume: 1
   buffDuration: 5
   buffAuraVFX: {fileID: 0}
   timeScaleMultiplier: 0.1
+  recoveryDuration: 1.5
 --- !u!65 &2259265304199790878
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -104,11 +104,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f89bd40985538c4388908e81ff55e7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HorseSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: 33332dc03f740284eb9af41b0b39f979, type: 3}
   voiceVolume: 1
   buffDuration: 550
   buffAuraVFX: {fileID: 0}
   speedMultiplier: 50
+  dustVFXPrefab: {fileID: 0}
+  neighSFX: {fileID: 0}
 --- !u!64 &1436507267804429288
 MeshCollider:
   m_ObjectHideFlags: 0

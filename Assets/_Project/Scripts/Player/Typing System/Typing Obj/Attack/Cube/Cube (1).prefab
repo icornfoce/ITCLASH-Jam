@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03368b1bd83a3f441b56f2f7b5661d32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CubeProjectileSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: b2ca4f8fa49817342b5081aa62c1b458, type: 3}
   voiceVolume: 1
   launchForce: 20
   upwardForce: 2
@@ -134,4 +134,4 @@ MonoBehaviour:
   knockbackForce: 15
   knockbackDuration: 0.4
   hitVFXPrefab: {fileID: 0}
-  hitSFX: {fileID: 0}
+  hitSFX: {fileID: 8300000, guid: b2ca4f8fa49817342b5081aa62c1b458, type: 3}

@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 061a0c1e170eca54f8b2074386acf9ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WindowSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: cac0a47556fc5a643820b35c6e79233c, type: 3}
   voiceVolume: 1
   buffDuration: 5
   buffAuraVFX: {fileID: 0}
