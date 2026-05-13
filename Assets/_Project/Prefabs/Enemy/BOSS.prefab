@@ -920,7 +920,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3119370634680910396}
   - component: {fileID: 172402040840089601}
-  - component: {fileID: 2722088898606781284}
+  - component: {fileID: 6578599870838450095}
   m_Layer: 0
   m_Name: BOSS
   m_TagString: Untagged
@@ -938,7 +938,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -24.79298, y: 0.30158, z: 18.11909}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 4.23092, y: 4.23092, z: 4.23092}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2926152942435569300}
@@ -965,24 +965,30 @@ MonoBehaviour:
   floorLayer:
     serializedVersion: 2
     m_Bits: 8
+  globalRandomRadius: 25
   raysCount: 8
-  distanceBetweenObjects: 1.5
-  maxRayLength: 30
-  overdriveRings: 4
-  ringSpacing: 3
-  rainCountPhase1: 5
-  rainCountPhase2: 12
+  raySpacing: 1.5
+  rayLength: 12
+  overdriveWaves: 6
+  pointsPerWave: 8
+  waveSpacing: 4
+  pointRandomness: 3
+  rainCountPhase1: 80
+  rainCountPhase2: 160
   summonPrefabs:
   - {fileID: 3368657497738892344, guid: 22c93a62c29bbb84aa8473222760bc03, type: 3}
   - {fileID: 631570723758232874, guid: 4fea794ee18ffab4eb6c6100da90bf21, type: 3}
   - {fileID: 4580916124177637001, guid: 41529fa817f752a41a6f507b4ce61712, type: 3}
   summonCount: 3
-  summonRadius: 5
+  summonMinDistance: 4
+  summonMaxDistance: 10
+  summonAngleRange: 60
   summonWarningPrefab: {fileID: 1457164696074657159, guid: 9cb1ffb5a769e724481cb1d367b9a800, type: 3}
   warningPrefab: {fileID: 7745618099665393396, guid: 61103ee966c10f04c8bffb090e0a9b9e, type: 3}
   damagePrefab: {fileID: 92318338007570237, guid: 9f06ad4c7b624704cb680190a01ba913, type: 3}
   voidZonePrefab: {fileID: 968852385677825792, guid: 897c41f2fdbf54a46a00d27cbb9e0584, type: 3}
   voidZoneCount: 4
+  voidZoneDuration: 5
   phaseChangeVFX: {fileID: 0}
   ultimateCastVFX: {fileID: 0}
   phaseChangeSFX: {fileID: 0}
@@ -995,52 +1001,33 @@ MonoBehaviour:
   bobHeight: 0.3
   alwaysFacePlayer: 1
   faceRotationOffset: {x: 0, y: 0, z: 0}
---- !u!114 &2722088898606781284
-MonoBehaviour:
+--- !u!54 &6578599870838450095
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1993589799877864604}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 228c2c48d5ce1cc44b4d07ffc611ed0b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MiniBoss
-  maxHealth: 1000
-  skillCooldown: 3
-  hitColor: {r: 1, g: 0, b: 0, a: 1}
-  hitFlashDuration: 0.1
-  floorLayer:
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  raysCount: 8
-  distanceBetweenObjects: 1.5
-  maxRayLength: 30
-  overdriveRings: 4
-  ringSpacing: 3
-  rainCountPhase1: 5
-  rainCountPhase2: 12
-  summonPrefabs: []
-  summonCount: 3
-  summonRadius: 5
-  summonWarningPrefab: {fileID: 0}
-  warningPrefab: {fileID: 0}
-  damagePrefab: {fileID: 0}
-  voidZonePrefab: {fileID: 0}
-  voidZoneCount: 1
-  phaseChangeVFX: {fileID: 0}
-  ultimateCastVFX: {fileID: 0}
-  phaseChangeSFX: {fileID: 0}
-  ultimateCastSFX: {fileID: 0}
-  ultimateDamageSFX: {fileID: 0}
-  attackAnimTrig: attack
-  phase2AnimTrig: state2
-  visualTransform: {fileID: 0}
-  bobSpeed: 1.5
-  bobHeight: 0.3
-  alwaysFacePlayer: 1
-  faceRotationOffset: {x: 0, y: 0, z: 0}
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 32
+  m_CollisionDetection: 0
 --- !u!1 &2437819338819245243
 GameObject:
   m_ObjectHideFlags: 0
