@@ -178,10 +178,10 @@ MonoBehaviour:
   - itemName: floor
     description: 
     icon: {fileID: 0}
-    itemPrefab: {fileID: 0}
+    itemPrefab: {fileID: 4510005059547293361, guid: 6845eba68db4bef479c43ecae51ed423, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 0
-    itemSkill: {fileID: 0}
+    itemSkill: {fileID: 4510005059547293361, guid: d4a07902ea5013e4ba2239ba8d895497, type: 3}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: Cataclysm
@@ -220,13 +220,13 @@ MonoBehaviour:
     itemSkill: {fileID: 0}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
-  - itemName: Blank
+  - itemName: painting
     description: 
     icon: {fileID: 0}
-    itemPrefab: {fileID: 0}
+    itemPrefab: {fileID: 4067632375309360118, guid: 6ad0f54848e6fc34daf41d7fdf3a77b0, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 0
-    itemSkill: {fileID: 0}
+    isUnlocked: 1
+    itemSkill: {fileID: 4179630659955486272, guid: f454969181e30f6408f692c1ab34b442, type: 3}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []
