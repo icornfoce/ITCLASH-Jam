@@ -162,8 +162,62 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 919132149155446097, guid: a4f97055a8900694c86fafd9345194f7, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 3450640878072655868, guid: 4908d21748171e84ca03c591064c00f1, type: 3}
+    skillSpawnOffset: {x: 0, y: 0, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: money
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 0}
+    skillSpawnOffset: {x: 0, y: 0, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: floor
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 0}
+    skillSpawnOffset: {x: 0, y: 0, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Cataclysm
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 0}
+    skillSpawnOffset: {x: 0, y: 0, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: fountain
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 0}
+    skillSpawnOffset: {x: 0, y: 0, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Socrates
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 0}
+    skillSpawnOffset: {x: 0, y: 0, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Shelfter
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 0}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []
