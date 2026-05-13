@@ -1700,7 +1700,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00022150077, y: 0.00021278883}
+  m_AnchoredPosition: {x: 0.00022150077, y: 0.000521}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &489384326
@@ -1857,7 +1857,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1304503444}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999971
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4777,7 +4777,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 6.52131, y: 0, z: 5.84988}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3, y: 1, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -6374,9 +6374,15 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   damageVignette: {fileID: 0}
-  fadeInSpeed: 5
-  fadeOutSpeed: 2
+  bloodColor: {r: 1, g: 0, b: 0, a: 1}
+  bloodStartThreshold: 0.5
+  bloodStartScale: 0.25
+  bloodMaxScale: 0.6
   maxAlpha: 1
+  pulseSpeed: 4
+  pulseAmount: 0.3
+  fadeGroup: {fileID: 0}
+  deathFadeDuration: 2
 --- !u!114 &2017645229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7126,6 +7132,10 @@ MonoBehaviour:
   healthSlider: {fileID: 0}
   healthText: {fileID: 0}
   animationSpeed: 5
+  pulseThreshold: 0.3
+  pulseSpeed: 8
+  pulseAmount: 0.15
+  lowHealthColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!222 &2206455975172985484
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7541,6 +7551,63 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1001 &4454234774270007607
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 8.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.000000021855694
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4474562808240367167, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5141197222763173585, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
+      propertyPath: m_Name
+      value: dumplings_money
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
 --- !u!114 &5009836087160695110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8586,3 +8653,4 @@ SceneRoots:
   - {fileID: 1521854179250472237}
   - {fileID: 794716529}
   - {fileID: 941926557}
+  - {fileID: 4454234774270007607}
