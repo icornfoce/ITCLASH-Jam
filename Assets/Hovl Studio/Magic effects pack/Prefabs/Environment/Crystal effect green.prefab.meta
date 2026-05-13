@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 45e0f06c750176947862c10346226439
+guid: 00bba72dbda252a4eac12e218848cb44
 PrefabImporter:
   externalObjects: {}
   userData: 
@@ -10,5 +10,6 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/Portals/Portal blue.prefab
+  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/Environment/Crystal effect
+    green.prefab
   uploadId: 762116

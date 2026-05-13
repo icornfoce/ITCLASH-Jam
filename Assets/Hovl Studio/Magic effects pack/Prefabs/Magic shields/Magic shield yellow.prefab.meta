@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 45e0f06c750176947862c10346226439
+guid: d2ffbc8b168cdf74a9dbb7c6c1cfdf2f
 PrefabImporter:
   externalObjects: {}
   userData: 
@@ -10,5 +10,6 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/Portals/Portal blue.prefab
+  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/Magic shields/Magic shield
+    yellow.prefab
   uploadId: 762116

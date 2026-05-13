@@ -1,7 +1,8 @@
 fileFormatVersion: 2
-guid: 45e0f06c750176947862c10346226439
-PrefabImporter:
+guid: d51bc8cfea327f744a8090ac1eb3df9b
+NativeFormatImporter:
   externalObjects: {}
+  mainObjectFileID: 2100000
   userData: 
   assetBundleName: 
   assetBundleVariant: 
@@ -10,5 +11,5 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/Portals/Portal blue.prefab
+  assetPath: Assets/Hovl Studio/Magic effects pack/Materials/TechCircle2.mat
   uploadId: 762116

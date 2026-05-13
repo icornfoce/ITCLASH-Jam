@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 45e0f06c750176947862c10346226439
+guid: 4e91ed1a8efe7044785b9bd97a47d87f
 PrefabImporter:
   externalObjects: {}
   userData: 
@@ -10,5 +10,5 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/Portals/Portal blue.prefab
+  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/Smoke effects/Smoke puff.prefab
   uploadId: 762116

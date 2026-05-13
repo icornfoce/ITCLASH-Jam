@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 45e0f06c750176947862c10346226439
+guid: 645ebd7cef59b7b40b27c29bf3e99cf2
 PrefabImporter:
   externalObjects: {}
   userData: 
@@ -10,5 +10,6 @@ AssetOrigin:
   productId: 247933
   packageName: Magic Effects FREE
   packageVersion: 1.6
-  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/Portals/Portal blue.prefab
+  assetPath: Assets/Hovl Studio/Magic effects pack/Prefabs/AoE effects/Crystals front
+    attack.prefab
   uploadId: 762116
