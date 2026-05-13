@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd7f408ec3e7e40479171da5fc4ba9ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BenchSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: bc06f5e840e19484ba06a408338335ae, type: 3}
   voiceVolume: 1
   launchForce: 20
   upwardForce: 2

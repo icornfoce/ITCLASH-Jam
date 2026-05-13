@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6330053056624616938, guid: 75359fd73430e73469f135518dcb0c6f, type: 3}
       propertyPath: m_Name
-      value: Water domain Variant
+      value: FountainVFX
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d1a26bba61337844b8650edc49b281d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaterDomainSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: 369e3214dcb26f541b8ffd3da5483c8a, type: 3}
   voiceVolume: 1
   explosionRadius: 12
   damage: 40

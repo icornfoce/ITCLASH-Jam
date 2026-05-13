@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f2d6c15baf52cb4f8a290ab3fb7416f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TableSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: bc06f5e840e19484ba06a408338335ae, type: 3}
   voiceVolume: 1
   duration: 10
   actionInterval: 1
