@@ -4825,7 +4825,7 @@ GameObject:
   - component: {fileID: 8715761903829094485}
   - component: {fileID: 2564269725737345609}
   m_Layer: 0
-  m_Name: Portal red
+  m_Name: SocratesVFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
