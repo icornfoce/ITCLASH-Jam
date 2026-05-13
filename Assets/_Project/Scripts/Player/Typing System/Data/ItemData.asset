@@ -126,7 +126,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 8029616680622951557, guid: 5b79bd486d53d7a48ae4991b83b613d2, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 8029616680622951557, guid: 5035704acde36d64581f943eb0df5c6f, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -156,5 +156,14 @@ MonoBehaviour:
     isUnlocked: 0
     itemSkill: {fileID: 8753506051229858113, guid: 638157cfa452c214fb0e80c759d577a4, type: 3}
     skillSpawnOffset: {x: 0, y: 0.79, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Bishop
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 919132149155446097, guid: a4f97055a8900694c86fafd9345194f7, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 1
+    itemSkill: {fileID: 3450640878072655868, guid: 4908d21748171e84ca03c591064c00f1, type: 3}
+    skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []
