@@ -30,7 +30,7 @@ namespace ITCLASH.Enemies
         // ── Events ───────────────────────────────────────────────
         [Header("Floating & Bobbing")]
         public bool alwaysFacePlayer = true;
-        public bool useFloating = false;
+        public bool useFloating = true;
         public float floatHeight = 2.0f;
         public float bobSpeed = 1.5f;
         public float bobAmount = 0.2f;
@@ -97,6 +97,9 @@ namespace ITCLASH.Enemies
             Agent = GetComponent<NavMeshAgent>();
             Anim  = GetComponent<Animator>();
 
+            // เปิดระบบลอยอัตโนมัติ
+            useFloating = true; 
+
             if (stats == null)
             {
                 Debug.LogError($"[{name}] EnemyController has no EnemyStatsSO assigned.", this);
@@ -111,14 +114,19 @@ namespace ITCLASH.Enemies
             animConfig.Initialize(Anim);
             audioConfig.Initialize(gameObject);
 
-            // Force the tag so skills' CompareTag("Enemy") always works on new prefabs.
             if (!CompareTag("Enemy")) gameObject.tag = "Enemy";
-
             StateMachine = new EnemyStateMachine();
             
             if (Agent != null && alwaysFacePlayer)
             {
                 Agent.updateRotation = false;
+            }
+
+            // ตั้งค่าความสูง Agent ให้ต่ำเพื่อให้ลอยได้อิสระ
+            if (Agent != null && useFloating)
+            {
+                Agent.height = 0.5f;
+                Debug.Log($"<color=cyan>[{name}]</color> Floating System Initialized. Target: {floatHeight}");
             }
         }
 
@@ -148,14 +156,33 @@ namespace ITCLASH.Enemies
             }
         }
 
-        protected virtual void OnEnable()  => EnemyRegistry.Register(this);
-        protected virtual void OnDisable() => EnemyRegistry.Unregister(this);
+        protected virtual void OnEnable()
+        {
+            EnemyRegistry.Register(this);
+        }
+
+        protected virtual void OnDisable()
+        {
+            EnemyRegistry.Unregister(this);
+        }
 
         protected virtual void Update()
         {
             if (PlayerTransform == null) CacheReferences();
             if (!isDead && !isSpawning) StateMachine?.Tick(Time.deltaTime);
             HandleKnockback();
+
+            // --- DEBUG KEY: กด L เพื่อเช็คว่าทำไมไม่ลอย ---
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                string status = $"<color=yellow>[{name} Debug]</color>\n" +
+                               $"- UseFloating: {useFloating}\n" +
+                               $"- IsOnNavMesh: {Agent.isOnNavMesh}\n" +
+                               $"- Current BaseOffset: {Agent.baseOffset}\n" +
+                               $"- Target FloatHeight: {floatHeight}\n" +
+                               $"- Agent Height: {Agent.height}";
+                Debug.Log(status);
+            }
 
             // ── Face Player Always ──
             if (alwaysFacePlayer && !isDead && PlayerTransform != null)
@@ -177,16 +204,25 @@ namespace ITCLASH.Enemies
             }
         }
 
+        private float logTimer = 0f;
+
         private void HandleFloating()
         {
-            // ปรับความสูงจากพื้นโดยใช้ baseOffset ของ NavMeshAgent
-            Agent.baseOffset = Mathf.Lerp(Agent.baseOffset, floatHeight, Time.deltaTime * 3f);
+            if (Agent == null) return;
 
-            // Bobbing (ขยับขึ้นลงนิดๆ) ที่ตัว Visual
-            if (visualTransform != null)
+            // คำนวณความสูงเป้าหมายแบบแกว่งขึ้นลง (Dynamic Height)
+            // ทำให้ตำแหน่ง Y ของศัตรูเปลี่ยนตลอดเวลาอย่างเป็นธรรมชาติ
+            float dynamicHeight = floatHeight + (Mathf.Sin(Time.time * bobSpeed) * bobAmount);
+
+            // 1. ปรับความสูง Agent ให้ลอยตามค่าที่แกว่ง (ทำให้มันขยับตลอดเวลา)
+            Agent.baseOffset = Mathf.Lerp(Agent.baseOffset, dynamicHeight, Time.deltaTime * 2f);
+
+            // 2. Periodic Log (ทุกๆ 1 วินาที)
+            logTimer += Time.deltaTime;
+            if (logTimer >= 1f)
             {
-                float newY = Mathf.Sin(Time.time * bobSpeed) * bobAmount;
-                visualTransform.localPosition = new Vector3(visualTransform.localPosition.x, newY, visualTransform.localPosition.z);
+                logTimer = 0f;
+                Debug.Log($"<color=white>[{name} Floating]</color> Y-Offset: {Agent.baseOffset:F2} (Bobbing...)");
             }
         }
 

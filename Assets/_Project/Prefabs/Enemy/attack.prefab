@@ -272,6 +272,11 @@ MonoBehaviour:
   targetTransform: {fileID: 0}
   _rotationOffset: {x: 0, y: 90, z: 0}
   _randomHeightRange: {x: 1, y: 2.5}
+  wallCheckDistance: 1.5
+  wallAvoidTurnSpeed: 180
+  wallLayers:
+    serializedVersion: 2
+    m_Bits: 64
   currentState: 0
   startAttackPos: {x: 0, y: 0, z: 0}
   dashTargetPos: {x: 0, y: 0, z: 0}

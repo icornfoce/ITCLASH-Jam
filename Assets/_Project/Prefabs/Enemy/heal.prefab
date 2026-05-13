@@ -271,6 +271,11 @@ MonoBehaviour:
   spacingFromAllies: 3
   _rotationOffset: {x: 0, y: 90, z: 0}
   _randomHeightRange: {x: 1, y: 3}
+  wallCheckDistance: 2
+  wallAvoidTurnSpeed: 180
+  wallLayers:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!114 &4867658941003394556
 MonoBehaviour:
   m_ObjectHideFlags: 0
