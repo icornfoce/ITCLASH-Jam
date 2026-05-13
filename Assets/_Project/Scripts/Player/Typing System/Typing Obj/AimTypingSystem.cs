@@ -199,6 +199,8 @@ public class AimTypingSystem : MonoBehaviour
 
     private void Update()
     {
+        if (ITCLASH.Spawners.WaveManager.IsGameFinished) return;
+
         HandleRaycast();
         HandleInput();
         HandleZoom();

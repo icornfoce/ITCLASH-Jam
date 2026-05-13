@@ -77,11 +77,13 @@ public class MiniBoss : MonoBehaviour
     // State
     private bool isPhase2 = false;
     private bool isDead = false;
+    public bool IsDead => isDead;
     private bool isCasting = false;
     private int lastSkillIndex = -1;
     private Coroutine skillLoopCoroutine;
     private Bounds groundBounds;
     private bool hasGroundBounds = false;
+    private List<GameObject> activeSkillObjects = new List<GameObject>();
 
     private void Start()
     {
@@ -163,6 +165,14 @@ public class MiniBoss : MonoBehaviour
         Vector3 center = playerTransform != null ? playerTransform.position : transform.position;
         Vector2 circle = Random.insideUnitCircle * 20f;
         return new Vector2(center.x + circle.x, center.z + circle.y);
+    }
+
+    private GameObject SpawnSkillObject(GameObject prefab, Vector3 pos, Quaternion rot)
+    {
+        if (prefab == null) return null;
+        GameObject obj = Instantiate(prefab, pos, rot);
+        activeSkillObjects.Add(obj);
+        return obj;
     }
 
     private void Update()
@@ -386,7 +396,7 @@ public class MiniBoss : MonoBehaviour
             List<GameObject> wList = new List<GameObject>();
             if (warningPrefab != null)
             {
-                foreach (var p in wave) wList.Add(Instantiate(warningPrefab, p, Quaternion.identity));
+                foreach (var p in wave) wList.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
             }
             waveWarnings.Add(wList);
         }
@@ -411,7 +421,7 @@ public class MiniBoss : MonoBehaviour
             {
                 foreach (var p in waves[i])
                 {
-                    damages.Add(Instantiate(damagePrefab, p, Quaternion.identity));
+                    damages.Add(SpawnSkillObject(damagePrefab, p, Quaternion.identity));
                 }
             }
 
@@ -488,7 +498,7 @@ public class MiniBoss : MonoBehaviour
             {
                 foreach (Vector3 p in spawnPoints)
                 {
-                    warnings.Add(Instantiate(activeWarningPrefab, p, Quaternion.identity));
+                    warnings.Add(SpawnSkillObject(activeWarningPrefab, p, Quaternion.identity));
                 }
             }
 
@@ -581,7 +591,7 @@ public class MiniBoss : MonoBehaviour
             {
                 foreach (Vector3 p in spawnPoints)
                 {
-                    warnings.Add(Instantiate(warningPrefab, p, Quaternion.identity));
+                    warnings.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
                 }
             }
             else
@@ -598,7 +608,7 @@ public class MiniBoss : MonoBehaviour
             {
                 foreach (Vector3 p in spawnPoints)
                 {
-                    GameObject vz = Instantiate(voidZonePrefab, p, Quaternion.identity);
+                    GameObject vz = SpawnSkillObject(voidZonePrefab, p, Quaternion.identity);
                     Debug.Log($"<color=green>[BOSS]</color> VoidZone spawned at {p}.");
                 }
             }
@@ -617,7 +627,7 @@ public class MiniBoss : MonoBehaviour
         List<GameObject> warnings = new List<GameObject>();
         if (warningPrefab != null)
         {
-            foreach (Vector3 p in points) warnings.Add(Instantiate(warningPrefab, p, Quaternion.identity));
+            foreach (Vector3 p in points) warnings.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
         }
 
         yield return new WaitForSeconds(delay);
@@ -635,7 +645,7 @@ public class MiniBoss : MonoBehaviour
         {
             foreach (Vector3 p in points)
             {
-                damages.Add(Instantiate(damagePrefab, p, Quaternion.identity));
+                damages.Add(SpawnSkillObject(damagePrefab, p, Quaternion.identity));
             }
         }
 
@@ -790,6 +800,15 @@ public class MiniBoss : MonoBehaviour
     private void Die()
     {
         isDead = true;
+        StopAllCoroutines();
+        
+        // Clean up all active skill objects (Void Zones, warnings, etc.)
+        foreach (var obj in activeSkillObjects)
+        {
+            if (obj != null) Destroy(obj);
+        }
+        activeSkillObjects.Clear();
+
         Collider col = GetComponent<Collider>();
         if (col != null) col.enabled = false;
         Destroy(gameObject, 3f);

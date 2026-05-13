@@ -47,6 +47,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (ITCLASH.Spawners.WaveManager.IsGameFinished) return;
+
         // บังคับให้ตัวละครหันหน้า (แกน Y) ไปทางเดียวกับที่กล้องมองเสมอ
         if (mainCamera != null)
         {

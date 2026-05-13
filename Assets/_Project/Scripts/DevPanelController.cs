@@ -22,6 +22,8 @@ public class DevPanelController : MonoBehaviour
 
     private void Update()
     {
+        if (ITCLASH.Spawners.WaveManager.IsGameFinished) return;
+
         // ------------------------------------------------
         // Toggle System (F)
         // ------------------------------------------------
@@ -230,6 +232,13 @@ public class DevPanelController : MonoBehaviour
                 }
                 Debug.Log($"<color=orange>[DEV]</color> Forced {bosses.Length} MiniBoss(es) to use Void Zone!");
             }
+        }
+
+        // 2: Skip Wave
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            var wm = FindFirstObjectByType<ITCLASH.Spawners.WaveManager>();
+            if (wm != null) wm.SkipWave();
         }
     }
 }
