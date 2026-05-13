@@ -37,6 +37,16 @@ public class AimTypingSystem : MonoBehaviour
 
     // ───────────────────────────────────────────────────────────
 
+    [Header("─── Highlight Settings ───")]
+    [Tooltip("สีที่จะใช้ไฮไลท์ตอนเล็ง")]
+    [SerializeField] private Color highlightColor = Color.cyan;
+    [Tooltip("ความเข้มของการเรืองแสง (Emission)")]
+    [SerializeField] private float emissionIntensity = 2f;
+    [Tooltip("ความเร็วในการกระพริบ")]
+    [SerializeField] private float flashSpeed = 5f;
+
+    // ───────────────────────────────────────────────────────────
+
     [Header("─── Zoom Settings ───")]
     [Tooltip("FOV ปกติของกล้อง")]
     [SerializeField] private float normalFOV = 60f;
@@ -132,15 +142,25 @@ public class AimTypingSystem : MonoBehaviour
 
     private Camera playerCamera;
 
-    // Raycast
+    // Raycast & Highlighting
     private float scanTimer;
     private GameObject currentHoveredObject;
+    
+    // โครงสร้างข้อมูลสำหรับเก็บ Renderer และค่าสีดั้งเดิม
+    private struct RendererData
+    {
+        public Renderer renderer;
+        public Material[] materials;
+        public Color[] originalColors;
+        public Color[] originalEmissions;
+    }
+    private List<RendererData> targetRenderers = new List<RendererData>();
 
     // States
-    private bool isZooming;        // กำลัง Scope/Zoom อยู่ (กดคลิกขวา)
-    private bool isAimTyping;      // Text Input เปิดอยู่ (เจอ Bullet แล้ว)
+    private bool isZooming;        // กำลัง Scope/Zoom อยู่ (กดคลิกขวา 1)
+    private bool isAimTyping;      // Text Input เปิดอยู่ (กดคลิกขวา 2)
     private GameObject lockedTarget;
-    private Vector3 lockedHitPoint; // บันทึกจุดที่กระสุนชนจริงๆ ไม่ใช่แค่กึ่งกลางวัตถุ
+    private Vector3 lockedHitPoint; 
     private string currentTargetWord;
 
     // Internal
@@ -204,6 +224,7 @@ public class AimTypingSystem : MonoBehaviour
         HandleZoom();
         HandleVignette();
         HandleFocus();
+        HandleHighlightEffect();
     }
 
     // ============================================================
@@ -212,51 +233,145 @@ public class AimTypingSystem : MonoBehaviour
 
     private void HandleRaycast()
     {
-        // ยิงเฉพาะตอน Zoom + ยังไม่ได้เปิด Input
-        if (!isZooming || isAimTyping) return;
+        // ยิง Raycast ตลอดเวลาที่ Zoom แต่ยังไม่ได้ Confirm สแกน
+        if (!isZooming || isAimTyping) 
+        {
+            if (!isAimTyping) SetHoveredObject(null);
+            return;
+        }
 
         scanTimer += Time.unscaledDeltaTime;
         if (scanTimer < scanInterval) return;
         scanTimer = 0f;
 
         Vector3 screenCenter = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
-
-        if (playerCamera == null)
-        {
-            playerCamera = Camera.main;
-            if (playerCamera == null) return;
-        }
-
         Ray ray = playerCamera.ScreenPointToRay(screenCenter);
 
         if (Physics.Raycast(ray, out RaycastHit hit, scanRange, scanLayerMask))
         {
             if (hit.collider.CompareTag("Scannable"))
             {
-                // เจอ Bullet → ล็อกเป้าอัตโนมัติ + เปิด Input
-                if (hit.collider.gameObject != lockedTarget)
-                    LockTarget(hit.collider.gameObject, hit.point);
+                SetHoveredObject(hit.collider.gameObject);
+                lockedHitPoint = hit.point; // อัปเดตจุดที่เล็งไว้ตลอด
                 return;
             }
         }
-
-        // เล็งไม่โดนหรือโดนแต่ไม่ใช่ Scannable → ซ่อน Input
-        if (lockedTarget != null)
-            CancelTyping();
 
         SetHoveredObject(null);
     }
 
     private void SetHoveredObject(GameObject obj)
     {
+        if (currentHoveredObject == obj) return;
+
+        // คืนสีให้วัตถุเก่า
+        ResetHighlight();
+
         currentHoveredObject = obj;
-        bool hasTarget = obj != null;
+        if (obj == null) return;
+
+        // กวาดเอา Renderer ทั้งหมด
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+        foreach (var r in renderers)
+        {
+            if (r == null || r.sharedMaterials == null) continue;
+
+            Material[] mats = r.materials; // สร้าง instances
+            Color[] baseColors = new Color[mats.Length];
+            Color[] emissionColors = new Color[mats.Length];
+
+            for (int i = 0; i < mats.Length; i++)
+            {
+                // เก็บค่าสีหลัก
+                if (mats[i].HasProperty("_Color")) baseColors[i] = mats[i].color;
+                else if (mats[i].HasProperty("_BaseColor")) baseColors[i] = mats[i].GetColor("_BaseColor");
+
+                // เก็บค่าสี Emission
+                if (mats[i].HasProperty("_EmissionColor"))
+                {
+                    emissionColors[i] = mats[i].GetColor("_EmissionColor");
+                    mats[i].EnableKeyword("_EMISSION"); // บังคับเปิด Emission
+                }
+            }
+
+            targetRenderers.Add(new RendererData 
+            { 
+                renderer = r,
+                materials = mats,
+                originalColors = baseColors,
+                originalEmissions = emissionColors
+            });
+        }
 
         if (targetWordLabel != null)
         {
-            targetWordLabel.gameObject.SetActive(hasTarget);
-            targetWordLabel.text = hasTarget ? GetWordFromObject(obj) : "";
+            targetWordLabel.gameObject.SetActive(true);
+            targetWordLabel.text = GetWordFromObject(obj);
         }
+    }
+
+    private void HandleHighlightEffect()
+    {
+        if (currentHoveredObject == null || targetRenderers.Count == 0 || isAimTyping) return;
+
+        // คำนวณจังหวะการกระพริบ (0.0 ถึง 1.0)
+        float pulse = (Mathf.Sin(Time.time * flashSpeed) + 1f) * 0.5f;
+        
+        // ผสม Alpha ของ highlightColor เข้ากับจังหวะกระพริบ
+        float currentAlpha = highlightColor.a * pulse;
+
+        foreach (var data in targetRenderers)
+        {
+            if (data.materials == null) continue;
+
+            for (int i = 0; i < data.materials.Length; i++)
+            {
+                Material m = data.materials[i];
+                if (m == null) continue;
+
+                // 1. ปรับสีหลัก + Alpha
+                Color lerpedColor = Color.Lerp(data.originalColors[i], highlightColor, pulse);
+                lerpedColor.a = Mathf.Lerp(data.originalColors[i].a, highlightColor.a * pulse, pulse);
+                
+                if (m.HasProperty("_Color")) m.color = lerpedColor;
+                else if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", lerpedColor);
+
+                // 2. ปรับ Emission (เรืองแสง) ให้วาบตามจังหวะ pulse
+                if (m.HasProperty("_EmissionColor"))
+                {
+                    Color targetEmission = highlightColor * (emissionIntensity * pulse);
+                    m.SetColor("_EmissionColor", Color.Lerp(data.originalEmissions[i], targetEmission, pulse));
+                }
+            }
+        }
+    }
+
+    private void ResetHighlight()
+    {
+        foreach (var data in targetRenderers)
+        {
+            if (data.renderer == null || data.materials == null) continue;
+
+            for (int i = 0; i < data.materials.Length; i++)
+            {
+                Material m = data.materials[i];
+                if (m == null) continue;
+
+                // คืนค่าสีหลัก
+                if (m.HasProperty("_Color")) m.color = data.originalColors[i];
+                else if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", data.originalColors[i]);
+
+                // คืนค่า Emission
+                if (m.HasProperty("_EmissionColor"))
+                {
+                    m.SetColor("_EmissionColor", data.originalEmissions[i]);
+                }
+            }
+            
+            // คืนค่า sharedMaterials (ทำลาย instances)
+            // data.renderer.sharedMaterials = ... // จริงๆ แค่เคลียร์ลิสต์ก็พอเพราะ r.materials สร้าง instances ใหม่
+        }
+        targetRenderers.Clear();
     }
 
     // ============================================================
@@ -265,26 +380,48 @@ public class AimTypingSystem : MonoBehaviour
 
     private void HandleInput()
     {
-        // ── ESC → ยกเลิกทุกอย่าง ──
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             CancelAll();
             return;
         }
 
+        // ── คลิกซ้าย → ยกเลิกการเล็ง ──
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (isZooming || isAimTyping)
+            {
+                CancelAll();
+                return;
+            }
+        }
+
         // ── คลิกขวา ──
         if (Input.GetMouseButtonDown(1))
         {
-            // ถ้ากำลัง Zoom อยู่ → ออกจาก Zoom
+            // 1. ถ้าพิมพ์อยู่ -> ยกเลิกการพิมพ์ (แต่ยัง Zoom อยู่)
+            if (isAimTyping)
+            {
+                CancelTyping();
+                return;
+            }
+
+            // 2. ถ้ากำลัง Zoom และเล็งวัตถุอยู่ -> กดยืนยันการสแกน (ครั้งที่ 2)
+            if (isZooming && currentHoveredObject != null)
+            {
+                LockTarget(currentHoveredObject, lockedHitPoint);
+                return;
+            }
+
+            // 3. ถ้ากำลัง Zoom แต่ไม่ได้เล็งอะไร -> ออกจากโหมดเล็ง
             if (isZooming)
             {
                 ExitZoom();
                 return;
             }
 
-            // ไม่ได้ Zoom → เข้า Zoom!
+            // 4. ถ้าปกติ -> เข้าโหมดเล็ง (ครั้งที่ 1)
             EnterZoom();
-            return;
         }
 
         // ── Enter → ส่งคำ (เฉพาะตอนพิมพ์อยู่) ──
@@ -571,8 +708,8 @@ public class AimTypingSystem : MonoBehaviour
     /// </summary>
     private string SanitizeName(string raw)
     {
-        // 1. ตัด "(1)", "(23)" ที่ Unity เติมต่อท้ายอัตโนมัติ
-        string result = Regex.Replace(raw, @"\s*\(\d+\)\s*$", "");
+        // 1. ตัดตัวเลขทั้งหมดออกจากชื่อ (เช่น "Enemy123" -> "Enemy", "Table (1)" -> "Table")
+        string result = Regex.Replace(raw, @"\d+", "");
 
         // 2. แปลง Underscore → Space
         result = result.Replace("_", " ");
@@ -580,10 +717,13 @@ public class AimTypingSystem : MonoBehaviour
         // 3. Lowercase และ Trim
         result = result.Trim().ToLower();
 
-        // 4. ลบ Space ซ้ำ
+        // 4. ลบวงเล็บเปล่าๆ ที่อาจเหลือจากการตัดตัวเลข (เช่น "Table ()")
+        result = result.Replace("()", "").Replace("[]", "");
+
+        // 5. ลบ Space ซ้ำ
         result = Regex.Replace(result, @"\s+", " ");
 
-        return result;
+        return result.Trim();
     }
 
     /// <summary>
