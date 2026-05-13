@@ -1,26 +1,36 @@
 using UnityEngine;
 using ITCLASH.Enemies;
 
-public class BlankSkill : BaseAoESkill
+/// <summary>
+/// BlankSkill — โยนภาพวาดเปล่า (ไร้สี) ใส่ศัตรู
+/// ชนแล้วทำให้ศัตรูมองไม่เห็น (Blind) ชั่วคราว ไม่มีดาเมจ ทำเฉพาะ CC
+/// </summary>
+public class BlankSkill : BaseProjectileSkill
 {
-    [Header("Blank Settings")]
+    [Header("─── Blank Settings ───")]
+    [Tooltip("ระยะเวลาที่ศัตรูมองไม่เห็น (วินาที)")]
     public float blindDuration = 4f;
 
-    protected override void ApplyAoEEffect(GameObject enemyObj)
+    protected override void OnHit(Collision collision)
     {
-        EnemyController enemy = enemyObj.GetComponentInParent<EnemyController>();
-        if (enemy == null) return;
-
-        var existing = enemy.GetComponent<BlindEffect>();
-        if (existing != null)
+        EnemyController enemy = collision.gameObject.GetComponentInParent<EnemyController>();
+        if (enemy != null)
         {
-            existing.Refresh(blindDuration);
-        }
-        else
-        {
-            enemy.gameObject.AddComponent<BlindEffect>().Setup(enemy, blindDuration);
+            BlindEffect existing = enemy.GetComponent<BlindEffect>();
+            if (existing != null)
+            {
+                existing.Refresh(blindDuration);
+            }
+            else
+            {
+                enemy.gameObject.AddComponent<BlindEffect>().Setup(enemy, blindDuration);
+            }
+
+            Debug.Log($"[BlankSkill] {collision.gameObject.name} โดน Blank! มองไม่เห็น {blindDuration} วิ");
         }
 
-        Debug.Log($"[BlankSkill] {enemyObj.name} โดนลบการมองเห็น! (Stun {blindDuration} วิ)");
+        SpawnHitVFX(collision.contacts[0].point);
+        PlayHitSFX(transform.position);
+        Destroy(gameObject);
     }
 }

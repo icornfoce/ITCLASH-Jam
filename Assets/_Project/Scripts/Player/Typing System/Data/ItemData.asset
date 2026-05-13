@@ -220,4 +220,13 @@ MonoBehaviour:
     itemSkill: {fileID: 0}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: Blank
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 0}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 0
+    itemSkill: {fileID: 0}
+    skillSpawnOffset: {x: 0, y: 0, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []
