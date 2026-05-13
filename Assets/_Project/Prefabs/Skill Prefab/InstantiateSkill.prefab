@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5867946217203967586}
   - component: {fileID: 989779379434076161}
   m_Layer: 0
-  m_Name: Summon
+  m_Name: InstantiateSkill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
