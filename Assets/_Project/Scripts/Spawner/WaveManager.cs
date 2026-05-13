@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Playables;
+using UnityEngine.SceneManagement;
 using TMPro;
 using ITCLASH.Enemies;
 
@@ -40,10 +41,13 @@ namespace ITCLASH.Spawners
         [Header("UI & Game End")]
         public TextMeshProUGUI waveText;
         public GameObject mainHUD;
-        public GameObject gameEndUI;
         public UnityEvent OnAllWavesCleared;
+        
+        [Header("Scene Transition")]
+        public string nextSceneName;
+        public float sceneLoadDelay = 1f;
 
-        public static bool IsGameFinished { get; private set; } = false;
+        [HideInInspector] public bool IsGameFinished = false;
 
         private bool isTransitioning = false;
         private bool waveReadyToCheck = false;
@@ -51,15 +55,12 @@ namespace ITCLASH.Spawners
 
         void Awake()
         {
-            // Force start from the beginning regardless of Inspector value
             currentWaveIndex = -1;
             IsGameFinished = false;
         }
 
         void Start()
         {
-            if (gameEndUI != null) gameEndUI.SetActive(false);
-            
             // Start the first wave
             NextWave();
         }
@@ -68,11 +69,9 @@ namespace ITCLASH.Spawners
         {
             if (isTransitioning || !waveReadyToCheck || currentWaveIndex < 0 || currentWaveIndex >= waves.Count) return;
 
-            // Check if all normal enemies are dead
             bool enemiesDead = EnemyRegistry.All.Count == 0;
-            
-            // Check if it's a boss wave and if boss is dead
             bool bossDead = true;
+
             if (waves[currentWaveIndex].isBossWave)
             {
                 if (activeBoss != null)
@@ -81,19 +80,13 @@ namespace ITCLASH.Spawners
                     if (miniBoss != null)
                     {
                         bossDead = miniBoss.IsDead;
-                        
-                        // If boss dies, kill all remaining minions/summoned enemies immediately
                         if (bossDead && !enemiesDead)
                         {
                             KillAllEnemiesInRegistry();
-                            enemiesDead = true; // Update flag to proceed to clear sequence
+                            enemiesDead = true;
                         }
                     }
                     else bossDead = false;
-                }
-                else
-                {
-                    bossDead = true; // Boss was destroyed or never spawned
                 }
             }
 
@@ -114,7 +107,6 @@ namespace ITCLASH.Spawners
             }
             else
             {
-                // All waves finished
                 EndGame();
             }
         }
@@ -122,17 +114,9 @@ namespace ITCLASH.Spawners
         private void UpdateWaveUI()
         {
             if (waveText == null) return;
-
             if (currentWaveIndex >= 0 && currentWaveIndex < waves.Count)
             {
-                if (waves[currentWaveIndex].isBossWave)
-                {
-                    waveText.text = "Final Wave";
-                }
-                else
-                {
-                    waveText.text = $"Wave {currentWaveIndex + 1}/{waves.Count}";
-                }
+                waveText.text = waves[currentWaveIndex].isBossWave ? "Final Wave" : $"Wave {currentWaveIndex + 1}/{waves.Count}";
             }
         }
 
@@ -140,15 +124,10 @@ namespace ITCLASH.Spawners
         {
             isTransitioning = true;
             waveReadyToCheck = false;
-            Debug.Log($"[WaveManager] Starting Wave {currentWaveIndex + 1}. IsBossWave: {wave.isBossWave}");
 
-            // 1. Play Start Timeline if exists
             if (wave.startTimeline != null)
             {
-                Debug.Log("[WaveManager] Playing Start Timeline...");
                 wave.startTimeline.Play();
-                
-                // Robust wait logic using duration (Fixed per user suggestion)
                 float timeout = (float)wave.startTimeline.duration + 0.5f;
                 float elapsed = 0f;
                 while (wave.startTimeline.state == PlayState.Playing && elapsed < timeout)
@@ -156,26 +135,16 @@ namespace ITCLASH.Spawners
                     elapsed += Time.unscaledDeltaTime;
                     yield return null;
                 }
-                Debug.Log("[WaveManager] Start Timeline Finished.");
             }
             else if (wave.isBossWave)
             {
-                // Only wait for delay if no timeline
                 yield return new WaitForSecondsRealtime(wave.bossSpawnDelay);
             }
 
-            // 2. Handle Boss Spawn if Boss Wave
-            if (wave.isBossWave)
-            {
-                SpawnBoss(wave);
-            }
-
-            // 3. Spawn Normal Enemies (Now spawns in both normal and boss waves if defined)
+            if (wave.isBossWave) SpawnBoss(wave);
             SpawnWaveEnemies(wave);
 
-            // Wait a bit to ensure enemies have registered and are stable
             yield return new WaitForSecondsRealtime(0.1f);
-
             waveReadyToCheck = true;
             isTransitioning = false;
         }
@@ -183,12 +152,10 @@ namespace ITCLASH.Spawners
         private void SpawnWaveEnemies(EnemyWave wave)
         {
             if (wave.possibleEnemies == null || wave.possibleEnemies.Count == 0) return;
-
             for (int i = 0; i < wave.totalEnemiesToSpawn; i++)
             {
                 GameObject randomPrefab = wave.possibleEnemies[Random.Range(0, wave.possibleEnemies.Count)];
                 Transform spawnPoint = GetRandomGlobalSpawnPoint();
-                
                 if (randomPrefab != null && spawnPoint != null)
                 {
                     Instantiate(randomPrefab, spawnPoint.position, spawnPoint.rotation);
@@ -198,15 +165,9 @@ namespace ITCLASH.Spawners
 
         private void SpawnBoss(EnemyWave wave)
         {
-            if (wave.bossPrefab == null)
-            {
-                Debug.LogWarning($"[WaveManager] Boss Prefab is MISSING in Wave {currentWaveIndex + 1}!");
-                return;
-            }
-
+            if (wave.bossPrefab == null) return;
             Transform spawnPoint = wave.bossSpawnPoint != null ? wave.bossSpawnPoint : GetRandomGlobalSpawnPoint();
             activeBoss = Instantiate(wave.bossPrefab, spawnPoint.position, spawnPoint.rotation);
-            Debug.Log($"[WaveManager] Boss {activeBoss.name} Spawned at {spawnPoint.position}");
         }
 
         private IEnumerator HandleWaveCleared()
@@ -214,15 +175,9 @@ namespace ITCLASH.Spawners
             isTransitioning = true;
             EnemyWave currentWave = waves[currentWaveIndex];
 
-            Debug.Log($"[WaveManager] Wave {currentWaveIndex + 1} Cleared!");
-
-            // Play End Timeline if exists
             if (currentWave.endTimeline != null)
             {
-                Debug.Log("[WaveManager] Playing End Timeline...");
                 currentWave.endTimeline.Play();
-                
-                // Robust wait logic using duration
                 float timeout = (float)currentWave.endTimeline.duration + 0.5f;
                 float elapsed = 0f;
                 while (currentWave.endTimeline.state == PlayState.Playing && elapsed < timeout)
@@ -232,9 +187,7 @@ namespace ITCLASH.Spawners
                 }
             }
 
-            // Small delay before next wave
             yield return new WaitForSecondsRealtime(0.2f);
-
             NextWave();
         }
 
@@ -246,65 +199,41 @@ namespace ITCLASH.Spawners
 
         private void KillAllEnemiesInRegistry()
         {
-            Debug.Log("[WaveManager] Boss defeated! Killing all remaining enemies.");
             var enemies = new List<EnemyController>(EnemyRegistry.All);
-            foreach (var e in enemies)
-            {
-                if (e != null) e.ApplyDamage(999999f); // Kill instantly
-            }
+            foreach (var e in enemies) if (e != null) e.ApplyDamage(999999f);
         }
 
-        /// <summary>
-        /// Forces the current wave to end by killing all registered enemies.
-        /// Called by DevPanelController.
-        /// </summary>
         public void SkipWave()
         {
             if (isTransitioning) return;
-
-            Debug.Log("<color=orange>[DEV]</color> Skipping Wave...");
-            
-            // Kill all normal enemies
             var enemies = new List<EnemyController>(EnemyRegistry.All);
-            foreach (var e in enemies)
-            {
-                if (e != null) e.ApplyDamage(999999f); // Kill instantly
-            }
-
-            // Kill boss if active
+            foreach (var e in enemies) if (e != null) e.ApplyDamage(999999f);
             if (activeBoss != null)
             {
                 var miniBoss = activeBoss.GetComponent<MiniBoss>();
-                if (miniBoss != null)
-                {
-                    miniBoss.ApplyDamage(999999f);
-                }
-                else 
-                {
-                    Destroy(activeBoss);
-                }
+                if (miniBoss != null) miniBoss.ApplyDamage(999999f);
+                else Destroy(activeBoss);
             }
         }
 
         private void EndGame()
         {
-            Debug.Log("[WaveManager] All Waves Cleared! Showing Game End UI.");
-            
-            // Hide All Game UI
+            IsGameFinished = true;
             if (waveText != null) waveText.gameObject.SetActive(false);
             if (mainHUD != null) mainHUD.SetActive(false);
-
-            // Show End UI
-            if (gameEndUI != null) gameEndUI.SetActive(true);
             
             OnAllWavesCleared?.Invoke();
-            IsGameFinished = true;
-            
-            // Unlock cursor for UI interaction
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
 
-            isTransitioning = false;
+            if (!string.IsNullOrEmpty(nextSceneName))
+            {
+                StartCoroutine(LoadNextScene());
+            }
+        }
+
+        private IEnumerator LoadNextScene()
+        {
+            yield return new WaitForSecondsRealtime(sceneLoadDelay);
+            SceneManager.LoadScene(nextSceneName);
         }
     }
 }

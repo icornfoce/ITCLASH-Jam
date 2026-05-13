@@ -22,8 +22,6 @@ public class DevPanelController : MonoBehaviour
 
     private void Update()
     {
-        if (ITCLASH.Spawners.WaveManager.IsGameFinished) return;
-
         // ------------------------------------------------
         // Toggle System (F)
         // ------------------------------------------------
@@ -237,8 +235,8 @@ public class DevPanelController : MonoBehaviour
         // 2: Skip Wave
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            var wm = FindFirstObjectByType<ITCLASH.Spawners.WaveManager>();
-            if (wm != null) wm.SkipWave();
+            var manager = FindFirstObjectByType<ITCLASH.Spawners.WaveManager>();
+            if (manager != null) manager.SkipWave();
         }
     }
 }

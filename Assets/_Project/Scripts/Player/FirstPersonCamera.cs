@@ -19,8 +19,6 @@ public class FirstPersonCamera : MonoBehaviour
 
     void Update()
     {
-        if (ITCLASH.Spawners.WaveManager.IsGameFinished) return;
-        
         HandleLook();
     }
 
