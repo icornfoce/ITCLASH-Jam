@@ -1966,12 +1966,10 @@ MonoBehaviour:
   currentWaveIndex: -1
   waveText: {fileID: 0}
   mainHUD: {fileID: 0}
+  gameEndUI: {fileID: 0}
   OnAllWavesCleared:
     m_PersistentCalls:
       m_Calls: []
-  nextSceneName: 
-  sceneLoadDelay: 1
-  IsGameFinished: 0
 --- !u!4 &1054214833
 Transform:
   m_ObjectHideFlags: 0
@@ -5333,14 +5331,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1637611068050236810, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
-      propertyPath: m_Size
-      value: 0.9999811
-      objectReference: {fileID: 0}
-    - target: {fileID: 1637611068050236810, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
-      propertyPath: m_Value
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1974642726046985540, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -5369,20 +5359,12 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5672242021307738278, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
-      propertyPath: m_Size
-      value: 0.9999993
-      objectReference: {fileID: 0}
     - target: {fileID: 5820855890315066613, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5820855890315066613, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5820855890315066613, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
-      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5874581184164456633, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
@@ -5395,11 +5377,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9054883505151110519, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00069610303
+      value: -0.0007957216
       objectReference: {fileID: 0}
     - target: {fileID: 9054883505151110519, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00010621079
+      value: 0.00006892496
       objectReference: {fileID: 0}
     - target: {fileID: 9134534653275662834, guid: 4105e266ebc74c543ae240dcd0d3d0e7, type: 3}
       propertyPath: m_AnchorMax.x
