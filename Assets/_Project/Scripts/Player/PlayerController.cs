@@ -34,9 +34,7 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         currentHealth = maxHealth;
         
-        // Lock the cursor to the center of the screen
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // (ย้ายระบบเมาส์ออกไปอยู่ในสคริปต์แยก CursorUnlocker แล้วครับ)
 
         // ถ้าไม่ได้ลากใส่ ให้พยายามหา MainCamera อัตโนมัติ
         if (mainCamera == null && Camera.main != null)
