@@ -49,4 +49,4 @@ MonoBehaviour:
   buffDuration: 5
   buffAuraVFX: {fileID: 0}
   warpDistance: 15
-  warpVFX: {fileID: 0}
+  warpVFX: {fileID: 56518101734528211, guid: c10d8f32993c1f94792ee90ed8431d42, type: 3}

@@ -129,7 +129,7 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 0
-  explosionVFX: {fileID: 0}
+  explosionVFX: {fileID: 100008, guid: baa91f92b8af7ea43af785cbae01437e, type: 3}
   explosionSFX: {fileID: 8300000, guid: 8a9b20b5aa1a5884d9fb90ed1761b744, type: 3}
   damage: 80
   slowDuration: 5
