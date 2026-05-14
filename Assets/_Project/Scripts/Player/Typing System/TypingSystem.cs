@@ -475,16 +475,13 @@ public class TypingSystem : MonoBehaviour
         // สร้างไอเทมโดยให้มันเป็นลูกของ playerTransform เพื่อให้มันเคลื่อนที่ตาม Player
         GameObject obj = Instantiate(item.itemPrefab, playerTransform);
         
-        // ─── FIX: ป้องกันไอเทมหายถ้าไม่ได้ตั้งค่าขนาด (Size) ใน Inspector ───
-        Vector3 finalSize = item.itemSize;
-        if (finalSize == Vector3.zero) finalSize = Vector3.one;
-        obj.transform.localScale = finalSize;
+        // เราจะไม่ปรับขนาด localScale ในโค้ดแล้ว เพื่อให้ใช้ขนาดดั้งเดิมของ Prefab ตามที่ USER ต้องการ
         
         // กำหนดตำแหน่ง local ทันที (Update จะคอยคุมตำแหน่ง floating ต่อ)
         obj.transform.localPosition = new Vector3(
             relativeOffset.x, 
             relativeOffset.y, 
-            relativeOffset.z - (finalSize.z * 0.5f)
+            relativeOffset.z - (item.itemSize.z * 0.5f)
         );
         
         obj.transform.localRotation = Quaternion.identity;
