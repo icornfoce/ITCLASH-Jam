@@ -137,6 +137,7 @@ MonoBehaviour:
   slowDuration: 3
   slowPercent: 0.5
   fireVFX: {fileID: 3226506910322988314, guid: eccbc655050af0b4f81d8db39f84a58e, type: 3}
+  bulletVFX: {fileID: 3226506910322988314, guid: eccbc655050af0b4f81d8db39f84a58e, type: 3}
 --- !u!54 &-6727191791846881598
 Rigidbody:
   m_ObjectHideFlags: 0

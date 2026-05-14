@@ -9,6 +9,7 @@ public class LanternSkill : BaseProjectileSkill
     public float slowDuration = 3f;
     [Range(0f, 1f)] public float slowPercent = 0.5f;
     public GameObject fireVFX;
+    public GameObject bulletVFX;
 
     protected override void OnHit(Collision collision)
     {

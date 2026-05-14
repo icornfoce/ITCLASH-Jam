@@ -7,6 +7,17 @@ public class RomanticSkill : BaseProjectileSkill
     [Header("Romantic Settings")]
     public float stunDuration = 3f;
     public float dpsDamage = 5f;
+    public GameObject bulletVFX;
+    private GameObject spawnedBulletVFX;
+
+    public override void Activate(Transform playerTransform)
+    {
+        base.Activate(playerTransform);
+        if (bulletVFX != null)
+        {
+            spawnedBulletVFX = Instantiate(bulletVFX, transform.position, transform.rotation, transform);
+        }
+    }
 
     protected override void OnHit(Collision collision)
     {

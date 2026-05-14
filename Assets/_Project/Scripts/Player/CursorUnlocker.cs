@@ -52,6 +52,13 @@ public class CursorUnlocker : MonoBehaviour
         {
             ApplyLock();
         }
+
+        // 3. เมื่อคลิกที่หน้าจอเกม และเมาส์ยังไม่ล็อค -> ให้ล็อคกลับมา (กันพลาดตอน Alt-Tab)
+        if (Input.GetMouseButtonDown(0) && Cursor.lockState != CursorLockMode.Locked)
+        {
+            // เช็คว่าไม่ได้คลิกโดน UI (Optional: ถ้ามีระบบ UI เยอะๆ อาจต้องเช็ค EventSystem)
+            ApplyLock();
+        }
     }
 
     public void LockCursor()

@@ -45,11 +45,13 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        /* 
         // บังคับให้ตัวละครหันหน้า (แกน Y) ไปทางเดียวกับที่กล้องมองเสมอ
         if (mainCamera != null)
         {
             transform.rotation = Quaternion.Euler(0f, mainCamera.eulerAngles.y, 0f);
         }
+        */
 
         HandleMovement();
     }
