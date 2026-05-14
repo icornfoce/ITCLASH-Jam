@@ -22,8 +22,11 @@ namespace ITCLASH.Enemies
         public EnemyAudioConfig Audio => audioConfig;
         public EnemyVFXConfig VFX => vfxConfig;
 
-        [Header("Anchors (optional)")]
+        [Header("Anchors & Visuals")]
         public Transform visualTransform;
+        [Tooltip("องศาที่ต้องการชดเชยให้โมเดล (เช่น ถ้าหน้ากากหันข้าง ให้ปรับตรงนี้)")]
+        public Vector3 visualRotationOffset;
+        
         [SerializeField] Transform muzzlePoint;
         [SerializeField] Transform orbSpawnPoint;
         [SerializeField] Transform dashImpactPoint;
@@ -32,13 +35,13 @@ namespace ITCLASH.Enemies
         public Transform OrbSpawnPoint => orbSpawnPoint != null ? orbSpawnPoint : transform;
         public Transform DashImpactPoint => dashImpactPoint != null ? dashImpactPoint : transform;
 
-        [Header("Floating & Bobbing")]
+        [Header("Floating & Behavior")]
         public bool alwaysFacePlayer = true;
         public bool useFloating = true;
         public float floatHeight = 2.5f;
         public float bobSpeed = 1.5f;
         public float bobAmount = 0.2f;
-        
+
         [Header("Events")]
         public UnityEvent<float> OnDamaged = new UnityEvent<float>();
         public UnityEvent<float> OnHealed  = new UnityEvent<float>();
@@ -83,7 +86,14 @@ namespace ITCLASH.Enemies
         {
             Agent = GetComponent<NavMeshAgent>();
             Anim  = GetComponentInChildren<Animator>();
-            useFloating = true; 
+
+            // ถ้าลืมลากใส่ใน Inspector ให้ลองหาตัวลูกมาใส่ให้เองครับ
+            if (visualTransform == null)
+            {
+                visualTransform = transform.Find("Visual");
+                if (visualTransform == null) visualTransform = transform.Find("Model");
+                if (visualTransform == null && transform.childCount > 0) visualTransform = transform.GetChild(0);
+            }
 
             if (stats != null)
             {
@@ -96,12 +106,13 @@ namespace ITCLASH.Enemies
             audioConfig.Initialize(gameObject);
             StateMachine = new EnemyStateMachine();
             
-            if (Agent != null && alwaysFacePlayer) Agent.updateRotation = false;
+            // ปิดระบบหมุนอัตโนมัติของ Agent เพื่อให้โค้ดเราคุมเอง 100%
+            if (Agent != null) Agent.updateRotation = false;
         }
 
         protected virtual void Start()
         {
-            CacheReferences();
+            FindPlayer();
             vfxConfig.SpawnSpawnFx(transform);
             audioConfig.PlaySpawn();
             BuildStateMachine();
@@ -115,7 +126,7 @@ namespace ITCLASH.Enemies
             isSpawning = false;
         }
 
-        void CacheReferences()
+        void FindPlayer()
         {
             var go = GameObject.FindGameObjectWithTag("Player");
             if (go != null)
@@ -130,12 +141,24 @@ namespace ITCLASH.Enemies
 
         protected virtual void Update()
         {
-            if (PlayerTransform == null) CacheReferences();
+            if (PlayerTransform == null) FindPlayer();
+            
             if (!isDead && !isSpawning) StateMachine?.Tick(Time.deltaTime);
             HandleKnockback();
 
-            if (alwaysFacePlayer && !isDead && PlayerTransform != null) FacePlayer(Time.deltaTime);
-            if (useFloating && !isDead) HandleFloating();
+            // ── ระบบหันหน้าใหม่ ──
+            if (!isDead)
+            {
+                if (alwaysFacePlayer && PlayerTransform != null)
+                {
+                    FacePlayer(Time.deltaTime);
+                }
+
+                if (useFloating)
+                {
+                    HandleFloating();
+                }
+            }
 
             if (Anim != null)
             {
@@ -144,14 +167,31 @@ namespace ITCLASH.Enemies
             }
         }
 
+        public void FacePlayer(float dt)
+        {
+            if (visualTransform == null || PlayerTransform == null) return;
+
+            // 1. หาิศทางจากตัวมอนสเตอร์ไปยัง Player
+            Vector3 direction = PlayerTransform.position - visualTransform.position;
+            direction.y = 0; // ล็อคแกน Y ไม่ให้หน้ากากเงยขึ้นลง
+
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                // 2. คำนวณการหมุน (World Rotation) แบบเดียวกับบอส
+                // โดยเอาทิศทางมาคูณกับ Offset ที่เราตั้งไว้
+                Quaternion targetRot = Quaternion.LookRotation(direction) * Quaternion.Euler(visualRotationOffset);
+                
+                // 3. หมุนตัวลูก (Visual) โดยตรง
+                // ใช้ RotateTowards เพื่อให้การหันดูนุ่มนวล (หรือจะใช้ = ไปเลยถ้าอยากให้หันทันที)
+                float step = (stats != null ? stats.turnSpeedDeg : 360f) * dt;
+                visualTransform.rotation = Quaternion.RotateTowards(visualTransform.rotation, targetRot, step);
+            }
+        }
+
         private void HandleFloating()
         {
             if (Agent == null) return;
-
-            // ระบบลอยแบบดั้งเดิม: ใช้แค่ baseOffset และการแกว่ง (Bobbing)
             float targetHeight = floatHeight + (Mathf.Sin(Time.time * bobSpeed) * bobAmount);
-            
-            // ค่อยๆ Lerp ค่า baseOffset
             Agent.baseOffset = Mathf.Lerp(Agent.baseOffset, targetHeight, Time.deltaTime * 2f);
         }
 
@@ -215,16 +255,6 @@ namespace ITCLASH.Enemies
         {
             if (PlayerTransform == null) return float.PositiveInfinity;
             return Vector3.Distance(transform.position, PlayerTransform.position);
-        }
-
-        public void FacePlayer(float dt)
-        {
-            if (PlayerTransform == null || stats == null) return;
-            Vector3 to = PlayerTransform.position - transform.position;
-            to.y = 0f;
-            if (to.sqrMagnitude < 0.0001f) return;
-            Quaternion target = Quaternion.LookRotation(to);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, target, stats.turnSpeedDeg * dt);
         }
     }
 }

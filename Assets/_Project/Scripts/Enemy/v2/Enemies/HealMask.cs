@@ -26,7 +26,6 @@ namespace ITCLASH.Enemies
         public float spacingFromAllies = 3f;   
 
         [Header("Orientation & Float")]
-        public Vector3 _rotationOffset;
         public Vector2 _randomHeightRange = new Vector2(2.5f, 4.5f); 
 
         [Header("Wall Avoidance")]
@@ -50,10 +49,9 @@ namespace ITCLASH.Enemies
 
         protected override void Update()
         {
+            base.Update();
             if (PlayerTransform == null || !IsAlive || isSpawning) return;
 
-            // ปล่อยให้ base.Update() ใน EnemyController เป็นคนจัดการ HandleFloating เอง
-            base.Update();
 
             // --- Wall Avoidance Check (8-Direction Scan) ---
             if (HandleWallAvoidance()) return;
@@ -61,8 +59,8 @@ namespace ITCLASH.Enemies
             List<EnemyController> alliesToHeal = FindLowestHPAllies(maxTargets);
             if (alliesToHeal.Count > 0)
             {
-                currentLookTarget = alliesToHeal[0];
-                FaceTarget(currentLookTarget.transform.position + Vector3.up);
+                // การหันหน้าจะถูกจัดการโดยระบบอัตโนมัติใน base.Update()
+
                 float distToAlly = Vector3.Distance(transform.position, currentLookTarget.transform.position);
                 if (distToAlly <= healRange)
                 {
@@ -73,7 +71,6 @@ namespace ITCLASH.Enemies
             }
             else
             {
-                FaceTarget(PlayerTransform.position + Vector3.up * 1.5f);
                 MaintainBacklinePosition();
             }
         }
@@ -118,7 +115,7 @@ namespace ITCLASH.Enemies
             if (bestDir == Vector3.zero) return true;
 
             bestDir.y = 0;
-            Quaternion targetRot = Quaternion.LookRotation(bestDir) * Quaternion.Euler(_rotationOffset);
+            Quaternion targetRot = Quaternion.LookRotation(bestDir);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, wallAvoidTurnSpeed * Time.deltaTime);
 
             Vector3 avoidWorldPos = transform.position + bestDir * 4f;
@@ -186,14 +183,7 @@ namespace ITCLASH.Enemies
             mover.Setup(target, healAmount);
         }
 
-        private void FaceTarget(Vector3 pos)
-        {
-            Vector3 to = pos - transform.position;
-            if (to.sqrMagnitude < 0.01f) return;
-            Quaternion targetRot = Quaternion.LookRotation(to.normalized);
-            targetRot *= Quaternion.Euler(_rotationOffset);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, stats.turnSpeedDeg * Time.deltaTime);
-        }
+
     }
 
     public class HealProjectileMover : MonoBehaviour

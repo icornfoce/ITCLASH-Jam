@@ -53,15 +53,15 @@ namespace ITCLASH.Enemies
 
         protected override void Update()
         {
+            base.Update(); // เรียกตัวแม่ก่อนเสมอเพื่อหา Player และหันหน้า
             if (PlayerTransform == null || !IsAlive || isSpawning) return;
 
-            // ให้คลาสแม่จัดการระบบลอย (HandleFloating)
-            base.Update();
 
             // --- Wall Avoidance Check (8-Direction Scan) ---
             if (HandleWallAvoidance()) return;
 
-            FaceTarget(PlayerTransform.position + Vector3.up * 1.5f);
+            // การหันหน้าจะใช้ระบบของ base.Update() แทนเพื่อให้เสถียรขึ้น
+
 
             float dist = DistanceToPlayer();
             if (dist <= attackRange && Time.time >= nextAttackTime && HasLineOfSight())
@@ -177,14 +177,7 @@ namespace ITCLASH.Enemies
             mover.Setup(damage, projectileSpeed);
         }
 
-        private void FaceTarget(Vector3 pos)
-        {
-            Vector3 to = pos - transform.position;
-            if (to.sqrMagnitude < 0.01f) return;
-            Quaternion targetRot = Quaternion.LookRotation(to.normalized);
-            targetRot *= Quaternion.Euler(_rotationOffset);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, stats.turnSpeedDeg * Time.deltaTime);
-        }
+
 
         private bool HasLineOfSight()
         {

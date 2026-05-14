@@ -1,55 +1,58 @@
 using UnityEngine;
-using System.Collections;
 
 public class BossSpawnProjectile : MonoBehaviour
 {
     private GameObject minionPrefab;
-    private Vector3 targetPosition;
-    private float travelDuration;
+    private Transform targetTransform;
+    private float speed = 20f;
     private GameObject arrivalVFX;
+    private bool isInitialized = false;
 
-    public void Launch(GameObject prefab, Vector3 target, float duration, GameObject vfx = null)
+    // ฟังก์ชันสั่งยิง (รับเป็น Transform แทนเพื่อให้มันพุ่งหาจุดนั้นแม่นๆ)
+    public void Launch(GameObject prefab, Transform target, float moveSpeed, GameObject vfx = null)
     {
         minionPrefab = prefab;
-        targetPosition = target;
-        travelDuration = duration;
+        targetTransform = target;
+        speed = moveSpeed > 0 ? moveSpeed : 20f;
         arrivalVFX = vfx;
-        StartCoroutine(TravelRoutine());
+        isInitialized = true;
+        
+        Debug.Log($"[Projectile] Simple Launch towards: {target.name}");
     }
 
-    private IEnumerator TravelRoutine()
+    private void Update()
     {
-        Vector3 startPos = transform.position;
-        float elapsed = 0f;
+        if (!isInitialized || targetTransform == null) return;
 
-        while (elapsed < travelDuration)
+        // พุ่งเข้าหาจุดเกิดตรงๆ
+        Vector3 targetPos = targetTransform.position;
+        transform.position = Vector3.MoveTowards(transform.position, targetPos, speed * Time.deltaTime);
+        
+        // หันหัวไปทางเป้าหมาย
+        transform.LookAt(targetPos);
+
+        // ถ้าถึงจุดหมาย (ระยะห่างน้อยกว่า 0.2 เมตร)
+        if (Vector3.Distance(transform.position, targetPos) < 0.2f)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / travelDuration;
-            
-            // Parabola arch effect
-            float height = Mathf.Sin(t * Mathf.PI) * 5f; 
-            transform.position = Vector3.Lerp(startPos, targetPosition, t) + Vector3.up * height;
-            
-            if (targetPosition - transform.position != Vector3.zero)
-                transform.rotation = Quaternion.LookRotation((targetPosition + Vector3.up * height) - transform.position);
-
-            yield return null;
+            SpawnMinion();
         }
+    }
 
-        transform.position = targetPosition;
-
-        // On Arrival
+    private void SpawnMinion()
+    {
+        Debug.Log("[Projectile] Reached target, spawning minion.");
+        
         if (arrivalVFX != null)
         {
-            Instantiate(arrivalVFX, targetPosition, Quaternion.identity);
+            Instantiate(arrivalVFX, transform.position, Quaternion.identity);
         }
 
         if (minionPrefab != null)
         {
-            Instantiate(minionPrefab, targetPosition, Quaternion.identity);
+            Instantiate(minionPrefab, transform.position, Quaternion.identity);
         }
 
+        // ทำลายตัวเองทิ้ง
         Destroy(gameObject);
     }
 }

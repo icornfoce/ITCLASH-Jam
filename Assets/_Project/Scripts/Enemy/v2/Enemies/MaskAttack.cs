@@ -28,8 +28,6 @@ namespace ITCLASH.Enemies
         [Header("Targeting (Optional)")]
         public Transform targetTransform;        
 
-        [Header("Orientation Settings")]
-        public Vector3 _rotationOffset = new Vector3(0, 0, 0); 
 
         [Header("Random Height")]
         public Vector2 _randomHeightRange = new Vector2(1.5f, 3.5f); 
@@ -62,10 +60,9 @@ namespace ITCLASH.Enemies
 
         protected override void Update()
         {
+            base.Update();
             if (PlayerTransform == null || !IsAlive || isSpawning) return;
 
-            // ให้คลาสแม่จัดการระบบลอย (HandleFloating)
-            base.Update();
 
             float dist = DistanceToPlayer();
 
@@ -87,18 +84,9 @@ namespace ITCLASH.Enemies
                     HandleCooldown(dist);
                     break;
             }
-            CustomFacePlayer(Time.deltaTime);
         }
 
-        private void CustomFacePlayer(float dt)
-        {
-            if (PlayerTransform == null || stats == null) return;
-            Vector3 target = PlayerTransform.position + Vector3.up * 1.5f;
-            Vector3 dir = (target - transform.position).normalized;
-            Quaternion targetRot = Quaternion.LookRotation(dir);
-            targetRot *= Quaternion.Euler(_rotationOffset);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, stats.turnSpeedDeg * dt);
-        }
+
 
         private bool HasLineOfSight()
         {
@@ -304,7 +292,7 @@ namespace ITCLASH.Enemies
 
             // หันไปทิศที่โล่ง
             bestDir.y = 0;
-            Quaternion targetRot = Quaternion.LookRotation(bestDir) * Quaternion.Euler(_rotationOffset);
+            Quaternion targetRot = Quaternion.LookRotation(bestDir);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, wallAvoidTurnSpeed * Time.deltaTime);
 
             // หาจุด NavMesh ที่ตรงกับทิศที่โล่ง (ยิงเลเซอร์ลงพื้น)

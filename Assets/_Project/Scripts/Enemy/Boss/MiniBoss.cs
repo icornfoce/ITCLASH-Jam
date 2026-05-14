@@ -157,35 +157,53 @@ public class MiniBoss : MonoBehaviour
     private IEnumerator SpawnMinionsThresholdSequence(BossWaveThreshold waveData)
     {
         isInvulnerable = true;
+        Debug.Log($"<color=cyan>[MiniBoss]</color> Starting Wave: {waveData.waveName} (Spawn Count: {waveData.spawnCount})");
+        
         PlaySound(spawnAlertSFX);
         if (spawnAlertVFX != null) Instantiate(spawnAlertVFX, transform.position, Quaternion.identity);
+        
         yield return new WaitForSeconds(1.0f);
 
-        // เลิกใช้ WaveManager และใช้จุดเกิดที่เรากำหนดเอง (fixedSpawnPoints)
         if (fixedSpawnPoints != null && fixedSpawnPoints.Count > 0 && waveData.enemyPrefabs != null && waveData.enemyPrefabs.Count > 0)
         {
             for (int i = 0; i < waveData.spawnCount; i++)
             {
-                // เลือกจุดเกิดแบบวนลูป (Round-robin) เพื่อให้กระจายตัวตามจุดที่กำหนด
                 Transform targetPoint = fixedSpawnPoints[nextSpawnPointIndex];
                 nextSpawnPointIndex = (nextSpawnPointIndex + 1) % fixedSpawnPoints.Count;
 
+                GameObject prefabToSpawn = waveData.enemyPrefabs[Random.Range(0, waveData.enemyPrefabs.Count)];
+                
                 if (spawnProjectilePrefab != null)
                 {
-                    GameObject projObj = Instantiate(spawnProjectilePrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
+                    // วิธีที่ 1: ยิงกระสุนไปที่จุดเกิด
+                    GameObject projObj = Instantiate(spawnProjectilePrefab, transform.position + Vector3.up * 3f, Quaternion.identity);
+                    
+                    Collider bossCol = GetComponent<Collider>();
+                    Collider projCol = projObj.GetComponent<Collider>();
+                    if (bossCol != null && projCol != null) Physics.IgnoreCollision(bossCol, projCol);
+
                     BossSpawnProjectile proj = projObj.GetComponent<BossSpawnProjectile>();
                     if (proj != null)
                     {
-                        GameObject prefabToSpawn = waveData.enemyPrefabs[Random.Range(0, waveData.enemyPrefabs.Count)];
-                        proj.Launch(prefabToSpawn, targetPoint.position, 1.2f, ultimateCastVFX != null ? ultimateCastVFX.gameObject : null);
+                        Debug.Log($"[MiniBoss] Shooting towards Transform: {targetPoint.name}");
+                        // ส่ง targetPoint (Transform) ไปตรงๆ เลยครับ
+                        proj.Launch(prefabToSpawn, targetPoint, 25f, ultimateCastVFX != null ? ultimateCastVFX.gameObject : null);
                     }
                 }
-                yield return new WaitForSeconds(0.2f);
+                else
+                {
+                    // วิธีที่ 2: เสกลงจุดเกิดตรงๆ (Fallback ถ้าไม่มีพรีแฟบกระสุน)
+                    Debug.Log($"[MiniBoss] No projectile prefab, spawning {prefabToSpawn.name} directly at {targetPoint.position}");
+                    Instantiate(prefabToSpawn, targetPoint.position, Quaternion.identity);
+                    if (ultimateCastVFX != null) Instantiate(ultimateCastVFX, targetPoint.position, Quaternion.identity);
+                }
+                
+                yield return new WaitForSeconds(0.3f);
             }
         }
         else
         {
-            Debug.LogWarning($"[{name}] Missing fixedSpawnPoints or EnemyPrefabs! No minions spawned.");
+            Debug.LogError($"<color=red>[MiniBoss]</color> CANNOT SPAWN! Please check if 'fixedSpawnPoints' list is empty or 'Enemy Prefabs' in the wave is empty!");
         }
         
         yield return new WaitForSeconds(1.5f);
