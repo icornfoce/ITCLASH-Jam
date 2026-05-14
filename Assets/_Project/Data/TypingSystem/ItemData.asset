@@ -169,10 +169,10 @@ MonoBehaviour:
   - itemName: money
     description: 
     icon: {fileID: 0}
-    itemPrefab: {fileID: 0}
+    itemPrefab: {fileID: 5141197222763173585, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 0
-    itemSkill: {fileID: 0}
+    itemSkill: {fileID: 5141197222763173585, guid: b9056d2856a74e04dbea490d28c19fba, type: 3}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: floor
@@ -187,28 +187,19 @@ MonoBehaviour:
   - itemName: Cataclysm
     description: 
     icon: {fileID: 0}
-    itemPrefab: {fileID: 0}
+    itemPrefab: {fileID: 4096322353786188216, guid: 22b2af70cddb6634697e43b08b3fa42d, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 0
-    itemSkill: {fileID: 0}
+    itemSkill: {fileID: 4096322353786188216, guid: 26b2111aa1aee9343bf623123ed032f7, type: 3}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: fountain
     description: 
     icon: {fileID: 0}
-    itemPrefab: {fileID: 0}
+    itemPrefab: {fileID: 1100478620616568088, guid: 9db3f089b2b8eb94eb90ea7e5cc8c0d0, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 1
-    itemSkill: {fileID: 0}
-    skillSpawnOffset: {x: 0, y: 0, z: 1}
-    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
-  - itemName: Socrates
-    description: 
-    icon: {fileID: 0}
-    itemPrefab: {fileID: 0}
-    itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 0
-    itemSkill: {fileID: 0}
+    itemSkill: {fileID: 1100478620616568088, guid: 5cfdd8d000e4d114191d64791f0c271a, type: 3}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: Shelfter
@@ -217,7 +208,7 @@ MonoBehaviour:
     itemPrefab: {fileID: 0}
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 0
-    itemSkill: {fileID: 0}
+    itemSkill: {fileID: 5457279990287378179, guid: e67ea2d23e0462c4ca38abf721c78f87, type: 3}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: painting
@@ -232,19 +223,19 @@ MonoBehaviour:
   - itemName: socretes
     description: 
     icon: {fileID: 0}
-    itemPrefab: {fileID: 0}
+    itemPrefab: {fileID: 6368185492814708546, guid: 558499288734e6d42bab425bd359e9b5, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 1
-    itemSkill: {fileID: 0}
+    itemSkill: {fileID: 6368185492814708546, guid: d184f2676cc196a4ab75f621505c8f5b, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: display-man
     description: 
     icon: {fileID: 0}
-    itemPrefab: {fileID: 0}
+    itemPrefab: {fileID: 1284868079160593247, guid: 52d3a92256cda3c4b99c093f74e463b2, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 0
-    itemSkill: {fileID: 0}
+    itemSkill: {fileID: 1284868079160593247, guid: 0e0b93972fc39314783011c8986d8ab6, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []

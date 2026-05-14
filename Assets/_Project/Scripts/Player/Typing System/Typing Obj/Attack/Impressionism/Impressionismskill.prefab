@@ -74,7 +74,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 47c8a087b24bd45439708c5ed9bfd962, type: 2}
     - target: {fileID: 919132149155446097, guid: 3bbee1e40e0274c44ba5a3eb03f9f9af, type: 3}
       propertyPath: m_Name
-      value: Painting_1skill
+      value: Impressionismskill
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -104,13 +104,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d5c97b80bb9931488593a944cd21eb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImpressionismSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: f84c1f35b7f85ae45a4764b2175b4083, type: 3}
   voiceVolume: 1
   burstDamage: 50
   slowPercent: 0.6
   slowDuration: 4
   healAmount: 30
   yellowKnockbackForce: 25
+  shootPoint: {fileID: 0}
   beamRange: 50
   beamDuration: 0.4
   beamWidth: 0.15
