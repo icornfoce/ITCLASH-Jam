@@ -148,9 +148,9 @@ namespace ITCLASH.Enemies
             if (targetTransform != null) dashTargetPos = targetTransform.position;
             else
             {
-                dashTargetPos = PlayerTransform.position + Vector3.up * 1.5f;
-                var playerCtrl = PlayerTransform.GetComponent<PlayerController>();
-                if (playerCtrl != null && playerCtrl.mainCamera != null) dashTargetPos = playerCtrl.mainCamera.position;
+                // เล็งไปที่กล้องหลักเสมอ เพื่อให้พุ่งใส่หน้าผู้เล่น
+                if (Camera.main != null) dashTargetPos = Camera.main.transform.position;
+                else dashTargetPos = PlayerTransform.position + Vector3.up * 1.5f;
             }
             currentState = MaskState.Dashing;
             dashStartTime = Time.time;

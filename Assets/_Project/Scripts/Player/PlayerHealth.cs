@@ -6,6 +6,8 @@ public class PlayerHealth : MonoBehaviour
     [Header("Health Settings")]
     public float maxHealth = 100f;
     [SerializeField] private float currentHealth;
+    public bool isGodMode = false; // ติ๊กเพื่อเป็นอมตะ
+
 
     [Header("Events")]
     // Event that passes the normalized health (0.0 to 1.0) useful for UI health bars
@@ -111,7 +113,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(float damageAmount)
     {
-        if (isDead) return;
+        if (isDead || isGodMode) return;
 
         currentHealth -= damageAmount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);

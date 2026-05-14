@@ -160,7 +160,8 @@ namespace ITCLASH.Enemies
             if (projectilePrefab == null) return;
             nextAttackTime = Time.time + attackCooldown;
             Vector3 spawnPos = shootPoint != null ? shootPoint.position : transform.position;
-            Vector3 targetPos = targetTransform != null ? targetTransform.position : PlayerTransform.position + Vector3.up * 1.2f;
+            Vector3 targetPos = targetTransform != null ? targetTransform.position : 
+                (Camera.main != null ? Camera.main.transform.position : PlayerTransform.position + Vector3.up * 1.5f);
             Vector3 fireDir = (targetPos - spawnPos).normalized;
             float roll = Random.Range(0f, 100f);
             if (roll < randomChance)
@@ -183,7 +184,7 @@ namespace ITCLASH.Enemies
         {
             if (PlayerTransform == null) return false;
             Vector3 origin = transform.position + Vector3.up * 1.0f;
-            Vector3 target = PlayerTransform.position + Vector3.up * 1.5f;
+            Vector3 target = Camera.main != null ? Camera.main.transform.position : PlayerTransform.position + Vector3.up * 1.5f;
             Vector3 dir = (target - origin).normalized;
             float dist = Vector3.Distance(origin, target);
             int mask = ~LayerMask.GetMask("Enemy", "Projectile", "Ignore Raycast");

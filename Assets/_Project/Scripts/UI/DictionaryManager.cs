@@ -54,50 +54,48 @@ public class DictionaryManager : MonoBehaviour
         int childCount = container.childCount;
         for (int i = childCount - 1; i >= 0; i--)
         {
-            Destroy(container.GetChild(i).gameObject);
+            // ใช้ DestroyImmediate เพื่อให้ Hierarchy เคลียร์ทันที ไม่ต้องรอกดจบเฟรม
+            DestroyImmediate(container.GetChild(i).gameObject);
+        }
+
+        // บังคับให้ Container ยึดด้านบนสุดเสมอ
+        RectTransform containerRT = container.GetComponent<RectTransform>();
+        if (containerRT != null)
+        {
+            containerRT.anchorMin = new Vector2(0, 1);
+            containerRT.anchorMax = new Vector2(1, 1);
+            containerRT.pivot = new Vector2(0.5f, 1);
         }
 
         // 2. Spawn unlocked items
         int unlockedCount = 0;
         foreach (var item in itemDataSO.items)
         {
-            Debug.Log($"[DictionaryManager] Checking item: {item.itemName} | Unlocked: {item.isUnlocked}");
             if (item.isUnlocked)
             {
                 unlockedCount++;
                 GameObject newObj = Instantiate(itemPrefab, container);
                 newObj.name = "Word_" + item.itemName;
+                newObj.transform.SetAsLastSibling(); // มั่นใจว่าตัวใหม่จะอยู่ล่างสุดใน Hierarchy
                 
-                // FORCE the UI to be visible and correctly scaled
                 newObj.SetActive(true);
                 
-                // Basic UI reset - allowing the Prefab and Layout Groups to control the look
                 RectTransform rt = newObj.GetComponent<RectTransform>();
                 if (rt != null)
                 {
                     rt.localScale = Vector3.one;
                     
-                    // AUTO-SPACING: Offset each item vertically based on its index
-                    // If you add a VerticalLayoutGroup to the container, it will automatically override this!
-                    float yOffset = -(unlockedCount - 1) * itemHeight;
-                    rt.anchoredPosition = new Vector2(0, yOffset);
+                    // บังคับให้ไอเทมแต่ละชิ้นยึดด้านบนของ Container
+                    rt.anchorMin = new Vector2(0, 1);
+                    rt.anchorMax = new Vector2(1, 1);
+                    rt.pivot = new Vector2(0.5f, 1);
 
-                    // Force the height and width stretching logic
-                    if (forceStretchWidth)
-                    {
-                        rt.anchorMin = new Vector2(0, 1);
-                        rt.anchorMax = new Vector2(1, 1);
-                        rt.pivot = new Vector2(0.5f, 1);
-                        // In stretch mode, sizeDelta.x = 0 means "match parent width"
-                        rt.sizeDelta = new Vector2(0, itemHeight);
-                    }
-                    else
-                    {
-                        // If not stretching, just ensure the height is set
-                        rt.sizeDelta = new Vector2(rt.sizeDelta.x, itemHeight);
-                    }
-                    
-                    Debug.Log($"[DictionaryManager] Successfully Spawned: {item.itemName} at {rt.anchoredPosition} with size {rt.sizeDelta}");
+                    // คำนวณตำแหน่ง Y ให้ไล่จาก 0 ลงไปเรื่อยๆ (ติดลบ)
+                    float yPos = -(unlockedCount - 1) * itemHeight;
+                    rt.anchoredPosition = new Vector2(0, yPos);
+                    rt.sizeDelta = new Vector2(0, itemHeight);
+
+                    Debug.Log($"[DictionaryManager] Spawned {item.itemName} at Y: {yPos}");
                 }
                 
                 Dictionary display = newObj.GetComponent<Dictionary>();
