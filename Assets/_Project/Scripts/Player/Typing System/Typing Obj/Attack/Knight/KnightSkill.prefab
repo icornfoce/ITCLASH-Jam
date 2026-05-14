@@ -84,5 +84,5 @@ MonoBehaviour:
   voiceClip: {fileID: 8300000, guid: 02fa00277764a494aa5461c40d9a92a9, type: 3}
   voiceVolume: 1
   buffDuration: 5
-  buffAuraVFX: {fileID: 0}
+  buffAuraVFX: {fileID: 7155335147208632822, guid: 6ca13793e58bfc143b627e41463cdad4, type: 3}
   speedMultiplier: 1.5

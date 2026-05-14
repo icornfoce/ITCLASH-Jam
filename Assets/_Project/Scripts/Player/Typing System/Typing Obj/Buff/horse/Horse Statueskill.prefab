@@ -107,7 +107,7 @@ MonoBehaviour:
   voiceClip: {fileID: 8300000, guid: 33332dc03f740284eb9af41b0b39f979, type: 3}
   voiceVolume: 1
   buffDuration: 550
-  buffAuraVFX: {fileID: 0}
+  buffAuraVFX: {fileID: 7155335147208632822, guid: 35f0d8fb9c6dcae489be55c93c31021d, type: 3}
   speedMultiplier: 50
   dustVFXPrefab: {fileID: 0}
   neighSFX: {fileID: 0}

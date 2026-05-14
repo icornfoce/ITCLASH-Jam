@@ -211,7 +211,7 @@ MonoBehaviour:
     itemSkill: {fileID: 5457279990287378179, guid: e67ea2d23e0462c4ca38abf721c78f87, type: 3}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
-  - itemName: painting
+  - itemName: Blank
     description: 
     icon: {fileID: 0}
     itemPrefab: {fileID: 4067632375309360118, guid: 6ad0f54848e6fc34daf41d7fdf3a77b0, type: 3}
