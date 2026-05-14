@@ -78,7 +78,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: ea8c8ebd7094e774f9f7d8ba0629f460, type: 2}
     - target: {fileID: 919132149155446097, guid: 4709c772a10c3e04c94905dc4bcaf7ec, type: 3}
       propertyPath: m_Name
-      value: Park-Lampskill
+      value: Cataclysmskill
       objectReference: {fileID: 0}
     - target: {fileID: 960997651672352474, guid: 4709c772a10c3e04c94905dc4bcaf7ec, type: 3}
       propertyPath: m_LocalScale.x
@@ -180,7 +180,7 @@ MonoBehaviour:
   voiceVolume: 1
   buffDuration: 5
   buffAuraVFX: {fileID: 0}
-  firePuddlePrefab: {fileID: 0}
+  firePuddlePrefab: {fileID: 100002, guid: 8ab6c72f39c05e2488825eb424cb36d4, type: 3}
   dropInterval: 0.35
   puddleLifetime: 8
   fireDamagePerTick: 1000

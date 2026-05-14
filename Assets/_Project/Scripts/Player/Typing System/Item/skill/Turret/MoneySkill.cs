@@ -105,8 +105,11 @@ public class MoneySkill : BaseTurretSkill
     {
         if (currentTarget == null) return;
         Transform pivot = aimPivot != null ? aimPivot : transform;
-        Vector3 dir = currentTarget.position - pivot.position;
-        dir.y = 0f;
+        
+        // เล็งไปที่กึ่งกลางตัวศัตรู (บวก Vector3.up)
+        Vector3 targetPos = currentTarget.position + Vector3.up;
+        Vector3 dir = targetPos - pivot.position;
+        
         if (dir.sqrMagnitude < 0.001f) return;
 
         Quaternion targetRot = Quaternion.LookRotation(dir);

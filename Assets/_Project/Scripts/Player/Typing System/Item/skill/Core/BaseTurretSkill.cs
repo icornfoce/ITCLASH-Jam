@@ -16,6 +16,25 @@ public abstract class BaseTurretSkill : BaseItemSkill
 
     public override void Activate(Transform playerTransform)
     {
+        // ถ้าไม่ได้เล็งเป้าไว้ (กดใช้ตรงๆ) ให้เกิดด้านหน้าผู้เล่น
+        if (!TargetPosition.HasValue)
+        {
+            // หาจุดเกิดห่างไปด้านหน้า 2 เมตร (บวกความสูงเผื่อไว้กันชนพื้นตอน Raycast)
+            Vector3 spawnPos = playerTransform.position + playerTransform.forward * 2f + Vector3.up * 2f;
+            
+            // ยิง Raycast ลงไปหาพื้น
+            if (Physics.Raycast(spawnPos, Vector3.down, out RaycastHit hit, 10f))
+            {
+                transform.position = hit.point;
+            }
+            else
+            {
+                transform.position = playerTransform.position + playerTransform.forward * 2f;
+            }
+
+            transform.rotation = playerTransform.rotation;
+        }
+
         PlayVoice(transform.position);
         transform.SetParent(null);
         

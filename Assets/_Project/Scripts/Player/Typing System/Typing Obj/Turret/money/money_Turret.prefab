@@ -309,7 +309,7 @@ GameObject:
   - component: {fileID: 3376258507550192036}
   - component: {fileID: 2236264153115270079}
   m_Layer: 0
-  m_Name: dumplings_money
+  m_Name: money_Turret
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -430,7 +430,7 @@ MonoBehaviour:
   targetingRange: 10
   damagePerShot: 10
   expPerHit: 5
-  bulletPrefab: {fileID: 2847718210125482402, guid: 3b2cb5fa190b9d3488b5838532c9e6fd, type: 3}
+  bulletPrefab: {fileID: 593542545141281283, guid: 41d5293bf160b1f44a3ef092387bc73b, type: 3}
   shootPoint: {fileID: 2963881988349135247}
   bulletSpeed: 30
   bulletLifetime: 5
@@ -465,7 +465,7 @@ Transform:
   m_GameObject: {fileID: 6866552799279401343}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.339, y: 0.286, z: -0.014}
+  m_LocalPosition: {x: 0.275, y: 0.253, z: -0.014}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

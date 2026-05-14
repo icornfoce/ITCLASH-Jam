@@ -23,6 +23,10 @@ public class LuminantSkill : BaseBuffSkill
     [Tooltip("ขนาดของแอ่งไฟ (รัศมี)")]
     public float puddleRadius = 1.5f;
 
+    [Header("─── Placement Settings ───")]
+    [Tooltip("ความสูงของแอ่งไฟจากพื้น")]
+    public float fireHeightOffset = 0.02f;
+
     [Header("─── Movement Check ───")]
     [Tooltip("ระยะเคลื่อนที่ขั้นต่ำถึงจะวางไฟ (ป้องกันวางซ้อนตอนยืนนิ่ง)")]
     public float minMoveDistance = 0.3f;
@@ -82,7 +86,7 @@ public class LuminantSkill : BaseBuffSkill
             // ข้าม trigger collider
             if (hit.collider.isTrigger) continue;
 
-            spawnPos = hit.point + Vector3.up * 0.02f;
+            spawnPos = hit.point + Vector3.up * fireHeightOffset;
             foundGround = true;
             break;
         }
@@ -130,13 +134,12 @@ public class LuminantSkill : BaseBuffSkill
             col.isTrigger = true;
         }
 
-        // เพิ่ม FirePuddle script ทำดาเมจ
+        // เพิ่ม FirePuddle script ทำดาเมจ และจัดการวงจรชีวิต
         FirePuddle fire = puddle.GetComponent<FirePuddle>();
         if (fire == null) fire = puddle.AddComponent<FirePuddle>();
         fire.damagePerTick = fireDamagePerTick;
         fire.damageInterval = fireDamageInterval;
-
-        Destroy(puddle, puddleLifetime);
+        fire.lifetime = puddleLifetime;
 
         Debug.Log($"[LuminantSkill] วางแอ่งไฟที่ {spawnPos}");
     }
