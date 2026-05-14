@@ -106,21 +106,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ImpressionismSkill
   voiceClip: {fileID: 8300000, guid: f84c1f35b7f85ae45a4764b2175b4083, type: 3}
   voiceVolume: 1
-  burstDamage: 50
-  slowPercent: 0.6
-  slowDuration: 4
-  healAmount: 30
-  yellowKnockbackForce: 25
+  ballPrefabs:
+  - {fileID: 7700000000000000001, guid: ee01a02b03c04d05e06f0708091a2b3c, type: 3}
+  - {fileID: 7700000000000000101, guid: ee02a02b03c04d05e06f0708091a2b3c, type: 3}
+  - {fileID: 7700000000000000201, guid: ee03a02b03c04d05e06f0708091a2b3c, type: 3}
+  - {fileID: 7700000000000000301, guid: ee04a02b03c04d05e06f0708091a2b3c, type: 3}
   shootPoint: {fileID: 0}
-  beamRange: 50
-  beamDuration: 0.4
-  beamWidth: 0.15
-  hitVFXPrefab: {fileID: 0}
-  hitSFX: {fileID: 0}
-  lightIntensity: 8
-  lightRange: 8
-  hitLightIntensity: 5
-  hitLightRange: 5
+  ballSpeed: 30
+  maxRange: 100
 --- !u!64 &3605786433555684648
 MeshCollider:
   m_ObjectHideFlags: 0
