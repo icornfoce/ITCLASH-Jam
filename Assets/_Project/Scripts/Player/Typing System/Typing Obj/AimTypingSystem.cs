@@ -225,6 +225,49 @@ public class AimTypingSystem : MonoBehaviour
         HandleVignette();
         HandleFocus();
         HandleHighlightEffect();
+
+        // --- ระบบหมุนลูกกลิ้งเมาส์เพื่อเลือกคำศัพท์ขณะเล็ง ---
+        if (isAimTyping && itemData != null)
+        {
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (Mathf.Abs(scroll) > 0.01f)
+            {
+                HandleScrollSelection(scroll);
+            }
+        }
+    }
+
+    private int scrollIndex = -1;
+    private List<ItemInfo> unlockedItemsCache = new List<ItemInfo>();
+
+    private void HandleScrollSelection(float scrollDelta)
+    {
+        // สร้าง Cache ของไอเทมที่ปลดล็อคแล้ว (ถ้ายังไม่มี)
+        if (unlockedItemsCache.Count == 0)
+        {
+            foreach (var item in itemData.items)
+            {
+                if (item.isUnlocked) unlockedItemsCache.Add(item);
+            }
+        }
+
+        if (unlockedItemsCache.Count == 0 || inputField == null) return;
+
+        // เลื่อน Index
+        if (scrollDelta > 0) scrollIndex--;
+        else scrollIndex++;
+
+        if (scrollIndex < 0) scrollIndex = unlockedItemsCache.Count - 1;
+        if (scrollIndex >= unlockedItemsCache.Count) scrollIndex = 0;
+
+        // ใส่คำศัพท์
+        isInternalUpdate = true;
+        inputField.text = unlockedItemsCache[scrollIndex].itemName;
+        inputField.selectionAnchorPosition = 0;
+        inputField.selectionFocusPosition = inputField.text.Length;
+        isInternalUpdate = false;
+        
+        Debug.Log($"[AimTyping] Scrolled to: {inputField.text}");
     }
 
     // ============================================================
@@ -472,6 +515,10 @@ public class AimTypingSystem : MonoBehaviour
 
         PlaySFX(lockOnSFX);
         SetSlowMotion(true);
+
+        // รีเซ็ตสถานะการเลือกคำศัพท์ด้วย Scroll
+        unlockedItemsCache.Clear();
+        scrollIndex = -1;
 
         // เปิด UI
         if (aimTypingUI != null) aimTypingUI.SetActive(true);

@@ -138,6 +138,9 @@ public class TypingSystem : MonoBehaviour
 
 
 
+    private int scrollIndex = -1;
+    private List<ItemInfo> unlockedItemsCache = new List<ItemInfo>();
+
     void Update()
     {
         // ยิงด้วยคลิกซ้าย และห้ามยิงตอนที่กำลังเล็ง (Zooming) อยู่
@@ -163,6 +166,16 @@ public class TypingSystem : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape) && isSlowed)
         {
             SetSlowMotion(false);
+        }
+
+        // --- ระบบหมุนลูกกลิ้งเมาส์เพื่อเลือกคำศัพท์ ---
+        if (isSlowed && itemData != null)
+        {
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (Mathf.Abs(scroll) > 0.01f)
+            {
+                HandleScrollSelection(scroll);
+            }
         }
 
         // ตรวจสอบการกด Enter เพื่อส่งคำศัพท์ (ส่งเฉพาะตอนที่เปิดหน้าต่างพิมพ์อยู่)
@@ -654,9 +667,44 @@ public class TypingSystem : MonoBehaviour
     public void OpenTyping()
     {
         Debug.Log("[TypingSystem] Opening Typing UI (Slow Motion Active)");
+        
+        // รีเซ็ต Cache ของไอเทมที่ปลดล็อคแล้วเพื่อเตรียมให้ Scroll
+        unlockedItemsCache.Clear();
+        if (itemData != null)
+        {
+            foreach (var item in itemData.items)
+            {
+                if (item.isUnlocked) unlockedItemsCache.Add(item);
+            }
+        }
+        scrollIndex = -1; // รีเซ็ตตำแหน่งการเลื่อน
+
         SetSlowMotion(true);
         PlaySFX(openSFX);
     }
+
+    private void HandleScrollSelection(float scrollDelta)
+    {
+        if (unlockedItemsCache.Count == 0 || inputField == null) return;
+
+        // เลื่อน Index ตามทิศทางลูกกลิ้ง
+        if (scrollDelta > 0) scrollIndex--;
+        else scrollIndex++;
+
+        // วนลูปกลับมาเริ่มใหม่
+        if (scrollIndex < 0) scrollIndex = unlockedItemsCache.Count - 1;
+        if (scrollIndex >= unlockedItemsCache.Count) scrollIndex = 0;
+
+        // นำคำศัพท์ไปใส่ในช่องพิมพ์
+        isInternalUpdate = true;
+        inputField.text = unlockedItemsCache[scrollIndex].itemName;
+        inputField.selectionAnchorPosition = 0;
+        inputField.selectionFocusPosition = inputField.text.Length;
+        isInternalUpdate = false;
+        
+        Debug.Log($"[TypingSystem] Scrolled to: {inputField.text}");
+    }
+
 
     private void SetSlowMotion(bool state)
     {
