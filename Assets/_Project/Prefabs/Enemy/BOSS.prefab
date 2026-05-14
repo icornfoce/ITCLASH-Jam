@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 3119370634680910396}
   - component: {fileID: 172402040840089601}
   - component: {fileID: 82801747169031166}
+  - component: {fileID: 6444539585894595896}
+  - component: {fileID: 3429234632520784310}
   m_Layer: 0
   m_Name: BOSS
   m_TagString: Untagged
@@ -56,13 +58,13 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   globalRandomRadius: 25
-  raysCount: 8
+  raysCount: 20
   raySpacing: 1.5
   rayLength: 12
-  overdriveWaves: 6
-  pointsPerWave: 8
-  waveSpacing: 4
-  pointRandomness: 3
+  overdriveWaves: 20
+  pointsPerWave: 20
+  waveSpacing: 20
+  pointRandomness: 20
   warningPrefab: {fileID: 7745618099665393396, guid: 61103ee966c10f04c8bffb090e0a9b9e, type: 3}
   damagePrefab: {fileID: 92318338007570237, guid: 9f06ad4c7b624704cb680190a01ba913, type: 3}
   voidZonePrefab: {fileID: 968852385677825792, guid: 897c41f2fdbf54a46a00d27cbb9e0584, type: 3}
@@ -75,7 +77,11 @@ MonoBehaviour:
   ultimateDamageSFX: {fileID: 0}
   spawnAlertSFX: {fileID: 0}
   spawnAlertVFX: {fileID: 0}
-  spawnProjectilePrefab: {fileID: 4951878285162301231, guid: 0a3f64a66b435884592d57561b41b74c, type: 3}
+  introTimeline: {fileID: 0}
+  deathTimeline: {fileID: 0}
+  gameUIContainer: {fileID: 0}
+  victoryUI: {fileID: 0}
+  spawnProjectilePrefab: {fileID: 0}
   hpThresholdWaves:
   - waveName: Wave X
     enemyPrefabs:
@@ -133,6 +139,47 @@ MonoBehaviour:
   bossNameText: {fileID: 0}
   lerpSpeed: 5
   showDelay: 0.5
+--- !u!95 &6444539585894595896
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1993589799877864604}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!320 &3429234632520784310
+PlayableDirector:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1993589799877864604}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 7a653da20cabe0142bba3a5a18426ef2, type: 2}
+  m_InitialState: 1
+  m_WrapMode: 0
+  m_DirectorUpdateMode: 1
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: -8621126085578906218, guid: 7a653da20cabe0142bba3a5a18426ef2, type: 2}
+    value: {fileID: 6444539585894595896}
+  m_ExposedReferences:
+    m_References: []
 --- !u!1 &2086117994690124520
 GameObject:
   m_ObjectHideFlags: 0
