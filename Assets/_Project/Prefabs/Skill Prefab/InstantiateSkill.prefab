@@ -53,8 +53,12 @@ MonoBehaviour:
   spawnDelay: 1
   customSpawnPoint: {fileID: 0}
   spawnPointNames:
-  - SpawnSummon
-  spawnVFX: {fileID: 0}
+  - Instantiate
+  - Instantiate
+  - Instantiate
+  - Instantiate
+  - Instantiate
+  spawnVFX: {fileID: 5607819269926399345, guid: 45e0f06c750176947862c10346226439, type: 3}
   spawnSFX: {fileID: 0}
 --- !u!1 &6189096577016107875
 GameObject:
