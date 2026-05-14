@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using ITCLASH.Enemies;
 
 public class MiniBoss : MonoBehaviour
 {
@@ -33,18 +34,6 @@ public class MiniBoss : MonoBehaviour
     public float waveSpacing = 4f;
     public float pointRandomness = 3f;
 
-    [Header("--- Sky Rain ---")]
-    public int rainCountPhase1 = 5;
-    public int rainCountPhase2 = 12;
-
-    [Header("--- Summon (Phase 2 - In Front) ---")]
-    public GameObject[] summonPrefabs;
-    public int summonCount = 3;
-    public float summonMinDistance = 4f;
-    public float summonMaxDistance = 10f;
-    public float summonAngleRange = 60f;
-    public GameObject summonWarningPrefab;
-
     [Header("--- Prefabs ---")]
     public GameObject warningPrefab;
     public GameObject damagePrefab;
@@ -58,6 +47,25 @@ public class MiniBoss : MonoBehaviour
     public AudioClip phaseChangeSFX;
     public AudioClip ultimateCastSFX;
     public AudioClip ultimateDamageSFX;
+    public AudioClip spawnAlertSFX;
+    public ParticleSystem spawnAlertVFX;
+
+    [Header("--- HP Threshold Waves (Shield Mechanic) ---")]
+    public GameObject spawnProjectilePrefab;
+    
+    [System.Serializable]
+    public class BossWaveThreshold
+    {
+        public string waveName = "Wave X";
+        public List<GameObject> enemyPrefabs;
+        public int spawnCount = 4;
+        public float damageToBoss = 250f;
+    }
+    
+    public List<BossWaveThreshold> hpThresholdWaves;
+    private int currentWaveThresholdIndex = 0;
+    private bool isInvulnerable = false;
+    private ITCLASH.Spawners.WaveManager waveManager;
 
     [Header("--- Animator Strings ---")]
     public string attackAnimTrig = "attack";
@@ -81,8 +89,6 @@ public class MiniBoss : MonoBehaviour
     private bool isDead = false;
     public bool IsDead => isDead;
     private bool isCasting = false;
-    private int lastSkillIndex = -1;
-    private Coroutine skillLoopCoroutine;
     private List<GameObject> activeSkillObjects = new List<GameObject>();
     private Dictionary<GameObject, Queue<GameObject>> prefabPools = new Dictionary<GameObject, Queue<GameObject>>();
 
@@ -93,6 +99,8 @@ public class MiniBoss : MonoBehaviour
         if (animator == null) animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+
+        waveManager = Object.FindObjectOfType<ITCLASH.Spawners.WaveManager>();
 
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null) playerTransform = player.transform;
@@ -110,65 +118,109 @@ public class MiniBoss : MonoBehaviour
         }
         if (visualTransform != null) initialVisualLocalPos = visualTransform.localPosition;
 
-        skillLoopCoroutine = StartCoroutine(SkillCycle());
+        if (BossHealthUI.Instance != null) BossHealthUI.Instance.Initialize(this, "The Corrupted Mask");
+
+        StartCoroutine(SkillCycle());
+        StartCoroutine(StartInitialWaveDelayed());
     }
 
-    private Vector3 GetRandomGroundPosition()
+    private IEnumerator StartInitialWaveDelayed()
     {
-        for (int i = 0; i < 50; i++)
-        {
-            float r = Random.Range(2f, globalRandomRadius);
-            float angle = Random.Range(0f, 360f);
-            Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), 0, Mathf.Sin(angle * Mathf.Deg2Rad)) * r;
-            Vector3 spawnPos = transform.position + offset;
-            Vector3[] hits = GetFloorPositions(new Vector2(spawnPos.x, spawnPos.z), false);
-            if (hits != null && hits.Length > 0) return hits[0];
-        }
-        return transform.position;
+        yield return new WaitForSeconds(2f);
+        if (hpThresholdWaves.Count > 0) StartCoroutine(SpawnMinionsThresholdSequence(hpThresholdWaves[0]));
     }
 
-    private GameObject SpawnSkillObject(GameObject prefab, Vector3 pos, Quaternion rot, float autoReturnDelay = -1f)
-    {
-        if (prefab == null) return null;
-        if (!prefabPools.ContainsKey(prefab)) prefabPools[prefab] = new Queue<GameObject>();
+    public float GetCurrentHealth() => currentHealth;
 
-        GameObject obj = null;
-        if (prefabPools[prefab].Count > 0)
-        {
-            obj = prefabPools[prefab].Dequeue();
-            if (obj != null)
-            {
-                obj.transform.position = pos;
-                obj.transform.rotation = rot;
-                obj.SetActive(true);
-            }
-            else obj = Instantiate(prefab, pos, rot);
-        }
-        else obj = Instantiate(prefab, pos, rot);
-
-        if (obj != null && !activeSkillObjects.Contains(obj)) activeSkillObjects.Add(obj);
-        if (autoReturnDelay > 0 && obj != null) StartCoroutine(ReturnToPoolAfterDelay(prefab, obj, autoReturnDelay));
-        return obj;
-    }
-
-    private void ReturnToPool(GameObject prefab, GameObject obj)
-    {
-        if (obj == null || prefab == null) return;
-        obj.SetActive(false);
-        if (prefabPools.ContainsKey(prefab)) prefabPools[prefab].Enqueue(obj);
-    }
-
-    private IEnumerator ReturnToPoolAfterDelay(GameObject prefab, GameObject obj, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        ReturnToPool(prefab, obj);
-    }
-
-    private void Update()
+    public void ApplyBossDamage(float amount)
     {
         if (isDead) return;
-        HandleVisuals();
+        currentHealth = Mathf.Max(0, currentHealth - amount);
+        StartCoroutine(HitEffectRoutine());
+        if (currentHealth <= maxHealth * 0.5f && !isPhase2) EnterPhase2();
+        if (currentHealth <= 0) Die();
+        else
+        {
+            currentWaveThresholdIndex++;
+            if (currentWaveThresholdIndex < hpThresholdWaves.Count)
+                StartCoroutine(SpawnMinionsThresholdSequence(hpThresholdWaves[currentWaveThresholdIndex]));
+        }
     }
+
+    public void ApplyDamage(float amount) { /* Immune */ }
+
+    [Header("--- Fixed Spawn Settings ---")]
+    [Tooltip("ลาก Transform ของจุดเกิดต่างๆ ในแมพมาใส่ที่นี่ มอนสเตอร์จะเกิดตรงนี้เสมอ")]
+    public List<Transform> fixedSpawnPoints = new List<Transform>();
+    private int nextSpawnPointIndex = 0;
+
+    private IEnumerator SpawnMinionsThresholdSequence(BossWaveThreshold waveData)
+    {
+        isInvulnerable = true;
+        PlaySound(spawnAlertSFX);
+        if (spawnAlertVFX != null) Instantiate(spawnAlertVFX, transform.position, Quaternion.identity);
+        yield return new WaitForSeconds(1.0f);
+
+        // เลิกใช้ WaveManager และใช้จุดเกิดที่เรากำหนดเอง (fixedSpawnPoints)
+        if (fixedSpawnPoints != null && fixedSpawnPoints.Count > 0 && waveData.enemyPrefabs != null && waveData.enemyPrefabs.Count > 0)
+        {
+            for (int i = 0; i < waveData.spawnCount; i++)
+            {
+                // เลือกจุดเกิดแบบวนลูป (Round-robin) เพื่อให้กระจายตัวตามจุดที่กำหนด
+                Transform targetPoint = fixedSpawnPoints[nextSpawnPointIndex];
+                nextSpawnPointIndex = (nextSpawnPointIndex + 1) % fixedSpawnPoints.Count;
+
+                if (spawnProjectilePrefab != null)
+                {
+                    GameObject projObj = Instantiate(spawnProjectilePrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
+                    BossSpawnProjectile proj = projObj.GetComponent<BossSpawnProjectile>();
+                    if (proj != null)
+                    {
+                        GameObject prefabToSpawn = waveData.enemyPrefabs[Random.Range(0, waveData.enemyPrefabs.Count)];
+                        proj.Launch(prefabToSpawn, targetPoint.position, 1.2f, ultimateCastVFX != null ? ultimateCastVFX.gameObject : null);
+                    }
+                }
+                yield return new WaitForSeconds(0.2f);
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] Missing fixedSpawnPoints or EnemyPrefabs! No minions spawned.");
+        }
+        
+        yield return new WaitForSeconds(1.5f);
+        StartCoroutine(MonitorMinions(waveData.damageToBoss));
+        yield return new WaitForSeconds(0.5f);
+        isInvulnerable = false;
+    }
+
+    private IEnumerator MonitorMinions(float damageOnClear)
+    {
+        yield return new WaitForSeconds(0.5f);
+        List<EnemyController> waveMinions = new List<EnemyController>(EnemyRegistry.All);
+        while (true)
+        {
+            bool anyAlive = false;
+            foreach (var m in waveMinions) if (m != null && m.IsAlive) { anyAlive = true; break; }
+            if (!anyAlive) break;
+            yield return new WaitForSeconds(0.5f);
+        }
+        ApplyBossDamage(damageOnClear);
+    }
+
+    private IEnumerator HitEffectRoutine()
+    {
+        foreach (Renderer r in renderers) if (r != null) foreach (Material m in r.materials) if (m.HasProperty("_Color")) m.color = hitColor;
+        yield return new WaitForSeconds(hitFlashDuration);
+        foreach (Renderer r in renderers)
+        {
+            if (r == null || !originalColors.ContainsKey(r)) continue;
+            Color[] colors = originalColors[r];
+            for (int i = 0; i < r.materials.Length; i++) if (i < colors.Length && r.materials[i].HasProperty("_Color")) r.materials[i].color = colors[i];
+        }
+    }
+
+    private void Update() { if (!isDead) HandleVisuals(); }
 
     private void HandleVisuals()
     {
@@ -179,37 +231,7 @@ public class MiniBoss : MonoBehaviour
         {
             Vector3 direction = playerTransform.position - visualTransform.position;
             direction.y = 0;
-            if (direction.sqrMagnitude > 0.001f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
-                visualTransform.rotation = targetRotation * Quaternion.Euler(faceRotationOffset);
-            }
-        }
-    }
-
-    public void ApplyDamage(float amount)
-    {
-        if (isDead) return;
-        currentHealth -= amount;
-        StartCoroutine(HitEffectRoutine());
-        if (currentHealth <= maxHealth * 0.5f && !isPhase2) EnterPhase2();
-        if (currentHealth <= 0) Die();
-    }
-
-    private IEnumerator HitEffectRoutine()
-    {
-        foreach (Renderer r in renderers)
-        {
-            if (r == null) continue;
-            foreach (Material m in r.materials) if (m.HasProperty("_Color")) m.color = hitColor;
-        }
-        yield return new WaitForSeconds(hitFlashDuration);
-        foreach (Renderer r in renderers)
-        {
-            if (r == null || !originalColors.ContainsKey(r)) continue;
-            Color[] colors = originalColors[r];
-            for (int i = 0; i < r.materials.Length; i++)
-                if (i < colors.Length && r.materials[i].HasProperty("_Color")) r.materials[i].color = colors[i];
+            if (direction.sqrMagnitude > 0.001f) visualTransform.rotation = Quaternion.LookRotation(direction) * Quaternion.Euler(faceRotationOffset);
         }
     }
 
@@ -231,44 +253,28 @@ public class MiniBoss : MonoBehaviour
                 if (!isPhase2)
                 {
                     int skill = Random.Range(0, 2);
-                    if (skill == 0) yield return StartCoroutine(SkyRain(rainCountPhase1));
+                    if (skill == 0) yield return StartCoroutine(SkyRain(5));
                     else yield return StartCoroutine(SeparateEightRays());
                 }
                 else
                 {
                     int skill = Random.Range(0, 3);
-                    if (skill == 0) yield return StartCoroutine(SkyRain(rainCountPhase2));
+                    if (skill == 0) yield return StartCoroutine(SkyRain(10));
                     else if (skill == 1) yield return StartCoroutine(OverdriveBarrage());
-                    else yield return StartCoroutine(SummonMobs());
+                    else yield return StartCoroutine(VoidZone());
                 }
             }
             yield return new WaitForSeconds(skillCooldown);
         }
     }
 
-    private Vector3[] GetFloorPositions(Vector2 xzPos, bool allFloors)
-    {
-        Vector3 rayStart = new Vector3(xzPos.x, transform.position.y + 50f, xzPos.y);
-        RaycastHit[] hits = Physics.RaycastAll(rayStart, Vector3.down, 100f, floorLayer);
-        if (hits.Length == 0) return null;
-        List<Vector3> validPositions = new List<Vector3>();
-        if (allFloors) foreach (var hit in hits) validPositions.Add(hit.point);
-        else
-        {
-            RaycastHit topHit = hits[0];
-            foreach (var h in hits) if (h.point.y > topHit.point.y) topHit = h;
-            validPositions.Add(topHit.point);
-        }
-        return validPositions.ToArray();
-    }
-
+    // --- Skills Implementation ---
     private IEnumerator SeparateEightRays()
     {
         isCasting = true;
         if (animator != null) animator.SetTrigger(attackAnimTrig);
         PlaySound(ultimateCastSFX);
         yield return new WaitForSeconds(0.5f);
-
         List<List<Vector3>> waves = new List<List<Vector3>>();
         for (int i = 0; i < raysCount; i++)
         {
@@ -294,7 +300,6 @@ public class MiniBoss : MonoBehaviour
         if (ultimateCastVFX != null) Instantiate(ultimateCastVFX, transform.position, Quaternion.identity);
         PlaySound(ultimateCastSFX);
         yield return new WaitForSeconds(0.5f);
-
         List<List<Vector3>> waves = new List<List<Vector3>>();
         List<Vector3> usedPositions = new List<Vector3>();
         for (int w = 1; w <= overdriveWaves; w++)
@@ -305,8 +310,7 @@ public class MiniBoss : MonoBehaviour
             {
                 float angle = (i * (360f/pointsPerWave)) + Random.Range(-20f, 20f);
                 Vector3 dir = Quaternion.Euler(0, angle, 0) * Vector3.forward;
-                Vector3 offset = dir * (currentRadius + Random.Range(-pointRandomness, pointRandomness));
-                Vector3 targetPos = transform.position + offset;
+                Vector3 targetPos = transform.position + (dir * (currentRadius + Random.Range(-pointRandomness, pointRandomness)));
                 Vector3[] floorHits = GetFloorPositions(new Vector2(targetPos.x, targetPos.z), false);
                 if (floorHits != null && floorHits.Length > 0)
                 {
@@ -328,12 +332,7 @@ public class MiniBoss : MonoBehaviour
         foreach (var wave in waves)
         {
             List<GameObject> wList = new List<GameObject>();
-            if (warningPrefab != null)
-                foreach (var p in wave)
-                {
-                    wList.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
-                    yield return null; // กระจายการเสกทีละเฟรมเพื่อลด Lag
-                }
+            if (warningPrefab != null) foreach (var p in wave) wList.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
             waveWarnings.Add(wList);
         }
         yield return new WaitForSeconds(initialDelay);
@@ -341,12 +340,7 @@ public class MiniBoss : MonoBehaviour
         {
             foreach (var w in waveWarnings[i]) ReturnToPool(warningPrefab, w);
             PlaySound(ultimateDamageSFX);
-            if (damagePrefab != null)
-                foreach (var p in waves[i])
-                {
-                    SpawnSkillObject(damagePrefab, p, Quaternion.identity, 0.5f);
-                    yield return null; // กระจายการเสกดาเมจ
-                }
+            if (damagePrefab != null) foreach (var p in waves[i]) SpawnSkillObject(damagePrefab, p, Quaternion.identity, 0.5f);
             yield return new WaitForSeconds(waveDelay);
         }
     }
@@ -357,79 +351,12 @@ public class MiniBoss : MonoBehaviour
         if (animator != null) animator.SetTrigger(attackAnimTrig);
         yield return new WaitForSeconds(0.5f);
         List<Vector3> spawnPoints = new List<Vector3>();
-        for (int i = 0; i < count; i++)
-        {
-            Vector3 pos = GetRandomGroundPosition();
-            if (pos != transform.position) spawnPoints.Add(pos);
-        }
-        yield return StartCoroutine(SpawnWarningAndDamage(spawnPoints, 1.5f, 1.0f));
-        isCasting = false;
-    }
-
-    private IEnumerator SpawnWarningAndDamage(List<Vector3> points, float delay, float damageDuration)
-    {
+        for (int i = 0; i < count; i++) { Vector3 pos = GetRandomGroundPosition(); if (pos != transform.position) spawnPoints.Add(pos); }
         List<GameObject> warnings = new List<GameObject>();
-        if (warningPrefab != null)
-            foreach (Vector3 p in points)
-            {
-                warnings.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
-                yield return null; // กระจาย spawn
-            }
-        yield return new WaitForSeconds(delay);
+        if (warningPrefab != null) foreach (Vector3 p in spawnPoints) warnings.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
+        yield return new WaitForSeconds(1.5f);
         foreach (GameObject w in warnings) ReturnToPool(warningPrefab, w);
-        if (damagePrefab != null)
-            foreach (Vector3 p in points)
-            {
-                SpawnSkillObject(damagePrefab, p, Quaternion.identity, damageDuration);
-                yield return null;
-            }
-    }
-
-    private IEnumerator SummonMobs()
-    {
-        isCasting = true;
-        if (animator != null) animator.SetTrigger(attackAnimTrig);
-        yield return new WaitForSeconds(0.5f);
-        if (summonPrefabs != null && summonPrefabs.Length > 0)
-        {
-            List<Vector3> spawnPoints = new List<Vector3>();
-            int attempts = 0;
-            while (spawnPoints.Count < summonCount && attempts < 50)
-            {
-                attempts++;
-                float randomAngle = Random.Range(-summonAngleRange, summonAngleRange);
-                Vector3 dir = Quaternion.Euler(0, randomAngle, 0) * transform.forward;
-                Vector3 targetPos = transform.position + (dir * Random.Range(summonMinDistance, summonMaxDistance));
-                Vector3[] floorHits = GetFloorPositions(new Vector2(targetPos.x, targetPos.z), false);
-                if (floorHits != null && floorHits.Length > 0)
-                {
-                    Vector3 pos = floorHits[0];
-                    bool tooClose = false;
-                    foreach (var s in spawnPoints) if (Vector3.Distance(pos, s) < 2f) { tooClose = true; break; }
-                    if (!tooClose) spawnPoints.Add(pos);
-                }
-            }
-            List<GameObject> warnings = new List<GameObject>();
-            GameObject activeWarningPrefab = summonWarningPrefab != null ? summonWarningPrefab : warningPrefab;
-            if (activeWarningPrefab != null)
-                foreach (Vector3 p in spawnPoints)
-                {
-                    warnings.Add(SpawnSkillObject(activeWarningPrefab, p, Quaternion.identity));
-                    yield return null;
-                }
-            yield return new WaitForSeconds(1.5f);
-            foreach (GameObject w in warnings) ReturnToPool(activeWarningPrefab, w);
-            foreach (Vector3 p in spawnPoints)
-            {
-                GameObject prefab = summonPrefabs[Random.Range(0, summonPrefabs.Length)];
-                if (prefab != null)
-                {
-                    Instantiate(prefab, p, Quaternion.identity);
-                    yield return null; // กระจายการเสกมอนสเตอร์
-                }
-            }
-        }
-        yield return new WaitForSeconds(1f);
+        if (damagePrefab != null) foreach (Vector3 p in spawnPoints) SpawnSkillObject(damagePrefab, p, Quaternion.identity, 1f);
         isCasting = false;
     }
 
@@ -439,30 +366,71 @@ public class MiniBoss : MonoBehaviour
         if (animator != null) animator.SetTrigger(attackAnimTrig);
         yield return new WaitForSeconds(0.5f);
         List<Vector3> spawnPoints = new List<Vector3>();
-        for (int i = 0; i < voidZoneCount; i++)
-        {
-            Vector3 pos = GetRandomGroundPosition();
-            if (pos != transform.position) spawnPoints.Add(pos);
-        }
+        for (int i = 0; i < voidZoneCount; i++) { Vector3 pos = GetRandomGroundPosition(); if (pos != transform.position) spawnPoints.Add(pos); }
         if (voidZonePrefab != null) foreach (Vector3 p in spawnPoints) SpawnSkillObject(voidZonePrefab, p, Quaternion.identity, voidZoneDuration);
         yield return new WaitForSeconds(1f);
         isCasting = false;
     }
 
-    private void PlaySound(AudioClip clip) { if (clip != null && audioSource != null) audioSource.PlayOneShot(clip); }
-    public void ForceUseSummon() { if (!isDead && !isCasting) StartCoroutine(SummonMobs()); }
+    private Vector3 GetRandomGroundPosition()
+    {
+        for (int i = 0; i < 50; i++)
+        {
+            float r = Random.Range(2f, globalRandomRadius);
+            float angle = Random.Range(0f, 360f);
+            Vector3 targetPos = transform.position + (new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), 0, Mathf.Sin(angle * Mathf.Deg2Rad)) * r);
+            Vector3[] floorHits = GetFloorPositions(new Vector2(targetPos.x, targetPos.z), false);
+            if (floorHits != null && floorHits.Length > 0) return floorHits[0];
+        }
+        return transform.position;
+    }
+
+    private Vector3[] GetFloorPositions(Vector2 xzPos, bool allFloors)
+    {
+        // ยิง Raycast โดยข้าม Triggers ทั้งหมด เพื่อไม่ให้ติด Collider ตัวเอง
+        RaycastHit[] hits = Physics.RaycastAll(
+            new Vector3(xzPos.x, transform.position.y + 50f, xzPos.y), 
+            Vector3.down, 
+            100f, 
+            floorLayer, 
+            QueryTriggerInteraction.Ignore
+        );
+
+        if (hits.Length == 0) return null;
+        List<Vector3> valid = new List<Vector3>();
+        if (allFloors)
+        {
+            foreach (var h in hits) valid.Add(h.point);
+        }
+        else 
+        { 
+            RaycastHit top = hits[0]; 
+            foreach (var h in hits) if (h.point.y > top.point.y) top = h; 
+            valid.Add(top.point); 
+        }
+        return valid.ToArray();
+    }
+
+    private GameObject SpawnSkillObject(GameObject prefab, Vector3 pos, Quaternion rot, float delay = -1f)
+    {
+        if (prefab == null) return null;
+        if (!prefabPools.ContainsKey(prefab)) prefabPools[prefab] = new Queue<GameObject>();
+        GameObject obj = prefabPools[prefab].Count > 0 ? prefabPools[prefab].Dequeue() : Instantiate(prefab, pos, rot);
+        obj.transform.position = pos; obj.transform.rotation = rot; obj.SetActive(true);
+        if (delay > 0) StartCoroutine(ReturnAfterDelay(prefab, obj, delay));
+        return obj;
+    }
+
+    private void ReturnToPool(GameObject prefab, GameObject obj) { if (obj != null) { obj.SetActive(false); prefabPools[prefab].Enqueue(obj); } }
+    private IEnumerator ReturnAfterDelay(GameObject prefab, GameObject obj, float d) { yield return new WaitForSeconds(d); ReturnToPool(prefab, obj); }
+
+    // --- Dev Panel Commands ---
+    public void ForceUseSummon() { if (!isDead && !isCasting) StartCoroutine(SummonMobsInternal()); }
     public void ForceUseVoidZone() { if (!isDead && !isCasting) StartCoroutine(VoidZone()); }
     public void ForceSkillThenDie() { if (!isDead) StartCoroutine(ForceSkillThenDieRoutine()); }
     private IEnumerator ForceSkillThenDieRoutine() { yield return StartCoroutine(VoidZone()); Die(); }
+    private IEnumerator SummonMobsInternal() { if (hpThresholdWaves.Count > currentWaveThresholdIndex) yield return StartCoroutine(SpawnMinionsThresholdSequence(hpThresholdWaves[currentWaveThresholdIndex])); }
 
-    private void Die()
-    {
-        isDead = true;
-        StopAllCoroutines();
-        foreach (var obj in activeSkillObjects) if (obj != null) obj.SetActive(false);
-        activeSkillObjects.Clear();
-        Collider col = GetComponent<Collider>();
-        if (col != null) col.enabled = false;
-        Destroy(gameObject, 3f);
-    }
+    private void PlaySound(AudioClip clip) { if (clip != null && audioSource != null) audioSource.PlayOneShot(clip); }
+    private void Die() { isDead = true; StopAllCoroutines(); Collider col = GetComponent<Collider>(); if (col != null) col.enabled = false; Destroy(gameObject, 3f); }
 }

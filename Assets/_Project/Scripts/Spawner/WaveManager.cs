@@ -142,14 +142,14 @@ namespace ITCLASH.Spawners
             }
 
             if (wave.isBossWave) SpawnBoss(wave);
-            SpawnWaveEnemies(wave);
+            else SpawnWaveEnemies(wave);
 
             yield return new WaitForSecondsRealtime(0.1f);
             waveReadyToCheck = true;
             isTransitioning = false;
         }
 
-        private void SpawnWaveEnemies(EnemyWave wave)
+        public void SpawnWaveEnemies(EnemyWave wave)
         {
             if (wave.possibleEnemies == null || wave.possibleEnemies.Count == 0) return;
             for (int i = 0; i < wave.totalEnemiesToSpawn; i++)
@@ -191,11 +191,13 @@ namespace ITCLASH.Spawners
             NextWave();
         }
 
-        private Transform GetRandomGlobalSpawnPoint()
+        public Transform GetRandomGlobalSpawnPoint()
         {
             if (globalSpawnPoints == null || globalSpawnPoints.Length == 0) return transform;
             return globalSpawnPoints[Random.Range(0, globalSpawnPoints.Length)];
         }
+
+        public Transform[] GetAllSpawnPoints() => globalSpawnPoints;
 
         private void KillAllEnemiesInRegistry()
         {

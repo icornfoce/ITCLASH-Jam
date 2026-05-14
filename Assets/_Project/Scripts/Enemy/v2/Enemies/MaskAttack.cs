@@ -58,20 +58,14 @@ namespace ITCLASH.Enemies
             if (visualTransform == null) visualTransform = transform;
             floatHeight = Random.Range(_randomHeightRange.x, _randomHeightRange.y);
             timeOffset = Random.Range(0f, 10f);
-
-            // เซ็ตค่า baseOffset ทันทีก่อน Agent จะดูดลงพื้น
-            if (Agent != null) Agent.baseOffset = floatHeight;
         }
 
         protected override void Update()
         {
             if (PlayerTransform == null || !IsAlive || isSpawning) return;
 
-            if (useFloating && Agent != null)
-            {
-                float bobY = Mathf.Sin((Time.time + timeOffset) * bobSpeed) * bobAmount;
-                Agent.baseOffset = floatHeight + bobY;
-            }
+            // ให้คลาสแม่จัดการระบบลอย (HandleFloating)
+            base.Update();
 
             float dist = DistanceToPlayer();
 
@@ -114,7 +108,7 @@ namespace ITCLASH.Enemies
             Vector3 dir = (target - origin).normalized;
             float dist = Vector3.Distance(origin, target);
             int mask = ~LayerMask.GetMask("Enemy", "Projectile", "Ignore Raycast");
-            if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, mask))
+            if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, mask, QueryTriggerInteraction.Ignore))
             {
                 if (hit.collider.CompareTag("Player")) return true;
                 return false; 
@@ -284,7 +278,7 @@ namespace ITCLASH.Enemies
             };
 
             // เช็คว่าข้างหน้าติดกำแพงไหม
-            bool frontBlocked = Physics.Raycast(origin, transform.forward, wallCheckDistance, wallLayers);
+            bool frontBlocked = Physics.Raycast(origin, transform.forward, wallCheckDistance, wallLayers, QueryTriggerInteraction.Ignore);
             if (!frontBlocked) return false;
 
             // หาทิศที่โล่งที่สุด
@@ -294,7 +288,7 @@ namespace ITCLASH.Enemies
             foreach (var dir in directions)
             {
                 float clearDist = wallCheckDistance;
-                if (Physics.Raycast(origin, dir, out RaycastHit hit, wallCheckDistance * 3f, wallLayers))
+                if (Physics.Raycast(origin, dir, out RaycastHit hit, wallCheckDistance * 3f, wallLayers, QueryTriggerInteraction.Ignore))
                     clearDist = hit.distance;
                 else
                     clearDist = wallCheckDistance * 3f;
@@ -315,7 +309,7 @@ namespace ITCLASH.Enemies
 
             // หาจุด NavMesh ที่ตรงกับทิศที่โล่ง (ยิงเลเซอร์ลงพื้น)
             Vector3 avoidWorldPos = transform.position + bestDir * 4f;
-            if (Physics.Raycast(avoidWorldPos + Vector3.up * 10f, Vector3.down, out RaycastHit groundHit, 20f))
+            if (Physics.Raycast(avoidWorldPos + Vector3.up * 10f, Vector3.down, out RaycastHit groundHit, 20f, wallLayers, QueryTriggerInteraction.Ignore))
             {
                 if (UnityEngine.AI.NavMesh.SamplePosition(groundHit.point, out UnityEngine.AI.NavMeshHit navHit, 4f, UnityEngine.AI.NavMesh.AllAreas))
                 {
