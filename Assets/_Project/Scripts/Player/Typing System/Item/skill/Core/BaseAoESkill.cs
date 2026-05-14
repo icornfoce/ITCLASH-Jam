@@ -111,6 +111,9 @@ public abstract class BaseAoESkill : BaseItemSkill
                 // ปรับขนาด VFX ให้สัมพันธ์กับรัศมี (สมมติว่ารัศมี 1 หน่วยใน VFX เท่ากับ 1 หน่วยในรัศมีดาเมจ)
                 vfx.transform.localScale = Vector3.one * (radius * 2f);
             }
+            
+            // ทำลาย VFX พร้อมกับตัวอ็อบเจกต์ของสกิล
+            Destroy(vfx, lifeSpanAfterExplode);
         }
         if (explosionSFX != null) AudioSource.PlayClipAtPoint(explosionSFX, finalPos);
 
