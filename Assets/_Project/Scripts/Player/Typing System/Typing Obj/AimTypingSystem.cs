@@ -440,8 +440,8 @@ public class AimTypingSystem : MonoBehaviour
         if (crosshairHighlight != null) crosshairHighlight.SetActive(true);
         if (crosshairNormal != null)    crosshairNormal.SetActive(false);
 
-        // ซ่อนของที่ถืออยู่ชั่วคราวเพื่อให้มองเห็นชัด และป้องกันการ Scan โดนของตัวเอง
-        if (typingSystem != null) typingSystem.SetSpawnedItemsVisibility(false);
+        // เราเลือกที่จะไม่ซ่อนของที่ถืออยู่ เพื่อให้ผู้เล่นรู้ว่ากำลังถืออะไรอยู่ (เช่น DisplayManSkill)
+        // if (typingSystem != null) typingSystem.SetSpawnedItemsVisibility(false);
     }
 
     private void ExitZoom()
@@ -453,8 +453,8 @@ public class AimTypingSystem : MonoBehaviour
         if (crosshairHighlight != null) crosshairHighlight.SetActive(false);
         if (crosshairNormal != null)    crosshairNormal.SetActive(true);
 
-        // แสดงของที่ถืออยู่กลับคืนมา
-        if (typingSystem != null) typingSystem.SetSpawnedItemsVisibility(true);
+        // ไม่ต้องสั่งให้แสดงผลใหม่เพราะเราไม่ได้ซ่อนไว้แล้ว
+        // if (typingSystem != null) typingSystem.SetSpawnedItemsVisibility(true);
 
         CancelTyping();
     }

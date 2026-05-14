@@ -13,6 +13,8 @@ public abstract class BaseAoESkill : BaseItemSkill
     [Header("─── VFX & Audio ───")]
     public GameObject explosionVFX;
     public AudioClip explosionSFX;
+    [Tooltip("ระยะเวลาที่ตัวสกิลจะค้างอยู่หลังจากระเบิดแล้ว (วินาที)")]
+    public float lifeSpanAfterExplode = 1.5f;
 
     public override void Activate(Transform playerTransform)
     {
@@ -44,10 +46,9 @@ public abstract class BaseAoESkill : BaseItemSkill
             ApplyAoEEffect(hit.gameObject);
         }
         
-        // 3. ทำลายตัวเอง (หน่วงเวลาไว้นิดหน่อยเพื่อให้เอฟเฟกต์ทำงานจบ ถ้าจำเป็น)
-        // หรือซ่อนโมเดลไปก่อน แล้วค่อยลบ
-        foreach (Renderer r in GetComponentsInChildren<Renderer>()) r.enabled = false;
-        Destroy(gameObject, 1.5f);
+        // 3. ทำลายตัวเอง (หน่วงเวลาไว้นิดหน่อยเพื่อให้เอฟเฟกต์ทำงานจบ)
+        // เราจะไม่ปิด Renderer ทันที เพื่อให้โมเดลสกิลค้างอยู่ตามเวลาที่กำหนด
+        Destroy(gameObject, lifeSpanAfterExplode);
     }
 
     /// <summary>

@@ -192,9 +192,11 @@ GameObject:
   - component: {fileID: 5564687382311179963}
   - component: {fileID: 5422107612092707451}
   - component: {fileID: 5219340884946116889}
-  - component: {fileID: 4265322488733304979}
+  - component: {fileID: 5283652263605647411}
+  - component: {fileID: 111464758640934274}
+  - component: {fileID: 3218360017825983076}
   m_Layer: 0
-  m_Name: Display-manSkill
+  m_Name: Display-manSumman
   m_TagString: Scannable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -208,7 +210,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1284868079160593247}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: -1.5034866, y: -2.3350806, z: -0.029922485}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -297,7 +299,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.25082052, y: 0.5503502, z: 0.3945201}
   m_Center: {x: -0.00000075250864, y: 0.2751751, z: -0.0000030323863}
---- !u!114 &4265322488733304979
+--- !u!114 &5283652263605647411
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -306,20 +308,181 @@ MonoBehaviour:
   m_GameObject: {fileID: 1284868079160593247}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4574f26c40d00cd40ac9268570097951, type: 3}
+  m_Script: {fileID: 11500000, guid: b51277d37e21c0f4692f60fdaa4b7a6c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DisplayManSkill
-  voiceClip: {fileID: 8300000, guid: 6cef479d20843fe469699282303c891b, type: 3}
-  voiceVolume: 1
-  summonPrefab: {fileID: 1284868079160593247, guid: 0dba23c50bdfd554f84ac0959fd9dac9, type: 3}
-  summonDuration: 0
-  dropToGround: 1
-  spawnDelay: 0
-  customSpawnPoint: {fileID: 0}
-  spawnPointNames: []
-  spawnVFX: {fileID: 0}
-  spawnSFX: {fileID: 0}
-  attackPower: 50
+  m_EditorClassIdentifier: Assembly-CSharp::ITCLASH.Enemies.MaskAttack
+  stats: {fileID: 11400000, guid: d8f07064b7126a24e8961f1dbd746c52, type: 2}
+  animConfig:
+    walkBoolParam: IsWalking
+    attackTriggerParam: Attack
+    dashTriggerParam: Dash
+    castTriggerParam: Cast
+    healCastTriggerParam: HealCast
+    hitTriggerParam: Hit
+    dieTriggerParam: Die
+  audioConfig:
+    source: {fileID: 0}
+    spawn:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+    footstep:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+    attackSwing:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+    attackHit:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+    dash:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+    cast:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+    heal:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+    getHit:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+    death:
+      clips: []
+      volume: 1
+      volumeJitter: 0.05
+      pitchMin: 0.95
+      pitchMax: 1.05
+  vfxConfig:
+    spawn:
+      prefab: {fileID: 0}
+      attachPoint: {fileID: 0}
+      parentToAnchor: 0
+      autoDestroyAfter: 5
+    attackTrail:
+      prefab: {fileID: 0}
+      attachPoint: {fileID: 0}
+      parentToAnchor: 0
+      autoDestroyAfter: 5
+    muzzleFlash:
+      prefab: {fileID: 0}
+      attachPoint: {fileID: 0}
+      parentToAnchor: 0
+      autoDestroyAfter: 5
+    hitImpact:
+      prefab: {fileID: 0}
+      attachPoint: {fileID: 0}
+      parentToAnchor: 0
+      autoDestroyAfter: 5
+    death:
+      prefab: {fileID: 0}
+      attachPoint: {fileID: 0}
+      parentToAnchor: 0
+      autoDestroyAfter: 5
+  visualTransform: {fileID: 0}
+  visualRotationOffset: {x: 0, y: 90, z: 0}
+  muzzlePoint: {fileID: 0}
+  orbSpawnPoint: {fileID: 0}
+  dashImpactPoint: {fileID: 0}
+  alwaysFacePlayer: 1
+  useFloating: 1
+  floatHeight: 2
+  bobSpeed: 1.5
+  bobAmount: 0.2
+  OnDamaged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  debugLogStates: 1
+  spawnDelay: 1.5
+  attackRange: 6
+  windUpDist: 1.5
+  dashSpeed: 15
+  returnSpeed: 5
+  attackCooldown: 2
+  knockbackForce: 15
+  retreatDistance: 4
+  maxSimultaneousAttackers: 2
+  spacingRadius: 2
+  targetTransform: {fileID: 0}
+  _randomHeightRange: {x: 1, y: 2.5}
+  wallCheckDistance: 1.5
+  wallAvoidTurnSpeed: 180
+  wallLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  currentState: 0
+  startAttackPos: {x: 0, y: 180, z: 0}
+  dashTargetPos: {x: 0, y: 0, z: 0}
+  nextAttackTime: 0
+  timeOffset: 0
+  dashStartTime: 0
+  maxDashDuration: 1.5
+--- !u!114 &111464758640934274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1284868079160593247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 299c75f8dd92958498242bc1995d447b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ITCLASH.Enemies.EnemyHitFlash
+  hitColor: {r: 1, g: 1, b: 1, a: 1}
+  healColor: {r: 0, g: 1, b: 0, a: 1}
+  flashDuration: 0.15
+--- !u!195 &3218360017825983076
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1284868079160593247}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1
+  m_BaseOffset: 0.5
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1 &4210482360330437591
 GameObject:
   m_ObjectHideFlags: 0

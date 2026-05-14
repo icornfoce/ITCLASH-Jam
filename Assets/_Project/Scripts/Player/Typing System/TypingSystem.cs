@@ -90,7 +90,7 @@ public class TypingSystem : MonoBehaviour
     [SerializeField] private float bobSpeed = 2f;
     [SerializeField] private float bobAmount = 0.1f;
     [SerializeField] private float followSpeed = 5f;
-    [Range(0f, 1f)] [SerializeField] private float itemAlpha = 0.5f; // ความโปร่งใสของไอเทมตอนที่ยังไม่ปล่อย
+    [Range(0f, 1f)] [SerializeField] private float itemAlpha = 1.0f; // ความโปร่งใสของไอเทมตอนที่ยังไม่ปล่อย (ค่าเริ่มต้นเป็น 1.0 เพื่อให้มองเห็นชัด)
     
     private GameObject spawnedFirst;
     private GameObject spawnedSecond;
@@ -467,23 +467,28 @@ public class TypingSystem : MonoBehaviour
 
     private GameObject SpawnItemAtOffset(ItemInfo item, Vector3 relativeOffset)
     {
-        if (item.itemPrefab == null) return null;
-
         // สร้างไอเทมโดยให้มันเป็นลูกของ playerTransform เพื่อให้มันเคลื่อนที่ตาม Player
         GameObject obj = Instantiate(item.itemPrefab, playerTransform);
-        obj.transform.localScale = item.itemSize;
+        
+        // ─── FIX: ป้องกันไอเทมหายถ้าไม่ได้ตั้งค่าขนาด (Size) ใน Inspector ───
+        Vector3 finalSize = item.itemSize;
+        if (finalSize == Vector3.zero) finalSize = Vector3.one;
+        obj.transform.localScale = finalSize;
         
         // กำหนดตำแหน่ง local ทันที (Update จะคอยคุมตำแหน่ง floating ต่อ)
         obj.transform.localPosition = new Vector3(
             relativeOffset.x, 
             relativeOffset.y, 
-            relativeOffset.z - (item.itemSize.z * 0.5f)
+            relativeOffset.z - (finalSize.z * 0.5f)
         );
         
         obj.transform.localRotation = Quaternion.identity;
 
-        // ทำให้ไอเทมดูใสๆ (Transparency)
-        ApplyTransparency(obj, itemAlpha);
+        // ทำให้ไอเทมดูใสๆ (ถ้า alpha < 1.0)
+        if (itemAlpha < 1.0f)
+        {
+            ApplyTransparency(obj, itemAlpha);
+        }
 
         return obj;
     }
@@ -493,44 +498,43 @@ public class TypingSystem : MonoBehaviour
         Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
         foreach (Renderer renderer in renderers)
         {
-            // ใช้ .materials เพื่อสร้าง instance ของ material มาแก้ (ไม่กระทบไฟล์ต้นฉบับ)
             foreach (Material mat in renderer.materials)
             {
+                // รองรับทั้ง Standard Shader (_Color) และ URP Lit (_BaseColor)
+                bool hasColor = false;
+                Color color = Color.white;
+
                 if (mat.HasProperty("_Color"))
                 {
-                    Color color = mat.color;
-                    color.a = alpha;
-                    mat.color = color;
+                    color = mat.color;
+                    hasColor = true;
+                }
+                else if (mat.HasProperty("_BaseColor"))
+                {
+                    color = mat.GetColor("_BaseColor");
+                    hasColor = true;
+                }
 
-                    // --- สำหรับ Standard Shader ---
+                if (hasColor)
+                {
+                    color.a = alpha;
+                    if (mat.HasProperty("_Color")) mat.color = color;
+                    if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+
+                    // --- ตั้งค่าโหมดโปร่งใส (Transparency Mode) ---
                     if (alpha < 1.0f)
                     {
-                        mat.SetFloat("_Mode", 3); // 3 คือ Transparent mode
+                        // Standard Shader
+                        mat.SetFloat("_Mode", 3); 
                         mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
                         mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
                         mat.SetInt("_ZWrite", 0);
-                        mat.DisableKeyword("_ALPHATEST_ON");
                         mat.EnableKeyword("_ALPHABLEND_ON");
-                        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
                         mat.renderQueue = 3000;
-                    }
-                    else
-                    {
-                        mat.SetFloat("_Mode", 0); // 0 คือ Opaque mode
-                        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-                        mat.SetInt("_ZWrite", 1);
-                        mat.DisableKeyword("_ALPHATEST_ON");
-                        mat.DisableKeyword("_ALPHABLEND_ON");
-                        mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                        mat.renderQueue = -1;
-                    }
 
-                    // --- สำหรับ URP (Universal Render Pipeline) ---
-                    if (mat.HasProperty("_Surface"))
-                    {
-                        mat.SetFloat("_Surface", alpha < 1.0f ? 1 : 0); // 1 = Transparent, 0 = Opaque
-                        mat.SetFloat("_Blend", 0); // 0 = Alpha blend
+                        // URP Shader
+                        if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1); // 1 = Transparent
+                        if (mat.HasProperty("_Blend")) mat.SetFloat("_Blend", 0);     // 0 = Alpha
                     }
                 }
             }

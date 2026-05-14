@@ -5,7 +5,13 @@ public class CataclysmSkill : BaseAoESkill
 {
     [Header("Cataclysm Settings")]
     public float damage = 80f;
-    public float slowDuration = 5f;
+    public float slowDuration = 8f; // เพิ่มจาก 5 เป็น 8
+
+    private void Awake()
+    {
+        // ตั้งค่าให้ตัวอุกกาบาตค้างอยู่บนพื้นนานขึ้น (เช่น 4 วินาที)
+        lifeSpanAfterExplode = 4f;
+    }
 
     protected override void ApplyAoEEffect(GameObject enemyObj)
     {
