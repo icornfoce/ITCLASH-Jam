@@ -1,0 +1,189 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &899460095948205893
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4887011397387706668}
+  - component: {fileID: 7065623631695209410}
+  - component: {fileID: 2989114359255924398}
+  - component: {fileID: 3166249109795009029}
+  m_Layer: 0
+  m_Name: Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4887011397387706668
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 899460095948205893}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 351.28418, y: -0.00005, z: 3786.656}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7773469508310303862}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7065623631695209410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 899460095948205893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c09d654f0c9ccdd4987cf3f22fa37f3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DevPanelController
+  devPanelUI: {fileID: 0}
+  mergeRadius: 20
+--- !u!114 &2989114359255924398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 899460095948205893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e943d770587bc8248aad929f80b6f172, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GemManager
+  commonGemPrefab: {fileID: -7428952101395094877, guid: ee84e3a3e6847654080f3ed45631800c, type: 3}
+  uncommonGemPrefab: {fileID: 2679603312816952230, guid: 9eb7008f62948be4fbf9f2c944c4d7a1, type: 3}
+  rareGemPrefab: {fileID: -2605325078923304633, guid: 556bcb320aa4e7f49960d31d807b6704, type: 3}
+  mergeCheckInterval: 5
+  mergeRadius: 10
+  mergeThreshold: 10
+--- !u!114 &3166249109795009029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 899460095948205893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f26db66b9626bfd4989eb591851a2509, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DictionaryManager
+  itemDataSO: {fileID: 11400000, guid: 354e0ae02c82d2f4d84c1090535658ce, type: 2}
+  itemPrefab: {fileID: 6064342799620060314, guid: 14de7a8728afdef4bbfb19c8b27140bd, type: 3}
+  container: {fileID: 0}
+  refreshOnEnable: 0
+  itemHeight: 100
+  forceStretchWidth: 1
+--- !u!1 &4687866548168925640
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7773469508310303862}
+  - component: {fileID: 4557159276767915001}
+  - component: {fileID: 5252978894439473191}
+  - component: {fileID: 6486007094181653196}
+  - component: {fileID: 100130610890560785}
+  m_Layer: 0
+  m_Name: Maneger-Buff
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7773469508310303862
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4687866548168925640}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 658.61993, y: 19, z: 2179.5828}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4887011397387706668}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4557159276767915001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4687866548168925640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7a925e3738f8d546a51d4d1f69ca097, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelUpManager
+  poolManager: {fileID: 5252978894439473191}
+  levelUpPanel: {fileID: 0}
+  cardPrefab: {fileID: 0}
+  cardContainer: {fileID: 0}
+  optionsCount: 3
+  startPosition: {x: 0, y: 355}
+  spacing: {x: 0, y: -100}
+--- !u!114 &5252978894439473191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4687866548168925640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc61b079437dd084aa7cd3079211cbe4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemPoolManager
+  rng: {fileID: 100130610890560785}
+  pitySystem: {fileID: 6486007094181653196}
+  masterPool:
+  - {fileID: 11400000, guid: 82db240458a7d2a4e8909f59b06c4e8a, type: 2}
+  - {fileID: 11400000, guid: 93e80758dfa849e469d9b2ac989c1e27, type: 2}
+  - {fileID: 11400000, guid: 073b2be8e2e3b8c46a84e827f87dfc48, type: 2}
+  - {fileID: 11400000, guid: 80fa1ecfb6a0af64b91b210aeae5e772, type: 2}
+  - {fileID: 11400000, guid: 4ebb50eba8c554c4d805849f4b171bdf, type: 2}
+--- !u!114 &6486007094181653196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4687866548168925640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 139780787d3923d43b4473922ba35cca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PitySystem
+  bonusPerMissRare: 0.15
+  bonusPerMissEpic: 0.25
+  bonusPerMissLegendary: 0.5
+--- !u!114 &100130610890560785
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4687866548168925640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95ec093799393864eb93719055758f55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SeededRNG
+  seed: 0
