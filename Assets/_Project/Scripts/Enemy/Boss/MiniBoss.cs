@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Playables;
 using ITCLASH.Enemies;
 
 public class MiniBoss : MonoBehaviour
@@ -49,6 +50,14 @@ public class MiniBoss : MonoBehaviour
     public AudioClip ultimateDamageSFX;
     public AudioClip spawnAlertSFX;
     public ParticleSystem spawnAlertVFX;
+
+    [Header("--- Cinematics & UI ---")]
+    public PlayableDirector introTimeline;
+    public PlayableDirector deathTimeline;
+    [Tooltip("UI ทั้งหมดที่จะให้หายไปตอนจบเกม (เช่น HP Bar, Crosshair)")]
+    public GameObject gameUIContainer;
+    [Tooltip("UI ตอนชนะ (Victory Screen)")]
+    public GameObject victoryUI;
 
     [Header("--- HP Threshold Waves (Shield Mechanic) ---")]
     public GameObject spawnProjectilePrefab;
@@ -120,6 +129,27 @@ public class MiniBoss : MonoBehaviour
 
         if (BossHealthUI.Instance != null) BossHealthUI.Instance.Initialize(this, "The Corrupted Mask");
 
+        // เริ่มระบบ Cinematic หรือเริ่มเกมทันที
+        if (introTimeline != null)
+        {
+            StartCoroutine(IntroCinematicSequence());
+        }
+        else
+        {
+            StartCoroutine(SkillCycle());
+            StartCoroutine(StartInitialWaveDelayed());
+        }
+    }
+
+    private IEnumerator IntroCinematicSequence()
+    {
+        isCasting = true; // ล็อคบอสไว้ไม่ให้ใช้สกิล
+        introTimeline.Play();
+        
+        // รอจนกว่าคัทซีนจะเล่นจบ
+        yield return new WaitUntil(() => introTimeline.state != PlayState.Playing);
+        
+        isCasting = false;
         StartCoroutine(SkillCycle());
         StartCoroutine(StartInitialWaveDelayed());
     }
@@ -450,5 +480,70 @@ public class MiniBoss : MonoBehaviour
     private IEnumerator SummonMobsInternal() { if (hpThresholdWaves.Count > currentWaveThresholdIndex) yield return StartCoroutine(SpawnMinionsThresholdSequence(hpThresholdWaves[currentWaveThresholdIndex])); }
 
     private void PlaySound(AudioClip clip) { if (clip != null && audioSource != null) audioSource.PlayOneShot(clip); }
-    private void Die() { isDead = true; StopAllCoroutines(); Collider col = GetComponent<Collider>(); if (col != null) col.enabled = false; Destroy(gameObject, 3f); }
+    private void Die() 
+    { 
+        if (isDead) return;
+        isDead = true; 
+        StopAllCoroutines(); 
+        
+        Collider col = GetComponent<Collider>(); 
+        if (col != null) col.enabled = false; 
+
+        // เริ่มคัทซีนตอนตาย
+        if (deathTimeline != null)
+        {
+            StartCoroutine(DeathCinematicSequence());
+        }
+        else
+        {
+            // ถ้าไม่มีคัทซีน ให้จบเกมแบบปกติ
+            HandleGameOverUI();
+            Destroy(gameObject, 3f); 
+        }
+    }
+
+    private IEnumerator DeathCinematicSequence()
+    {
+        // 1. ล็อคการควบคุมผู้เล่น
+        DisablePlayerControl();
+
+        // 2. เล่นคัทซีน
+        deathTimeline.Play();
+
+        // 3. ซ่อน UI เกม
+        if (gameUIContainer != null) gameUIContainer.SetActive(false);
+
+        // รอคัทซีนจบ
+        yield return new WaitUntil(() => deathTimeline.state != PlayState.Playing);
+
+        // 4. โชว์ UI ชนะ
+        HandleGameOverUI();
+    }
+
+    private void DisablePlayerControl()
+    {
+        if (playerTransform != null)
+        {
+            // ปิดสคริปต์ควบคุมตัวละคร
+            var controller = playerTransform.GetComponent<PlayerController>();
+            if (controller != null) controller.enabled = false;
+
+            // ปิดสคริปต์ควบคุมกล้อง (หาในลูกๆ หรือจุดที่เก็บกล้องไว้)
+            var cam = playerTransform.GetComponentInChildren<FirstPersonCamera>();
+            if (cam != null) cam.enabled = false;
+
+            // ปลดล็อคเมาส์มาให้กดปุ่มตอนจบ
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    private void HandleGameOverUI()
+    {
+        if (victoryUI != null) victoryUI.SetActive(true);
+        if (gameUIContainer != null) gameUIContainer.SetActive(false);
+        
+        // ถ้าไม่มีอะไรทำต่อ อาจจะทำลาย Boss ทิ้ง
+        // Destroy(gameObject, 1f); 
+    }
 }
