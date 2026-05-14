@@ -12,34 +12,58 @@ namespace ITCLASH.Enemies
     public class EnemyHitFlash : MonoBehaviour
     {
         [Header("Colors")]
-        public Color hitColor = Color.red;
+        public Color hitColor = Color.white;
         public Color healColor = Color.green;
-        public float flashDuration = 0.15f;
+        public float flashDuration = 0.1f;
         
         private EnemyController controller;
-        private Renderer[] renderers;
-        private Dictionary<Renderer, Color[]> originalColors = new Dictionary<Renderer, Color[]>();
+        private struct MaterialData
+        {
+            public Color originalColor;
+            public Color originalEmission;
+            public bool hadEmission;
+            public bool hasColorProp;
+            public string colorPropName;
+        }
+        private Dictionary<Material, MaterialData> originalMatData = new Dictionary<Material, MaterialData>();
         private Coroutine flashCoroutine;
 
         private void Awake()
         {
             controller = GetComponent<EnemyController>();
-            
-            // เก็บ Renderer และสีดั้งเดิมทั้งหมดไว้
-            renderers = GetComponentsInChildren<Renderer>();
+            CacheOriginalMaterials();
+        }
+
+        private void CacheOriginalMaterials()
+        {
+            Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
+            originalMatData.Clear();
+
             foreach (Renderer r in renderers)
             {
-                if (r is ParticleSystemRenderer) continue; 
+                if (r is ParticleSystemRenderer || r == null) continue;
 
-                Color[] colors = new Color[r.materials.Length];
-                for (int i = 0; i < r.materials.Length; i++)
+                foreach (Material mat in r.materials)
                 {
-                    if (r.materials[i].HasProperty("_Color"))
+                    if (mat == null || originalMatData.ContainsKey(mat)) continue;
+
+                    MaterialData data = new MaterialData();
+                    
+                    // เช็ค Property ชื่อสี
+                    if (mat.HasProperty("_BaseColor")) { data.hasColorProp = true; data.colorPropName = "_BaseColor"; }
+                    else if (mat.HasProperty("_Color")) { data.hasColorProp = true; data.colorPropName = "_Color"; }
+
+                    if (data.hasColorProp) data.originalColor = mat.GetColor(data.colorPropName);
+
+                    // เก็บค่า Emission
+                    if (mat.HasProperty("_EmissionColor"))
                     {
-                        colors[i] = r.materials[i].color;
+                        data.originalEmission = mat.GetColor("_EmissionColor");
+                        data.hadEmission = mat.IsKeywordEnabled("_EMISSION");
                     }
+
+                    originalMatData[mat] = data;
                 }
-                originalColors[r] = colors;
             }
         }
 
@@ -47,7 +71,6 @@ namespace ITCLASH.Enemies
         {
             if (controller != null)
             {
-                // ลงทะเบียนรับเหตุการณ์ทั้งโดนดาเมจและได้รับฮีล
                 controller.OnDamaged.AddListener(HandleDamaged);
                 controller.OnHealed.AddListener(HandleHealed);
             }
@@ -62,55 +85,48 @@ namespace ITCLASH.Enemies
             }
         }
 
-        private void HandleDamaged(float amount)
-        {
-            StartFlash(hitColor);
-        }
-
-        private void HandleHealed(float amount)
-        {
-            StartFlash(healColor);
-        }
+        private void HandleDamaged(float amount) { StartFlash(hitColor); }
+        private void HandleHealed(float amount) { StartFlash(healColor); }
 
         private void StartFlash(Color color)
         {
             if (!gameObject.activeInHierarchy) return;
-
             if (flashCoroutine != null) StopCoroutine(flashCoroutine);
             flashCoroutine = StartCoroutine(FlashRoutine(color));
         }
 
         private IEnumerator FlashRoutine(Color color)
         {
-            // 1. เปลี่ยนเป็นสีเป้าหมาย
-            foreach (Renderer r in renderers)
+            foreach (var entry in originalMatData)
             {
-                if (r == null) continue;
-                for (int i = 0; i < r.materials.Length; i++)
+                Material mat = entry.Key;
+                if (mat == null) continue;
+
+                if (entry.Value.hasColorProp) mat.SetColor(entry.Value.colorPropName, color);
+
+                if (mat.HasProperty("_EmissionColor"))
                 {
-                    if (r.materials[i].HasProperty("_Color"))
-                    {
-                        r.materials[i].color = color;
-                    }
+                    mat.SetColor("_EmissionColor", color * 2.5f); 
+                    mat.EnableKeyword("_EMISSION");
                 }
             }
 
             yield return new WaitForSeconds(flashDuration);
 
-            // 2. คืนค่าสีดั้งเดิม
-            foreach (Renderer r in renderers)
+            foreach (var entry in originalMatData)
             {
-                if (r == null || !originalColors.ContainsKey(r)) continue;
-                Color[] orig = originalColors[r];
-                for (int i = 0; i < r.materials.Length; i++)
+                Material mat = entry.Key;
+                MaterialData data = entry.Value;
+                if (mat == null) continue;
+
+                if (data.hasColorProp) mat.SetColor(data.colorPropName, data.originalColor);
+
+                if (mat.HasProperty("_EmissionColor"))
                 {
-                    if (i < orig.Length && r.materials[i].HasProperty("_Color"))
-                    {
-                        r.materials[i].color = orig[i];
-                    }
+                    mat.SetColor("_EmissionColor", data.originalEmission);
+                    if (!data.hadEmission) mat.DisableKeyword("_EMISSION");
                 }
             }
-            
             flashCoroutine = null;
         }
     }
