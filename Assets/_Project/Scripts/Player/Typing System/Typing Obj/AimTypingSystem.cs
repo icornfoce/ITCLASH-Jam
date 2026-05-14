@@ -896,8 +896,7 @@ public class AimTypingSystem : MonoBehaviour
         Time.fixedDeltaTime  = 0.02f * Time.timeScale;
 
         // ล็อก Cursor เหมือนระบบเดิม
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible   = false;
+        CursorUnlocker.ApplyLock();
     }
 
     // ============================================================

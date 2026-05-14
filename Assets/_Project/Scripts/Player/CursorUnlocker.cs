@@ -11,11 +11,31 @@ public class CursorUnlocker : MonoBehaviour
     // ตัวแปร Static ที่สคริปต์อื่น (เช่น กล้อง) สามารถเข้ามาเช็คได้
     public static bool IsLocked { get; private set; }
 
+    /// <summary>
+    /// Helper static method to lock cursor and keep state in sync
+    /// </summary>
+    public static void ApplyLock()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        IsLocked = true;
+    }
+
+    /// <summary>
+    /// Helper static method to unlock cursor and keep state in sync
+    /// </summary>
+    public static void ApplyUnlock()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        IsLocked = false;
+    }
+
     private void Start()
     {
         if (lockOnStart)
         {
-            LockCursor();
+            ApplyLock();
         }
     }
 
@@ -24,27 +44,23 @@ public class CursorUnlocker : MonoBehaviour
         // 1. เมื่อกด Alt (ซ้ายหรือขวา) ค้างไว้ -> ปลดล็อคเมาส์
         if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt))
         {
-            UnlockCursor();
+            ApplyUnlock();
         }
         
         // 2. เมื่อปล่อยปุ่ม Alt -> กลับไปล็อคเมาส์เหมือนเดิม
         if (Input.GetKeyUp(KeyCode.LeftAlt) || Input.GetKeyUp(KeyCode.RightAlt))
         {
-            LockCursor();
+            ApplyLock();
         }
     }
 
     public void LockCursor()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        IsLocked = true;
+        ApplyLock();
     }
 
     public void UnlockCursor()
     {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        IsLocked = false;
+        ApplyUnlock();
     }
 }

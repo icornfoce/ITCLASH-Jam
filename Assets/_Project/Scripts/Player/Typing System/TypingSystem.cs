@@ -94,7 +94,6 @@ public class TypingSystem : MonoBehaviour
     
     private GameObject spawnedFirst;
     private GameObject spawnedSecond;
-    private Vector3 currentShakeOffset;
 
     // Properties to access the current main item
     public string ItemName => firstItem?.itemName ?? string.Empty;
@@ -277,14 +276,7 @@ public class TypingSystem : MonoBehaviour
 
     void LateUpdate()
     {
-        if (currentShakeOffset != Vector3.zero)
-        {
-            Transform target = shakeTransform != null ? shakeTransform : (Camera.main != null ? Camera.main.transform : null);
-            if (target != null)
-            {
-                target.localPosition += currentShakeOffset;
-            }
-        }
+        // Shake logic moved to ShakeScreen coroutine to prevent interference with camera systems
     }
 
     private void SetTypingVignetteAlpha(float alpha)
@@ -737,15 +729,13 @@ public class TypingSystem : MonoBehaviour
             }
 
             // ไม่ต้องปลดล็อกเมาส์ (ซ่อนไว้ตามเดิมตามที่ต้องการ)
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            CursorUnlocker.ApplyLock();
         }
         else
         {
             needsFocus = false;
             // ล็อกเมาส์ไว้ปกติ
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            CursorUnlocker.ApplyLock();
         }
     }
 
@@ -846,6 +836,11 @@ public class TypingSystem : MonoBehaviour
         Debug.Log($"<color=yellow>[TypingSystem] SHAKE START! Duration: {duration}, Magnitude: {magnitude}</color>");
         
         Camera cam = Camera.main;
+        Transform target = shakeTransform != null ? shakeTransform : (cam != null ? cam.transform : null);
+        
+        if (target == null) yield break;
+
+        Vector3 originalPos = target.localPosition;
         Rect originalRect = cam != null ? cam.rect : new Rect(0, 0, 1, 1);
         float elapsed = 0.0f;
 
@@ -854,10 +849,10 @@ public class TypingSystem : MonoBehaviour
             float xOffset = Random.Range(-1f, 1f) * magnitude;
             float yOffset = Random.Range(-1f, 1f) * magnitude;
 
-            // Method 1: Transform Offset (Applied in LateUpdate)
-            currentShakeOffset = new Vector3(xOffset, yOffset, 0);
+            // Method 1: Transform Offset
+            target.localPosition = originalPos + new Vector3(xOffset, yOffset, 0);
 
-            // Method 2: Viewport Rect (Shifts the actual rendered image - Impossible to override)
+            // Method 2: Viewport Rect
             if (cam != null)
             {
                 float rectX = originalRect.x + (xOffset * 0.05f);
@@ -869,7 +864,8 @@ public class TypingSystem : MonoBehaviour
             yield return null;
         }
 
-        currentShakeOffset = Vector3.zero;
+        // Reset both methods
+        target.localPosition = originalPos;
         if (cam != null) cam.rect = originalRect;
 
         Debug.Log("<color=yellow>[TypingSystem] SHAKE FINISHED.</color>");

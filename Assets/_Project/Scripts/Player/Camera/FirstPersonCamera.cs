@@ -25,7 +25,7 @@ public class FirstPersonCamera : MonoBehaviour
         if (playerBody == null) return;
 
         // เช็คจาก CursorUnlocker: ถ้าเมาส์ไม่ได้ล็อค (เช่น กด Alt อยู่) ให้หยุดหมุนกล้องทันที
-        if (CursorUnlocker.IsLocked == false) return;
+        if (Cursor.lockState != CursorLockMode.Locked) return;
 
         // Get Mouse Input
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime;
