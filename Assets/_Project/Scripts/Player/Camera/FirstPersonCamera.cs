@@ -12,9 +12,7 @@ public class FirstPersonCamera : MonoBehaviour
 
     void Start()
     {
-        // Lock and hide the cursor
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // (ระบบเมาส์ถูกย้ายไปที่ CursorUnlocker แล้วครับ)
     }
 
     void Update()
@@ -26,7 +24,10 @@ public class FirstPersonCamera : MonoBehaviour
     {
         if (playerBody == null) return;
 
-        // Get Mouse Input (ใช้ unscaledDeltaTime เพื่อให้ความเร็วเมาส์ไม่ช้าลงตามเวลาที่ถูกสโลว์)
+        // เช็คจาก CursorUnlocker: ถ้าเมาส์ไม่ได้ล็อค (เช่น กด Alt อยู่) ให้หยุดหมุนกล้องทันที
+        if (CursorUnlocker.IsLocked == false) return;
+
+        // Get Mouse Input
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.unscaledDeltaTime;
 
