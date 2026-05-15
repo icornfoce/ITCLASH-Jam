@@ -11,6 +11,15 @@ public class LanternSkill : BaseProjectileSkill
     public GameObject fireVFX;
     public GameObject bulletVFX;
 
+    public override void Activate(Transform playerTransform)
+    {
+        base.Activate(playerTransform);
+        if (bulletVFX != null)
+        {
+            Instantiate(bulletVFX, transform.position, transform.rotation, transform);
+        }
+    }
+
     protected override void OnHit(Collision collision)
     {
         NavMeshAgent agent = collision.gameObject.GetComponentInParent<NavMeshAgent>();

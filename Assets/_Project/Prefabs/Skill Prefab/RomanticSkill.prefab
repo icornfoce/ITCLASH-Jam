@@ -135,6 +135,7 @@ MonoBehaviour:
   hitSFX: {fileID: 8300000, guid: ded71f882aa0c204c8e7a7d9330dcc7d, type: 3}
   stunDuration: 3
   dpsDamage: 5
+  bulletVFX: {fileID: 5766691976136461342, guid: 43d1d06cf70fcb2488255051aaae40a5, type: 3}
 --- !u!54 &361312655087093850
 Rigidbody:
   m_ObjectHideFlags: 0

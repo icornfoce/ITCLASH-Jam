@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InstantiateSkill
   voiceClip: {fileID: 0}
   voiceVolume: 1
-  summonPrefab: {fileID: 6770387138897645161, guid: 0498d8ac46fcd3f40987b7954ec62d48, type: 3}
+  summonPrefab: {fileID: 3368657497738892344, guid: 1b1e3bc175511214f8dd96b85113162f, type: 3}
   summonDuration: 16
   dropToGround: 1
   spawnDelay: 1
