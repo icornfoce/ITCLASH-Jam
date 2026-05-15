@@ -37,7 +37,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: 8103026101280114713}
-    m_Duration: 1.65
+    m_Duration: 3.8134731041267513
     m_TimeScale: 1
     m_ParentTrack: {fileID: -6999535351411583115}
     m_EaseInDuration: 0
@@ -127,10 +127,10 @@ MonoBehaviour:
   m_Children: []
   m_Clips:
   - m_Version: 1
-    m_Start: 0.08333333333333333
+    m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: -8206287961455155695}
-    m_Duration: 2.4166666666666665
+    m_Duration: 4.166666666666667
     m_TimeScale: 1
     m_ParentTrack: {fileID: -4019193800542006205}
     m_EaseInDuration: 0
@@ -279,7 +279,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: 6893941210468371402}
-    m_Duration: 1.65
+    m_Duration: 3.813473104126751
     m_TimeScale: 1
     m_ParentTrack: {fileID: 910991496608758004}
     m_EaseInDuration: 0
@@ -480,7 +480,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: 4218845954723208311}
-    m_Duration: 2.4999999999999982
+    m_Duration: 4.663473104126748
     m_TimeScale: 1
     m_ParentTrack: {fileID: 5117215055169230905}
     m_EaseInDuration: 0
@@ -620,8 +620,8 @@ AnimationClip:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: {x: 0, y: 0, z: 0}
+        time: 2.2166667
+        value: {x: -0.99778086, y: -0.748334, z: -0.9977756}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -629,8 +629,8 @@ AnimationClip:
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
-        time: 2
-        value: {x: 0, y: 0, z: -21.390001}
+        time: 4.133333
+        value: {x: -0.24944448, y: -0.24944448, z: -21.639446}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -666,7 +666,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 2
+    m_StopTime: 4.133333
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -687,8 +687,8 @@ AnimationClip:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: 0
+        time: 2.2166667
+        value: -0.99778086
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -696,8 +696,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 2
-        value: 0
+        time: 4.133333
+        value: -0.24944448
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -717,8 +717,8 @@ AnimationClip:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: 0
+        time: 2.2166667
+        value: -0.748334
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -726,8 +726,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 2
-        value: 0
+        time: 4.133333
+        value: -0.24944448
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -747,8 +747,8 @@ AnimationClip:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0
-        value: 0
+        time: 2.2166667
+        value: -0.9977756
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -756,8 +756,8 @@ AnimationClip:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 2
-        value: -21.390001
+        time: 4.133333
+        value: -21.639446
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -813,7 +813,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: -2319586147947500071}
-    m_Duration: 1.65
+    m_Duration: 3.813473104126751
     m_TimeScale: 1
     m_ParentTrack: {fileID: 8794632817502760370}
     m_EaseInDuration: 0

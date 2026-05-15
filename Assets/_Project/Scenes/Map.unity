@@ -13133,6 +13133,34 @@ PrefabInstance:
       propertyPath: m_Size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4191835275788628340, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4191835275788628340, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.6500001
+      objectReference: {fileID: 0}
+    - target: {fileID: 4191835275788628340, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4191835275788628340, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4191835275788628340, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4191835275788628340, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4191835275788628340, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4562861692174773447, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -13235,7 +13263,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 4590a091dab930c469b3dcabfe93ed28, type: 3}
     - target: {fileID: 8795257201312444017, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -229.99901
+      value: -229.99922
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15810,6 +15838,10 @@ PrefabInstance:
     - target: {fileID: 8358646318551867456, guid: acd34c8b3655a504395eb8a3c38a7299, type: 3}
       propertyPath: m_Name
       value: Win
+      objectReference: {fileID: 0}
+    - target: {fileID: 8358646318551867456, guid: acd34c8b3655a504395eb8a3c38a7299, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9153748705899677607, guid: acd34c8b3655a504395eb8a3c38a7299, type: 3}
       propertyPath: m_Pivot.x
@@ -161079,7 +161111,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4471033249167708398, guid: b7420b08c39fbab439a88a310a7af96d, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

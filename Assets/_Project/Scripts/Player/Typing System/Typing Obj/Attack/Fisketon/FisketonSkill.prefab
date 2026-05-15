@@ -105,14 +105,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FisketonSkill
   voiceClip: {fileID: 8300000, guid: d64ed21405bce5a4c987065e1faf2920, type: 3}
   voiceVolume: 1
-  buffDuration: 5
-  buffAuraVFX: {fileID: 0}
-  damage: 20
-  knockback: 15
-  aoeRadius: 5
-  hitInterval: 0.5
-  rotationSpeed: 360
-  orbitRadius: 2
+  radius: 5
+  delayBeforeExplode: 0.5
   enemyLayer:
     serializedVersion: 2
     m_Bits: 0
+  explosionVFX: {fileID: 0}
+  explosionSFX: {fileID: 0}
+  lifeSpanAfterExplode: 1.5
+  throwForce: 1
+  autoScaleVFX: 1
+  spawnForwardOffset: 2
+  damage: 20
+  knockbackForce: 10
+  spinSpeed: {x: 0, y: 720, z: 0}
+  visualModel: {fileID: 7652352306917241806, guid: a8ede9ebbaff6d543b0b31e6ace1b433, type: 3}
+  rotationOffset: {x: 0, y: 0, z: 0}
