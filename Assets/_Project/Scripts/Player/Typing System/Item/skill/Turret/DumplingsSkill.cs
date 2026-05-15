@@ -104,13 +104,20 @@ public class DumplingsSkill : BaseTurretSkill
         currentTarget = best;
     }
 
+    private Vector3 GetTargetCenter(Transform target)
+    {
+        Collider col = target.GetComponentInChildren<Collider>();
+        if (col != null) return col.bounds.center;
+        return target.position + Vector3.up;
+    }
+
     private void AimAtTarget()
     {
         if (currentTarget == null) return;
         Transform pivot = aimPivot != null ? aimPivot : transform;
         
-        // เล็งไปที่กึ่งกลางตัวศัตรู (บวก Vector3.up)
-        Vector3 targetPos = currentTarget.position + Vector3.up;
+        // เล็งไปที่จุดศูนย์กลางของศัตรู
+        Vector3 targetPos = GetTargetCenter(currentTarget);
         Vector3 dir = targetPos - pivot.position;
         
         if (dir.sqrMagnitude < 0.001f) return;
@@ -131,8 +138,9 @@ public class DumplingsSkill : BaseTurretSkill
 
         if (bulletPrefab != null && shootPoint != null)
         {
-            // คำนวณทิศทางจาก shootPoint ไปหาศัตรู
-            Vector3 direction = (currentTarget.position + Vector3.up - shootPoint.position).normalized;
+            // คำนวณทิศทางจาก shootPoint ไปหาศัตรูแบบแม่นยำ (กลางลำตัว)
+            Vector3 targetPos = GetTargetCenter(currentTarget);
+            Vector3 direction = (targetPos - shootPoint.position).normalized;
 
             GameObject bullet = Instantiate(bulletPrefab, shootPoint.position, Quaternion.LookRotation(direction));
 
@@ -141,12 +149,24 @@ public class DumplingsSkill : BaseTurretSkill
             if (bulletRb == null)
             {
                 bulletRb = bullet.AddComponent<Rigidbody>();
-                Debug.Log("[DumplingsSkill] กระสุนไม่มี Rigidbody → เพิ่มให้อัตโนมัติ");
             }
 
             bulletRb.useGravity = false;
             bulletRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             bulletRb.linearVelocity = direction * bulletSpeed;
+
+            // ตรวจสอบและติด Script ทำดาเมจให้กระสุน
+            DumplingBullet dmgScript = bullet.GetComponent<DumplingBullet>();
+            if (dmgScript == null) dmgScript = bullet.AddComponent<DumplingBullet>();
+            dmgScript.damage = damagePerShot;
+
+            // ตรวจสอบว่ามี Collider ไหม ถ้าไม่มีเพิ่มให้
+            if (bullet.GetComponent<Collider>() == null)
+            {
+                SphereCollider sc = bullet.AddComponent<SphereCollider>();
+                sc.radius = 0.3f;
+                sc.isTrigger = true; // ใช้ trigger จะได้ไม่ชนกระเด็น
+            }
 
             // ทำลายกระสุนหลังหมดเวลา
             Destroy(bullet, bulletLifetime);
@@ -240,5 +260,48 @@ public class DumplingsSkill : BaseTurretSkill
 
         Debug.Log("[DumplingsSkill] ป้อมถูกทำลาย!");
         Destroy(gameObject);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// คลาสสำหรับติดไว้ที่ตัวกระสุนเพื่อให้ทำดาเมจได้เมื่อชน
+// ─────────────────────────────────────────────────────────────
+public class DumplingBullet : MonoBehaviour
+{
+    public float damage;
+    private bool hasHit = false;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        HandleHit(other.gameObject);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        HandleHit(collision.gameObject);
+    }
+
+    private void HandleHit(GameObject hitObj)
+    {
+        if (hasHit) return;
+
+        // ข้ามการชนกับป้อมตัวเอง หรือกระสุนด้วยกัน หรือผู้เล่น
+        if (hitObj.CompareTag("Player") || hitObj.CompareTag("Bullet") || hitObj.name.Contains("Dumpling")) return;
+
+        var enemy = hitObj.GetComponentInParent<ITCLASH.Enemies.EnemyController>();
+        if (enemy != null)
+        {
+            hasHit = true;
+            enemy.ApplyDamage(damage);
+            // Debug.Log($"[DumplingsBullet] ยิงโดนศัตรู! ทำดาเมจ {damage}");
+            Destroy(gameObject);
+        }
+        else 
+        {
+            // ชนกำแพงหรือฉาก
+            // ถ้ายิงชนกันเอง หรือพื้น ก็ให้หายไป
+            hasHit = true;
+            Destroy(gameObject);
+        }
     }
 }

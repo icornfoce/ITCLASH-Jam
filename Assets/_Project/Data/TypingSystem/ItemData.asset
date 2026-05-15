@@ -207,7 +207,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 1813714421805739260, guid: 229d90e951634f543b0a9e106dc0ee37, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 4399038386957114039, guid: 3c557a7410bfead45820c8799f0f9abd, type: 3}
     skillSpawnOffset: {x: 0, y: 0, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -243,8 +243,8 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 1854454774246952120, guid: ff140be1615b5d240a17ff397e99a5d6, type: 3}
     itemSize: {x: 0, y: 0, z: 0}
-    isUnlocked: 0
-    itemSkill: {fileID: 1854454774246952120, guid: c49ca04dd62cfff4d8458c14e2d5f45f, type: 3}
+    isUnlocked: 1
+    itemSkill: {fileID: 9205513415571773846, guid: 0dd3fc492e7e8b246960879c45b7c914, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   - itemName: fiskeleton

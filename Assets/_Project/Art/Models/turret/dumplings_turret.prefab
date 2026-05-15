@@ -1017,7 +1017,7 @@ Transform:
   m_GameObject: {fileID: 6171998442953472677}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0.000000021855694, w: 0}
-  m_LocalPosition: {x: 0, y: 0.4538613, z: 0.7667358}
+  m_LocalPosition: {x: 0, y: 0.4538613, z: 0.989}
   m_LocalScale: {x: 1.9313246, y: 1.9313246, z: 1.9313246}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1847,7 +1847,7 @@ MonoBehaviour:
   actionInterval: 1
   targetingRange: 10
   damagePerShot: 10
-  bulletPrefab: {fileID: 7905575723407837380, guid: 054c5ddd969d428439d328af6f9fc3e4, type: 3}
+  bulletPrefab: {fileID: 1416280451055332062, guid: 8d1df42325e5e70439286e76e3832acf, type: 3}
   shootPoint: {fileID: 1411767547705898231}
   bulletSpeed: 30
   bulletLifetime: 5

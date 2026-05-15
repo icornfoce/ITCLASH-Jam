@@ -101,13 +101,20 @@ public class MoneySkill : BaseTurretSkill
         currentTarget = best;
     }
 
+    private Vector3 GetTargetCenter(Transform target)
+    {
+        Collider col = target.GetComponentInChildren<Collider>();
+        if (col != null) return col.bounds.center;
+        return target.position + Vector3.up;
+    }
+
     private void AimAtTarget()
     {
         if (currentTarget == null) return;
         Transform pivot = aimPivot != null ? aimPivot : transform;
         
-        // เล็งไปที่กึ่งกลางตัวศัตรู (บวก Vector3.up)
-        Vector3 targetPos = currentTarget.position + Vector3.up;
+        // เล็งไปที่จุดศูนย์กลางของศัตรู
+        Vector3 targetPos = GetTargetCenter(currentTarget);
         Vector3 dir = targetPos - pivot.position;
         
         if (dir.sqrMagnitude < 0.001f) return;
@@ -128,7 +135,8 @@ public class MoneySkill : BaseTurretSkill
 
         if (bulletPrefab != null && shootPoint != null)
         {
-            Vector3 direction = (currentTarget.position + Vector3.up - shootPoint.position).normalized;
+            Vector3 targetPos = GetTargetCenter(currentTarget);
+            Vector3 direction = (targetPos - shootPoint.position).normalized;
 
             GameObject bullet = Instantiate(bulletPrefab, shootPoint.position, Quaternion.LookRotation(direction));
 
@@ -136,17 +144,29 @@ public class MoneySkill : BaseTurretSkill
             if (bulletRb == null)
             {
                 bulletRb = bullet.AddComponent<Rigidbody>();
-                Debug.Log("[MoneySkill] กระสุนไม่มี Rigidbody → เพิ่มให้อัตโนมัติ");
             }
 
             bulletRb.useGravity = false;
             bulletRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             bulletRb.linearVelocity = direction * bulletSpeed;
 
+            // ตรวจสอบและติด Script ทำดาเมจให้กระสุน
+            MoneyBullet dmgScript = bullet.GetComponent<MoneyBullet>();
+            if (dmgScript == null) dmgScript = bullet.AddComponent<MoneyBullet>();
+            dmgScript.damage = damagePerShot;
+            dmgScript.exp = expPerHit; // ส่งค่า EXP ไปให้กระสุนด้วย
+
+            // ตรวจสอบว่ามี Collider ไหม ถ้าไม่มีเพิ่มให้
+            if (bullet.GetComponent<Collider>() == null)
+            {
+                SphereCollider sc = bullet.AddComponent<SphereCollider>();
+                sc.radius = 0.3f;
+                sc.isTrigger = true;
+            }
+
             Destroy(bullet, bulletLifetime);
 
-            Debug.Log($"[MoneySkill] ยิงกระสุนออกไป! ได้รับ EXP {expPerHit}!");
-            // PlayerLevel.Instance.AddExp(expPerHit);
+            Debug.Log($"[MoneySkill] ยิงกระสุนออกไป!");
         }
         else
         {
@@ -232,5 +252,51 @@ public class MoneySkill : BaseTurretSkill
 
         Debug.Log("[MoneySkill] ป้อมถูกทำลาย!");
         Destroy(gameObject);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// คลาสสำหรับติดไว้ที่ตัวกระสุนเพื่อให้ทำดาเมจและให้ EXP เมื่อชน
+// ─────────────────────────────────────────────────────────────
+public class MoneyBullet : MonoBehaviour
+{
+    public float damage;
+    public float exp;
+    private bool hasHit = false;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        HandleHit(other.gameObject);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        HandleHit(collision.gameObject);
+    }
+
+    private void HandleHit(GameObject hitObj)
+    {
+        if (hasHit) return;
+
+        // ข้ามการชนกับป้อมตัวเอง หรือกระสุนด้วยกัน หรือผู้เล่น
+        if (hitObj.CompareTag("Player") || hitObj.CompareTag("Bullet") || hitObj.name.Contains("Money")) return;
+
+        var enemy = hitObj.GetComponentInParent<ITCLASH.Enemies.EnemyController>();
+        if (enemy != null)
+        {
+            hasHit = true;
+            enemy.ApplyDamage(damage);
+            
+            Debug.Log($"[MoneyBullet] ยิงโดนศัตรู! ทำดาเมจ {damage} และได้รับ EXP {exp}!");
+            // PlayerLevel.Instance.AddExp(exp); // เปิดใช้งานได้ถ้ามีระบบ PlayerLevel
+            
+            Destroy(gameObject);
+        }
+        else 
+        {
+            // ชนกำแพงหรือฉาก
+            hasHit = true;
+            Destroy(gameObject);
+        }
     }
 }
