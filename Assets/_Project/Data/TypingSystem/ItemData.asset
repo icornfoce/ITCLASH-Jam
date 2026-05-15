@@ -27,7 +27,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 2382775708128415278, guid: a8ede9ebbaff6d543b0b31e6ace1b433, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 1
+    isUnlocked: 0
     itemSkill: {fileID: 4588876719905230272, guid: f37ca0ae1996d5c439aa6837dbdf9f23, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
@@ -236,6 +236,24 @@ MonoBehaviour:
     itemSize: {x: 0, y: 0, z: 0}
     isUnlocked: 0
     itemSkill: {fileID: 1284868079160593247, guid: 0e0b93972fc39314783011c8986d8ab6, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: dumpling
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 1854454774246952120, guid: ff140be1615b5d240a17ff397e99a5d6, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 1
+    itemSkill: {fileID: 1854454774246952120, guid: c49ca04dd62cfff4d8458c14e2d5f45f, type: 3}
+    skillSpawnOffset: {x: 0, y: 1, z: 1}
+    skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
+  - itemName: fiskeleton
+    description: 
+    icon: {fileID: 0}
+    itemPrefab: {fileID: 6655034624085930607, guid: f000895f43bfe88419029322e65c7ff2, type: 3}
+    itemSize: {x: 0, y: 0, z: 0}
+    isUnlocked: 1
+    itemSkill: {fileID: 4588876719905230272, guid: f37ca0ae1996d5c439aa6837dbdf9f23, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   combinations: []
