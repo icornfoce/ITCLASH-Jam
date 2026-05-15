@@ -155,11 +155,11 @@ public class AimTypingSystem : MonoBehaviour
     private struct RendererData
     {
         public Renderer renderer;
-        public Material[] materials;
         public Color[] originalColors;
         public Color[] originalEmissions;
     }
     private List<RendererData> targetRenderers = new List<RendererData>();
+    private MaterialPropertyBlock propBlock;
 
     // States
     private bool isZooming;        // กำลัง Scope/Zoom อยู่ (กดคลิกขวา 1)
@@ -190,6 +190,8 @@ public class AimTypingSystem : MonoBehaviour
 
     private void Awake()
     {
+        propBlock = new MaterialPropertyBlock();
+
         // ค้นหา Camera
         playerCamera = Camera.main;
         if (playerCamera == null)
@@ -240,6 +242,11 @@ public class AimTypingSystem : MonoBehaviour
         {
             inputField.onValueChanged.RemoveListener(OnInputValueChanged);
         }
+    }
+
+    private void OnDisable()
+    {
+        ResetHighlight();
     }
 
     private void Update()
@@ -344,28 +351,30 @@ public class AimTypingSystem : MonoBehaviour
         {
             if (r == null || r.sharedMaterials == null) continue;
 
-            Material[] mats = r.materials; // สร้าง instances
-            Color[] baseColors = new Color[mats.Length];
-            Color[] emissionColors = new Color[mats.Length];
+            Material[] origMats = r.sharedMaterials; // ใช้ sharedMaterials เพื่อหลีกเลี่ยงการสร้าง Instance เด็ดขาด
+            if (origMats == null || origMats.Length == 0) continue;
 
-            for (int i = 0; i < mats.Length; i++)
+            Color[] baseColors = new Color[origMats.Length];
+            Color[] emissionColors = new Color[origMats.Length];
+
+            for (int i = 0; i < origMats.Length; i++)
             {
-                // เก็บค่าสีหลัก
-                if (mats[i].HasProperty("_Color")) baseColors[i] = mats[i].color;
-                else if (mats[i].HasProperty("_BaseColor")) baseColors[i] = mats[i].GetColor("_BaseColor");
+                Material m = origMats[i];
+                if (m == null) continue;
 
-                // เก็บค่าสี Emission
-                if (mats[i].HasProperty("_EmissionColor"))
-                {
-                    emissionColors[i] = mats[i].GetColor("_EmissionColor");
-                    mats[i].EnableKeyword("_EMISSION"); // บังคับเปิด Emission
-                }
+                // ดึงค่าสีหลัก (พยายามดึง _BaseColor ของ URP ก่อน)
+                if (m.HasProperty("_BaseColor")) baseColors[i] = m.GetColor("_BaseColor");
+                else if (m.HasProperty("_Color")) baseColors[i] = m.GetColor("_Color");
+                else baseColors[i] = m.color;
+
+                // ดึงค่าสี Emission
+                if (m.HasProperty("_EmissionColor")) emissionColors[i] = m.GetColor("_EmissionColor");
+                else emissionColors[i] = Color.black;
             }
 
             targetRenderers.Add(new RendererData 
             { 
                 renderer = r,
-                materials = mats,
                 originalColors = baseColors,
                 originalEmissions = emissionColors
             });
@@ -384,32 +393,30 @@ public class AimTypingSystem : MonoBehaviour
 
         // คำนวณจังหวะการกระพริบ (0.0 ถึง 1.0)
         float pulse = (Mathf.Sin(Time.time * flashSpeed) + 1f) * 0.5f;
-        
-        // ผสม Alpha ของ highlightColor เข้ากับจังหวะกระพริบ
-        float currentAlpha = highlightColor.a * pulse;
 
         foreach (var data in targetRenderers)
         {
-            if (data.materials == null) continue;
+            if (data.renderer == null) continue;
 
-            for (int i = 0; i < data.materials.Length; i++)
+            for (int i = 0; i < data.originalColors.Length; i++)
             {
-                Material m = data.materials[i];
-                if (m == null) continue;
+                // ดึงบล็อคของคุณสมบัติ
+                data.renderer.GetPropertyBlock(propBlock, i);
 
                 // 1. ปรับสีหลัก + Alpha
                 Color lerpedColor = Color.Lerp(data.originalColors[i], highlightColor, pulse);
                 lerpedColor.a = Mathf.Lerp(data.originalColors[i].a, highlightColor.a * pulse, pulse);
                 
-                if (m.HasProperty("_Color")) m.color = lerpedColor;
-                else if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", lerpedColor);
+                // เซ็ตทั้งสองชื่อเลย เพื่อให้ครอบคลุมทั้ง URP และ Built-in
+                propBlock.SetColor("_Color", lerpedColor);
+                propBlock.SetColor("_BaseColor", lerpedColor);
 
-                // 2. ปรับ Emission (เรืองแสง) ให้วาบตามจังหวะ pulse
-                if (m.HasProperty("_EmissionColor"))
-                {
-                    Color targetEmission = highlightColor * (emissionIntensity * pulse);
-                    m.SetColor("_EmissionColor", Color.Lerp(data.originalEmissions[i], targetEmission, pulse));
-                }
+                // 2. ปรับ Emission (เรืองแสง)
+                Color targetEmission = highlightColor * (emissionIntensity * pulse);
+                propBlock.SetColor("_EmissionColor", Color.Lerp(data.originalEmissions[i], targetEmission, pulse));
+
+                // นำไปใส่คืน
+                data.renderer.SetPropertyBlock(propBlock, i);
             }
         }
     }
@@ -418,26 +425,13 @@ public class AimTypingSystem : MonoBehaviour
     {
         foreach (var data in targetRenderers)
         {
-            if (data.renderer == null || data.materials == null) continue;
+            if (data.renderer == null) continue;
 
-            for (int i = 0; i < data.materials.Length; i++)
+            for (int i = 0; i < data.originalColors.Length; i++)
             {
-                Material m = data.materials[i];
-                if (m == null) continue;
-
-                // คืนค่าสีหลัก
-                if (m.HasProperty("_Color")) m.color = data.originalColors[i];
-                else if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", data.originalColors[i]);
-
-                // คืนค่า Emission
-                if (m.HasProperty("_EmissionColor"))
-                {
-                    m.SetColor("_EmissionColor", data.originalEmissions[i]);
-                }
+                // ถอด PropertyBlock ออก เพื่อให้คืนค่า Material แบบดั้งเดิม
+                data.renderer.SetPropertyBlock(null, i);
             }
-            
-            // คืนค่า sharedMaterials (ทำลาย instances)
-            // data.renderer.sharedMaterials = ... // จริงๆ แค่เคลียร์ลิสต์ก็พอเพราะ r.materials สร้าง instances ใหม่
         }
         targetRenderers.Clear();
     }
