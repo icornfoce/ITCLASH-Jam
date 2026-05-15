@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
+using ITCLASH.Enemies;
 
 /// <summary>
 /// Skill ของ Fan: พัดศัตรูที่อยู่ข้างหน้าให้กระเด็นออกไป

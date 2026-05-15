@@ -21,11 +21,10 @@ namespace ITCLASH.Enemies
                 c.enabled = false;
 
             owner.Animation.TriggerDie();
-            owner.Audio.PlayDeath();
+            owner.Audio.PlayDeath(owner.transform.position);
             owner.VFX.SpawnDeath(owner.transform);
 
-            float lifetime = owner.Stats != null ? owner.Stats.deathFadeSeconds : 2f;
-            Object.Destroy(owner.gameObject, lifetime);
+            Object.Destroy(owner.gameObject);
         }
 
         public override void Tick(float dt) { }

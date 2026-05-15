@@ -35,6 +35,18 @@ namespace ITCLASH.Enemies
             float v = Mathf.Clamp01(volume + UnityEngine.Random.Range(-volumeJitter, volumeJitter));
             src.PlayOneShot(clip, v);
         }
+
+        public void PlayAtPoint(Vector3 pos)
+        {
+            if (clips == null || clips.Length == 0) return;
+            var clip = clips[UnityEngine.Random.Range(0, clips.Length)];
+            if (clip == null) return;
+
+            // Note: PlayClipAtPoint doesn't support pitch easily, 
+            // but for a one-off death sound it's better than no sound.
+            float v = Mathf.Clamp01(volume + UnityEngine.Random.Range(-volumeJitter, volumeJitter));
+            AudioSource.PlayClipAtPoint(clip, pos, v);
+        }
     }
 
     /// <summary>
@@ -83,6 +95,10 @@ namespace ITCLASH.Enemies
         public void PlayCast()        => cast.Play(source);
         public void PlayHeal()        => heal.Play(source);
         public void PlayGetHit()      => getHit.Play(source);
-        public void PlayDeath()       => death.Play(source);
+        public void PlayDeath(Vector3? pos = null)
+        {
+            if (pos.HasValue) death.PlayAtPoint(pos.Value);
+            else death.Play(source);
+        }
     }
 }

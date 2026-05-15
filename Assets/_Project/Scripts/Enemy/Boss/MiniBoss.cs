@@ -1,11 +1,13 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.Playables;
-using ITCLASH.Enemies;
 
-public class MiniBoss : MonoBehaviour
+namespace ITCLASH.Enemies
 {
+    public class MiniBoss : MonoBehaviour
+    {
+        public event System.Action OnBossDeathEvent;
+        
     [Header("--- Boss Stats ---")]
     public float maxHealth = 1000f;
     private float currentHealth;
@@ -23,6 +25,13 @@ public class MiniBoss : MonoBehaviour
     public LayerMask floorLayer;
     [Tooltip("รัศมีการสุ่มตำแหน่งสกิลรอบตัวบอส")]
     public float globalRandomRadius = 25f;
+
+    [Header("--- Skill Targeting ---")]
+    [Range(0f, 100f)] public float playerTargetChance = 50f;
+    [Tooltip("รัศมีขั้นต่ำรอบตัว Player (เพื่อไม่ให้เกิดทับตัวเป๊ะๆ)")]
+    public float minPlayerTargetRadius = 3.0f;
+    [Tooltip("รัศมีสูงสุดรอบตัว Player")]
+    public float playerTargetRadius = 7.0f;
 
     [Header("--- Eight Rays (Phase 1) ---")]
     public int raysCount = 8;
@@ -51,16 +60,9 @@ public class MiniBoss : MonoBehaviour
     public AudioClip spawnAlertSFX;
     public ParticleSystem spawnAlertVFX;
 
-    [Header("--- Cinematics & UI ---")]
-    public PlayableDirector introTimeline;
-    public PlayableDirector deathTimeline;
-    [Tooltip("UI ทั้งหมดที่จะให้หายไปตอนจบเกม (เช่น HP Bar, Crosshair)")]
-    public GameObject gameUIContainer;
-    [Tooltip("UI ตอนชนะ (Victory Screen)")]
-    public GameObject victoryUI;
-
     [Header("--- HP Threshold Waves (Shield Mechanic) ---")]
     public GameObject spawnProjectilePrefab;
+    
     
     [System.Serializable]
     public class BossWaveThreshold
@@ -101,6 +103,9 @@ public class MiniBoss : MonoBehaviour
     private List<GameObject> activeSkillObjects = new List<GameObject>();
     private Dictionary<GameObject, Queue<GameObject>> prefabPools = new Dictionary<GameObject, Queue<GameObject>>();
 
+    private Bounds mapFloorBounds;
+    private bool hasMapBounds = false;
+
     private void Start()
     {
         currentHealth = maxHealth;
@@ -128,31 +133,18 @@ public class MiniBoss : MonoBehaviour
         if (visualTransform != null) initialVisualLocalPos = visualTransform.localPosition;
 
         if (BossHealthUI.Instance != null) BossHealthUI.Instance.Initialize(this, "The Corrupted Mask");
-
-        // เริ่มระบบ Cinematic หรือเริ่มเกมทันที
-        if (introTimeline != null)
-        {
-            StartCoroutine(IntroCinematicSequence());
-        }
-        else
-        {
-            StartCoroutine(SkillCycle());
-            StartCoroutine(StartInitialWaveDelayed());
-        }
+        
+        CalculateFloorBounds();
     }
 
-    private IEnumerator IntroCinematicSequence()
+    public void StartFight()
     {
-        isCasting = true; // ล็อคบอสไว้ไม่ให้ใช้สกิล
-        introTimeline.Play();
-        
-        // รอจนกว่าคัทซีนจะเล่นจบ
-        yield return new WaitUntil(() => introTimeline.state != PlayState.Playing);
-        
-        isCasting = false;
         StartCoroutine(SkillCycle());
         StartCoroutine(StartInitialWaveDelayed());
     }
+
+    // Cinematic logic removed (now handled by BossManager)
+    
 
     private IEnumerator StartInitialWaveDelayed()
     {
@@ -374,22 +366,45 @@ public class MiniBoss : MonoBehaviour
         isCasting = false;
     }
 
-    private IEnumerator ExecuteWaveAttack(List<List<Vector3>> waves, float initialDelay, float waveDelay)
+    private IEnumerator ExecuteWaveAttack(List<List<Vector3>> waves, float warningDelay, float waveDelay)
     {
-        List<List<GameObject>> waveWarnings = new List<List<GameObject>>();
-        foreach (var wave in waves)
-        {
-            List<GameObject> wList = new List<GameObject>();
-            if (warningPrefab != null) foreach (var p in wave) wList.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
-            waveWarnings.Add(wList);
-        }
-        yield return new WaitForSeconds(initialDelay);
+        // Iterate through each wave (e.g. each ray or each expansion step)
         for (int i = 0; i < waves.Count; i++)
         {
-            foreach (var w in waveWarnings[i]) ReturnToPool(warningPrefab, w);
-            PlaySound(ultimateDamageSFX);
-            if (damagePrefab != null) foreach (var p in waves[i]) SpawnSkillObject(damagePrefab, p, Quaternion.identity, 0.5f);
+            List<Vector3> currentWavePoints = waves[i];
+            
+            // Start the sequence for this entire wave: Warnings -> Delay -> Damage
+            StartCoroutine(ExecuteSingleWave(currentWavePoints, warningDelay));
+            
+            // Small delay before starting the next wave's warning
             yield return new WaitForSeconds(waveDelay);
+        }
+    }
+
+    private IEnumerator ExecuteSingleWave(List<Vector3> points, float delay)
+    {
+        List<GameObject> warnings = new List<GameObject>();
+        
+        // Spawn all warnings for this wave (with a tiny stagger to avoid lag spikes)
+        foreach (var p in points)
+        {
+            if (warningPrefab != null) warnings.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
+            if (points.Count > 5) yield return new WaitForSeconds(0.01f); 
+        }
+
+        yield return new WaitForSeconds(delay);
+
+        // Clean up warnings
+        foreach (var w in warnings) if (w != null) ReturnToPool(warningPrefab, w);
+        
+        // Trigger damage for this wave
+        PlaySound(ultimateDamageSFX);
+        if (damagePrefab != null)
+        {
+            foreach (var p in points)
+            {
+                SpawnSkillObject(damagePrefab, p, Quaternion.identity, 0.5f);
+            }
         }
     }
 
@@ -398,14 +413,36 @@ public class MiniBoss : MonoBehaviour
         isCasting = true;
         if (animator != null) animator.SetTrigger(attackAnimTrig);
         yield return new WaitForSeconds(0.5f);
-        List<Vector3> spawnPoints = new List<Vector3>();
-        for (int i = 0; i < count; i++) { Vector3 pos = GetRandomGroundPosition(); if (pos != transform.position) spawnPoints.Add(pos); }
-        List<GameObject> warnings = new List<GameObject>();
-        if (warningPrefab != null) foreach (Vector3 p in spawnPoints) warnings.Add(SpawnSkillObject(warningPrefab, p, Quaternion.identity));
-        yield return new WaitForSeconds(1.5f);
-        foreach (GameObject w in warnings) ReturnToPool(warningPrefab, w);
-        if (damagePrefab != null) foreach (Vector3 p in spawnPoints) SpawnSkillObject(damagePrefab, p, Quaternion.identity, 1f);
+        
+        for (int i = 0; i < count; i++) 
+        { 
+            Vector3 pos = GetRandomGroundPosition(); 
+            if (pos != transform.position)
+            {
+                // Spawn warning and schedule damage automatically
+                StartCoroutine(SpawnPointSkill(pos, 1.5f, 1f));
+            }
+            yield return new WaitForSeconds(0.15f); // Stagger the individual drops
+        }
+        
+        yield return new WaitForSeconds(2.0f); // Buffertime for last drop to finish
         isCasting = false;
+    }
+
+    private IEnumerator SpawnPointSkill(Vector3 pos, float warningDuration, float damageDuration)
+    {
+        if (warningPrefab == null) yield break;
+        
+        GameObject warning = SpawnSkillObject(warningPrefab, pos, Quaternion.identity);
+        yield return new WaitForSeconds(warningDuration);
+        
+        ReturnToPool(warningPrefab, warning);
+        
+        // สำหรับสกิลทั่วไปที่กระจายตัว อาจไม่เล่นเสียงทุกจุดเพื่อไม่ให้หนวกหูเกินไป
+        // แต่ถ้าต้องการให้เล่นเสียงทุกจุด สามารถเปิดคอมเมนต์บรรทัดล่างได้ครับ
+        // PlaySound(ultimateDamageSFX); 
+        
+        if (damagePrefab != null) SpawnSkillObject(damagePrefab, pos, Quaternion.identity, damageDuration);
     }
 
     private IEnumerator VoidZone()
@@ -413,16 +450,74 @@ public class MiniBoss : MonoBehaviour
         isCasting = true;
         if (animator != null) animator.SetTrigger(attackAnimTrig);
         yield return new WaitForSeconds(0.5f);
-        List<Vector3> spawnPoints = new List<Vector3>();
-        for (int i = 0; i < voidZoneCount; i++) { Vector3 pos = GetRandomGroundPosition(); if (pos != transform.position) spawnPoints.Add(pos); }
-        if (voidZonePrefab != null) foreach (Vector3 p in spawnPoints) SpawnSkillObject(voidZonePrefab, p, Quaternion.identity, voidZoneDuration);
+        
+        for (int i = 0; i < voidZoneCount; i++) 
+        { 
+            Vector3 pos = GetRandomGroundPosition(); 
+            if (pos != transform.position)
+            {
+                if (voidZonePrefab != null) SpawnSkillObject(voidZonePrefab, pos, Quaternion.identity, voidZoneDuration);
+            }
+            yield return new WaitForSeconds(0.2f); 
+        }
+        
         yield return new WaitForSeconds(1f);
         isCasting = false;
     }
 
+    private void CalculateFloorBounds()
+    {
+        // ค้นหาวัตถุทั้งหมดที่มี Layer ตรงกับ floorLayer เพื่อหาขอบเขตทั้งหมดของแมพ
+        Collider[] allColliders = Object.FindObjectsByType<Collider>(FindObjectsSortMode.None);
+        bool first = true;
+        foreach (var col in allColliders)
+        {
+            // ตรวจสอบว่า collider นี้อยู่ใน floorLayer หรือไม่
+            if (((1 << col.gameObject.layer) & floorLayer) != 0)
+            {
+                if (first) { mapFloorBounds = col.bounds; first = false; }
+                else mapFloorBounds.Encapsulate(col.bounds);
+            }
+        }
+        hasMapBounds = !first;
+        if (hasMapBounds) Debug.Log($"<color=green>[MiniBoss]</color> Map Floor Bounds Calculated: {mapFloorBounds}");
+    }
+
     private Vector3 GetRandomGroundPosition()
     {
-        for (int i = 0; i < 50; i++)
+        // ตัดสินใจว่าจะสุ่มใกล้ตัวผู้เล่นหรือสุ่มทั่วทั้งแมพตามเปอร์เซ็นต์ที่ตั้งไว้
+        bool targetPlayer = (Random.Range(0f, 100f) < playerTargetChance) && playerTransform != null;
+        
+        if (targetPlayer)
+        {
+            Vector3 centerPos = playerTransform.position;
+            float radius = playerTargetRadius;
+            for (int i = 0; i < 30; i++)
+            {
+                float r = Random.Range(minPlayerTargetRadius, radius);
+                float angle = Random.Range(0f, 360f);
+                Vector3 offset = new Vector3(Mathf.Cos(angle * Mathf.Deg2Rad), 0, Mathf.Sin(angle * Mathf.Deg2Rad)) * r;
+                Vector3 targetPos = centerPos + offset;
+
+                Vector3[] floorHits = GetFloorPositions(new Vector2(targetPos.x, targetPos.z), false);
+                if (floorHits != null && floorHits.Length > 0) return floorHits[0];
+            }
+        }
+        else if (hasMapBounds)
+        {
+            // สุ่มตำแหน่งที่ใดก็ได้ภายในขอบเขตของ Floor ทั้งหมดในแมพ
+            for (int i = 0; i < 50; i++)
+            {
+                float x = Random.Range(mapFloorBounds.min.x, mapFloorBounds.max.x);
+                float z = Random.Range(mapFloorBounds.min.z, mapFloorBounds.max.z);
+                
+                Vector3[] floorHits = GetFloorPositions(new Vector2(x, z), false);
+                if (floorHits != null && floorHits.Length > 0) return floorHits[0];
+            }
+        }
+
+        // Fallback เป็นตำแหน่งเดิม (รอบตัวบอส) ถ้าสุ่มข้างบนไม่เจอ
+        for (int i = 0; i < 20; i++)
         {
             float r = Random.Range(2f, globalRandomRadius);
             float angle = Random.Range(0f, 360f);
@@ -430,6 +525,7 @@ public class MiniBoss : MonoBehaviour
             Vector3[] floorHits = GetFloorPositions(new Vector2(targetPos.x, targetPos.z), false);
             if (floorHits != null && floorHits.Length > 0) return floorHits[0];
         }
+
         return transform.position;
     }
 
@@ -489,61 +585,15 @@ public class MiniBoss : MonoBehaviour
         Collider col = GetComponent<Collider>(); 
         if (col != null) col.enabled = false; 
 
-        // เริ่มคัทซีนตอนตาย
-        if (deathTimeline != null)
-        {
-            StartCoroutine(DeathCinematicSequence());
-        }
-        else
-        {
-            // ถ้าไม่มีคัทซีน ให้จบเกมแบบปกติ
-            HandleGameOverUI();
-            Destroy(gameObject, 3f); 
-        }
-    }
-
-    private IEnumerator DeathCinematicSequence()
-    {
-        // 1. ล็อคการควบคุมผู้เล่น
-        DisablePlayerControl();
-
-        // 2. เล่นคัทซีน
-        deathTimeline.Play();
-
-        // 3. ซ่อน UI เกม
-        if (gameUIContainer != null) gameUIContainer.SetActive(false);
-
-        // รอคัทซีนจบ
-        yield return new WaitUntil(() => deathTimeline.state != PlayState.Playing);
-
-        // 4. โชว์ UI ชนะ
-        HandleGameOverUI();
-    }
-
-    private void DisablePlayerControl()
-    {
-        if (playerTransform != null)
-        {
-            // ปิดสคริปต์ควบคุมตัวละคร
-            var controller = playerTransform.GetComponent<PlayerController>();
-            if (controller != null) controller.enabled = false;
-
-            // ปิดสคริปต์ควบคุมกล้อง (หาในลูกๆ หรือจุดที่เก็บกล้องไว้)
-            var cam = playerTransform.GetComponentInChildren<FirstPersonCamera>();
-            if (cam != null) cam.enabled = false;
-
-            // ปลดล็อคเมาส์มาให้กดปุ่มตอนจบ
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-    }
-
-    private void HandleGameOverUI()
-    {
-        if (victoryUI != null) victoryUI.SetActive(true);
-        if (gameUIContainer != null) gameUIContainer.SetActive(false);
+        // ส่งสัญญาณบอก BossManager
+        OnBossDeathEvent?.Invoke();
         
-        // ถ้าไม่มีอะไรทำต่อ อาจจะทำลาย Boss ทิ้ง
-        // Destroy(gameObject, 1f); 
+        // ลบ Boss ออกจากฉากหลังจากดีเลย์
+        Destroy(gameObject, 10f); 
     }
+
+    // Cinematics and UI logic removed (now handled by BossManager)
+    private void DisablePlayerControl() { /* Moved to BossManager logic or equivalent */ }
+    private void HandleGameOverUI() { /* Moved to BossManager */ }
+}
 }
