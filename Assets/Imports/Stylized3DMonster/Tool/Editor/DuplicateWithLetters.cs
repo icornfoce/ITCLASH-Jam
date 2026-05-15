@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+#if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor;
 using System.IO;
 
@@ -95,3 +96,4 @@ public class DuplicateWithLetters : Editor
         Undo.RegisterCreatedObjectUndo(newObj, "Duplicate With Letters");
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System.IO;
@@ -373,3 +374,4 @@ public class PixeliusVita_Tool : EditorWindow
         res.SetPixels(p); res.Apply(); return res;
     }
 }
+#endif
