@@ -66,6 +66,9 @@ public class AimTypingSystem : MonoBehaviour
     [Tooltip("TMP_InputField ช่องพิมพ์")]
     [SerializeField] private TMP_InputField inputField;
 
+    [Tooltip("สีพื้นหลังไฮไลท์ของตัวอักษรช่วยพิมพ์ (ลดค่า Alpha ให้จางลง)")]
+    [SerializeField] private Color autocompleteHighlightColor = new Color(0.1f, 0.4f, 0.8f, 0.15f); // ฟ้าจางมากๆ
+
     [Tooltip("TMP_Text แสดงคำที่ต้องพิมพ์ (แสดงบน Crosshair หรือด้านบนจอ)")]
     [SerializeField] private TMP_Text targetWordLabel;
 
@@ -214,7 +217,10 @@ public class AimTypingSystem : MonoBehaviour
         }
 
         if (inputField != null)
+        {
             inputField.onValueChanged.AddListener(OnInputValueChanged);
+            inputField.selectionColor = autocompleteHighlightColor; // ปรับสีไฮไลท์
+        }
 
         // Fallback for AudioSource if not assigned
         if (audioSource == null)

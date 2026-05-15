@@ -10,6 +10,9 @@ public class TypingSystem : MonoBehaviour
     [SerializeField] private GameObject typingUI; 
     [SerializeField] private TMP_InputField inputField;
 
+    [Tooltip("สีพื้นหลังไฮไลท์ของตัวอักษรช่วยพิมพ์ (ลดค่า Alpha ให้จางลง)")]
+    [SerializeField] private Color autocompleteHighlightColor = new Color(0.1f, 0.4f, 0.8f, 0.15f); // ฟ้าจางมากๆ
+
     [Header("─── Aim Typing Guard ───")]
     [Tooltip("ลาก AimTypingSystem มาใส่ — ป้องกัน TypingUI โผล่ตอนกำลัง Aim อยู่")]
     [SerializeField] private AimTypingSystem aimTypingSystem;
@@ -139,6 +142,7 @@ public class TypingSystem : MonoBehaviour
         if (inputField != null)
         {
             inputField.onValueChanged.AddListener(OnInputValueChanged);
+            inputField.selectionColor = autocompleteHighlightColor; // ปรับสีไฮไลท์ให้จางลง
         }
 
         // Fallback for AudioSource if not assigned
