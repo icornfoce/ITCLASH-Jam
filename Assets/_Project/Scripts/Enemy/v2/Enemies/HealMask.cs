@@ -50,7 +50,7 @@ namespace ITCLASH.Enemies
         protected override void Update()
         {
             base.Update();
-            if (PlayerTransform == null || !IsAlive || isSpawning) return;
+            if (GetCombatTarget() == null || !IsAlive || isSpawning) return;
 
 
             // --- Wall Avoidance Check (8-Direction Scan) ---
@@ -146,9 +146,12 @@ namespace ITCLASH.Enemies
         private void MaintainBacklinePosition()
         {
             if (Agent == null || !Agent.isOnNavMesh) return;
-            Vector3 retreatDir = (transform.position - PlayerTransform.position).normalized;
+            var target = GetCombatTarget();
+            if (target == null) return;
+
+            Vector3 retreatDir = (transform.position - target.position).normalized;
             retreatDir.y = 0;
-            Vector3 backlinePos = PlayerTransform.position + retreatDir * safeDistance;
+            Vector3 backlinePos = target.position + retreatDir * safeDistance;
             Agent.SetDestination(backlinePos);
             Agent.stoppingDistance = 2f;
             Agent.isStopped = false;

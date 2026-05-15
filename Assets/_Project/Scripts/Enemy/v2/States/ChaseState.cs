@@ -27,11 +27,12 @@ namespace ITCLASH.Enemies
 
         public override void Tick(float dt)
         {
-            if (owner.PlayerTransform == null) return;
+            var target = owner.GetCombatTarget();
+            if (target == null) return;
 
             if (owner.Agent != null && owner.Agent.isOnNavMesh)
             {
-                if (owner.DistanceToPlayer() <= owner.Stats.meleeRange)
+                if (owner.DistanceToCombatTarget() <= owner.Stats.meleeRange)
                 {
                     // In range but on cooldown — hold position.
                     owner.Agent.isStopped = true;
@@ -41,7 +42,7 @@ namespace ITCLASH.Enemies
                 else
                 {
                     owner.Agent.isStopped = false;
-                    owner.Agent.SetDestination(owner.PlayerTransform.position);
+                    owner.Agent.SetDestination(target.position);
                     owner.Animation.SetWalking(true);
                 }
             }

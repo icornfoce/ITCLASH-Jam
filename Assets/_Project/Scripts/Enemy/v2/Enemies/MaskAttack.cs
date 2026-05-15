@@ -61,10 +61,10 @@ namespace ITCLASH.Enemies
         protected override void Update()
         {
             base.Update();
-            if (PlayerTransform == null || !IsAlive || isSpawning) return;
+            var target = GetCombatTarget();
+            if (target == null || !IsAlive || isSpawning) return;
 
-
-            float dist = DistanceToPlayer();
+            float dist = DistanceToCombatTarget();
 
             switch (currentState)
             {
@@ -90,15 +90,19 @@ namespace ITCLASH.Enemies
 
         private bool HasLineOfSight()
         {
-            if (PlayerTransform == null) return false;
+            var targetTransform = GetCombatTarget();
+            if (targetTransform == null) return false;
+            
             Vector3 origin = transform.position + Vector3.up * 1.0f;
-            Vector3 target = PlayerTransform.position + Vector3.up * 1.5f;
-            Vector3 dir = (target - origin).normalized;
-            float dist = Vector3.Distance(origin, target);
+            Vector3 targetPos = targetTransform.position + Vector3.up * 1.5f;
+            Vector3 dir = (targetPos - origin).normalized;
+            float dist = Vector3.Distance(origin, targetPos);
+            
             int mask = ~LayerMask.GetMask("Enemy", "Projectile", "Ignore Raycast");
             if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, mask, QueryTriggerInteraction.Ignore))
             {
-                if (hit.collider.CompareTag("Player")) return true;
+                // ถ้าชนเป้าหมาย หรือ ชนตัวลูกของเป้าหมาย ถือว่าเห็น
+                if (hit.transform.root == targetTransform.root) return true;
                 return false; 
             }
             return true;
@@ -112,9 +116,9 @@ namespace ITCLASH.Enemies
             if (dist <= attackRange && Time.time >= nextAttackTime && HasLineOfSight())
             {
                 if (ActiveAttackers < maxSimultaneousAttackers) StartWindUp();
-                else MoveTowardsPlayer(attackRange);
+                else MoveTowardsCombatTarget(attackRange);
             }
-            else MoveTowardsPlayer(attackRange - 1f);
+            else MoveTowardsCombatTarget(attackRange - 1f);
         }
 
         private void StartWindUp()
@@ -127,19 +131,20 @@ namespace ITCLASH.Enemies
                 Agent.isStopped = true;
                 Agent.velocity = Vector3.zero;
             }
-            Vector3 backDir = (transform.position - PlayerTransform.position).normalized;
+            var target = GetCombatTarget();
+            Vector3 backDir = (transform.position - (target != null ? target.position : transform.position)).normalized;
             Vector3 targetBack = transform.position + backDir * windUpDist;
             StartCoroutine(WindUpRoutine(targetBack));
         }
 
-        private IEnumerator WindUpRoutine(Vector3 target)
+        private IEnumerator WindUpRoutine(Vector3 retreatTarget)
         {
             float elapsed = 0;
             float retreatDuration = 0.6f; 
             Vector3 start = transform.position;
             while (elapsed < retreatDuration)
             {
-                Vector3 nextPos = Vector3.Lerp(start, target, elapsed / retreatDuration);
+                Vector3 nextPos = Vector3.Lerp(start, retreatTarget, elapsed / retreatDuration);
                 WarpTo(nextPos);
                 elapsed += Time.deltaTime;
                 yield return null;
@@ -148,9 +153,9 @@ namespace ITCLASH.Enemies
             if (targetTransform != null) dashTargetPos = targetTransform.position;
             else
             {
-                // เล็งไปที่กล้องหลักเสมอ เพื่อให้พุ่งใส่หน้าผู้เล่น
-                if (Camera.main != null) dashTargetPos = Camera.main.transform.position;
-                else dashTargetPos = PlayerTransform.position + Vector3.up * 1.5f;
+                var combatTarget = GetCombatTarget();
+                if (combatTarget != null) dashTargetPos = combatTarget.position + Vector3.up * 1.5f;
+                else dashTargetPos = transform.position + transform.forward * 5f;
             }
             currentState = MaskState.Dashing;
             dashStartTime = Time.time;
@@ -162,21 +167,28 @@ namespace ITCLASH.Enemies
         {
             Vector3 nextPos = Vector3.MoveTowards(transform.position, dashTargetPos, dashSpeed * Time.deltaTime);
             WarpTo(nextPos);
-            float distToPlayer = Vector3.Distance(transform.position, PlayerTransform.position);
-            if (distToPlayer < 1.5f) TriggerHitPlayer();
+            float distToTarget = DistanceToCombatTarget();
+            if (distToTarget < 1.5f) TriggerHitTarget();
             else if (Vector3.Distance(transform.position, dashTargetPos) < 0.5f || (Time.time - dashStartTime) > maxDashDuration)
                 currentState = MaskState.Returning;
         }
 
-        private void TriggerHitPlayer()
+        private void TriggerHitTarget()
         {
             currentState = MaskState.Returning;
-            if (PlayerHealth != null) PlayerHealth.TakeDamage(10);
-            PlayerController playerCtrl = PlayerTransform.GetComponent<PlayerController>();
-            if (playerCtrl != null) playerCtrl.ApplyKnockback((PlayerTransform.position - transform.position).normalized * knockbackForce);
-            Vector3 escapeDir = (transform.position - PlayerTransform.position).normalized;
+            
+            var target = GetCombatTarget();
+            if (target == null) return;
+
+            var damageable = GetCombatTargetDamageable();
+            if (damageable != null) damageable.ApplyDamage(10);
+
+            IKnockbackable knockable = target.GetComponentInParent<IKnockbackable>();
+            if (knockable != null) knockable.ApplyKnockback((target.position - transform.position).normalized * knockbackForce);
+            
+            Vector3 escapeDir = (transform.position - target.position).normalized;
             if (escapeDir == Vector3.zero) escapeDir = -transform.forward;
-            WarpTo(PlayerTransform.position + escapeDir * 2.0f);
+            WarpTo(target.position + escapeDir * 2.0f);
         }
 
         private void HandleReturning()
@@ -198,25 +210,29 @@ namespace ITCLASH.Enemies
         {
             if (HandleWallAvoidance()) return;
             ApplyGroupSpacing();
-            MoveTowardsPlayer(attackRange);
+            MoveTowardsCombatTarget(attackRange);
             if (Time.time >= nextAttackTime) currentState = MaskState.Idle;
         }
 
-        private void MoveTowardsPlayer(float stopDist)
+        private void MoveTowardsCombatTarget(float stopDist)
         {
             if (Agent == null || !Agent.isOnNavMesh) return;
-            float dist = DistanceToPlayer();
+            
+            var target = GetCombatTarget();
+            if (target == null) return;
+
+            float dist = Vector3.Distance(transform.position, target.position);
             if (dist < retreatDistance)
             {
-                Vector3 retreatDir = (transform.position - PlayerTransform.position).normalized;
+                Vector3 retreatDir = (transform.position - target.position).normalized;
                 retreatDir.y = 0;
                 Agent.isStopped = false;
-                Agent.SetDestination(PlayerTransform.position + retreatDir * (retreatDistance + 2f));
+                Agent.SetDestination(target.position + retreatDir * (retreatDistance + 2f));
             }
             else if (dist > stopDist)
             {
                 Agent.isStopped = false;
-                Agent.SetDestination(PlayerTransform.position);
+                Agent.SetDestination(target.position);
             }
             else
             {

@@ -56,17 +56,18 @@ namespace ITCLASH.Enemies
             didFire = true;
 
             var prefab = owner.Stats.projectilePrefab;
-            if (prefab == null || owner.PlayerTransform == null) return;
+            var target = owner.GetCombatTarget();
+            if (prefab == null || target == null) return;
 
             Vector3 muzzlePos = owner.OrbSpawnPoint.position;
-            Vector3 toPlayer  = owner.PlayerTransform.position - muzzlePos;
-            Quaternion rot = Quaternion.LookRotation(toPlayer.normalized);
+            Vector3 toTarget  = target.position - muzzlePos;
+            Quaternion rot = Quaternion.LookRotation(toTarget.normalized);
 
             var go = Object.Instantiate(prefab, muzzlePos, rot);
             if (go.TryGetComponent(out EnemyProjectile proj))
             {
                 proj.Launch(
-                    direction: toPlayer.normalized,
+                    direction: toTarget.normalized,
                     speed: owner.Stats.projectileSpeed,
                     damage: owner.Stats.projectileDamage,
                     lifetime: LIFETIME,

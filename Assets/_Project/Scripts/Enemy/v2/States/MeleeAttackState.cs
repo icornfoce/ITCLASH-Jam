@@ -56,12 +56,15 @@ namespace ITCLASH.Enemies
             if (didHit) return;
             didHit = true;
 
-            if (owner.PlayerHealth == null || owner.PlayerTransform == null) return;
-            if (owner.DistanceToPlayer() <= owner.Stats.meleeRange + 0.5f)
+            var target     = owner.GetCombatTarget();
+            var damageable = owner.GetCombatTargetDamageable();
+            if (target == null || damageable == null) return;
+
+            if (owner.DistanceToCombatTarget() <= owner.Stats.meleeRange + 0.5f)
             {
-                owner.PlayerHealth.TakeDamage(owner.Stats.meleeDamage);
+                damageable.ApplyDamage(owner.Stats.meleeDamage);
                 owner.Audio.PlayAttackHit();
-                owner.VFX.SpawnHitImpact(owner.transform, owner.PlayerTransform.position);
+                owner.VFX.SpawnHitImpact(owner.transform, target.position);
             }
         }
     }

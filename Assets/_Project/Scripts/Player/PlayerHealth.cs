@@ -1,8 +1,15 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerHealth : MonoBehaviour
+public class PlayerHealth : MonoBehaviour, ITCLASH.Enemies.IDamageable
 {
+    // IDamageable Implementation
+    public Transform Transform => transform;
+    public float HealthPercent => GetHealthNormalized();
+    public bool IsAlive => !isDead;
+    public void ApplyDamage(float amount) => TakeDamage(amount);
+    // Heal(float) is already implemented below
+
     [Header("Health Settings")]
     public float maxHealth = 100f;
     [SerializeField] private float currentHealth;

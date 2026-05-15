@@ -56,6 +56,86 @@ namespace ITCLASH.Enemies
         public Transform PlayerTransform { get; private set; }
         public PlayerHealth PlayerHealth { get; private set; }
 
+        // ── Summon Taunt System ──────────────────────────────────────────────────
+        // ศัตรูทุกตัวจะเลือกเป้าหมายจาก Player หรือ Summon ที่ใกล้ที่สุดโดยอัตโนมัติ
+        private static readonly System.Collections.Generic.List<Transform> _activeSummons
+            = new System.Collections.Generic.List<Transform>();
+        
+        // รายชื่อ Summon ที่มี Priority สูงสุด (เช่น Socrates)
+        private static readonly System.Collections.Generic.List<Transform> _prioritySummons
+            = new System.Collections.Generic.List<Transform>();
+
+        public static void RegisterSummon(Transform t, bool isPriority = false)   
+        { 
+            if (t == null) return;
+            if (isPriority)
+            {
+                if (!_prioritySummons.Contains(t)) _prioritySummons.Add(t);
+            }
+            else
+            {
+                if (!_activeSummons.Contains(t)) _activeSummons.Add(t); 
+            }
+        }
+        
+        public static void UnregisterSummon(Transform t) 
+        { 
+            _activeSummons.Remove(t); 
+            _prioritySummons.Remove(t);
+        }
+
+        /// <summary>ส่งคืน Transform เป้าหมายที่ใกล้ที่สุด (Priority > Summon > Player)</summary>
+        public Transform GetCombatTarget()
+        {
+            Transform bestTarget = null;
+            float bestDist = float.MaxValue;
+
+            // 1. ค้นหาใน Priority Summons ก่อน (เช่น Socrates)
+            for (int i = _prioritySummons.Count - 1; i >= 0; i--)
+            {
+                var s = _prioritySummons[i];
+                if (s == null) { _prioritySummons.RemoveAt(i); continue; }
+                
+                float d = Vector3.Distance(transform.position, s.position);
+                if (d < bestDist) { bestDist = d; bestTarget = s; }
+            }
+
+            if (bestTarget != null) return bestTarget;
+
+            // 2. ถ้าไม่มี Priority ให้หาใน Summon ปกติ
+            bestDist = float.MaxValue;
+            for (int i = _activeSummons.Count - 1; i >= 0; i--)
+            {
+                var s = _activeSummons[i];
+                if (s == null) { _activeSummons.RemoveAt(i); continue; }
+                
+                float d = Vector3.Distance(transform.position, s.position);
+                if (d < bestDist) { bestDist = d; bestTarget = s; }
+            }
+
+            if (bestTarget != null) return bestTarget;
+
+            // 3. สุดท้ายคือ Player
+            return PlayerTransform;
+        }
+
+        public float DistanceToCombatTarget()
+        {
+            var t = GetCombatTarget();
+            if (t == null) return float.PositiveInfinity;
+            return Vector3.Distance(transform.position, t.position);
+        }
+
+        public IDamageable GetCombatTargetDamageable()
+        {
+            var t = GetCombatTarget();
+            if (t == null) return null;
+            // ถ้าเป้าหมายคือ Player → ใช้ PlayerHealth
+            if (t == PlayerTransform) return PlayerHealth;
+            // ถ้าเป้าหมายคือ Summon → หา IDamageable บน Summon
+            return t.GetComponentInParent<IDamageable>();
+        }
+
         public float CurrentHealth { get; private set; }
         public float HealthPercent => stats != null && stats.maxHealth > 0f
             ? Mathf.Clamp01(CurrentHealth / stats.maxHealth) : 0f;
@@ -149,9 +229,9 @@ namespace ITCLASH.Enemies
             // ── ระบบหันหน้าใหม่ ──
             if (!isDead)
             {
-                if (alwaysFacePlayer && PlayerTransform != null)
+                if (alwaysFacePlayer)
                 {
-                    FacePlayer(Time.deltaTime);
+                    FaceTarget(GetCombatTarget(), Time.deltaTime);
                 }
 
                 if (useFloating)
@@ -167,26 +247,27 @@ namespace ITCLASH.Enemies
             }
         }
 
-        public void FacePlayer(float dt)
+        public void FaceTarget(Transform target, float dt)
         {
-            if (visualTransform == null || PlayerTransform == null) return;
+            if (visualTransform == null || target == null) return;
 
-            // 1. หาิศทางจากตัวมอนสเตอร์ไปยัง Player
-            Vector3 direction = PlayerTransform.position - visualTransform.position;
-            direction.y = 0; // ล็อคแกน Y ไม่ให้หน้ากากเงยขึ้นลง
+            // 1. หาิศทางจากตัวมอนสเตอร์ไปยัง Target
+            Vector3 direction = target.position - visualTransform.position;
+            direction.y = 0; 
 
             if (direction.sqrMagnitude > 0.001f)
             {
-                // 2. คำนวณการหมุน (World Rotation) แบบเดียวกับบอส
-                // โดยเอาทิศทางมาคูณกับ Offset ที่เราตั้งไว้
+                // 2. คำนวณการหมุน (World Rotation) โดยเอาทิศทางมาคูณกับ Offset
                 Quaternion targetRot = Quaternion.LookRotation(direction) * Quaternion.Euler(visualRotationOffset);
                 
                 // 3. หมุนตัวลูก (Visual) โดยตรง
-                // ใช้ RotateTowards เพื่อให้การหันดูนุ่มนวล (หรือจะใช้ = ไปเลยถ้าอยากให้หันทันที)
                 float step = (stats != null ? stats.turnSpeedDeg : 360f) * dt;
                 visualTransform.rotation = Quaternion.RotateTowards(visualTransform.rotation, targetRot, step);
             }
         }
+
+        // Keep FacePlayer for legacy if needed, but it now uses the combat target system
+        public void FacePlayer(float dt) => FaceTarget(GetCombatTarget(), dt);
 
         private void HandleFloating()
         {

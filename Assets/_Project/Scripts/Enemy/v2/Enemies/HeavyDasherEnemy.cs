@@ -25,8 +25,8 @@ namespace ITCLASH.Enemies
 
             chase.DecideTransition = () =>
             {
-                if (PlayerTransform == null) return null;
-                float d = DistanceToPlayer();
+                if (GetCombatTarget() == null) return null;
+                float d = DistanceToCombatTarget();
 
                 // Prefer melee when already point-blank.
                 if (d <= Stats.meleeRange && MeleeReady) return melee;

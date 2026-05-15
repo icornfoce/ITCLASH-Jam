@@ -18,11 +18,11 @@ namespace ITCLASH.Enemies
 
             kite.DecideTransition = () =>
             {
-                if (PlayerTransform == null) return null;
+                if (GetCombatTarget() == null) return null;
                 if (!RangedReady) return null;
-
-                float d = DistanceToPlayer();
-                // Only cast if player is within roughly the kite range — don't fire blind.
+ 
+                float d = DistanceToCombatTarget();
+                // Only cast if target is within roughly the kite range — don't fire blind.
                 if (d <= Stats.preferredRange + 4f && d <= Stats.detectionRadius)
                     return cast;
                 return null;

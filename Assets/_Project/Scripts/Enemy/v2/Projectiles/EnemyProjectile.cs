@@ -91,17 +91,20 @@ namespace ITCLASH.Enemies
         void ResolveHit(RaycastHit hit)
         {
             Debug.Log($"[Projectile] Hit: {hit.collider.name} (Tag: {hit.collider.tag})");
-            // Damage only the player; ignore other enemies / environment besides FX.
-            if (hit.collider.CompareTag("Player"))
+            
+            // หา IDamageable บนเป้าหมาย
+            var damageable = hit.collider.GetComponentInParent<IDamageable>();
+            if (damageable != null)
             {
-                var hp = hit.collider.GetComponent<PlayerHealth>();
-                if (hp == null) hp = hit.collider.GetComponentInParent<PlayerHealth>();
-                if (hp != null)
+                // ตรวจสอบว่าเป้าหมายไม่ใช่ศัตรูเหมือนกัน (เพื่อไม่ให้ยิงโดนกันเอง)
+                // เราเช็คจาก Layer หรือ Tag ก็ได้ แต่ในที่นี้เราจะเช็คว่ามันไม่มี EnemyController
+                if (hit.collider.GetComponentInParent<EnemyController>() == null)
                 {
-                    hp.TakeDamage(damage);
-                    Debug.Log($"[Projectile] Damage {damage} applied to Player.");
+                    damageable.ApplyDamage(damage);
+                    Debug.Log($"[Projectile] Damage {damage} applied to {hit.collider.name}.");
                 }
             }
+            
             Despawn(hit.point);
         }
 

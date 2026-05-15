@@ -54,7 +54,8 @@ namespace ITCLASH.Enemies
         protected override void Update()
         {
             base.Update(); // เรียกตัวแม่ก่อนเสมอเพื่อหา Player และหันหน้า
-            if (PlayerTransform == null || !IsAlive || isSpawning) return;
+            var combatTarget = GetCombatTarget();
+            if (combatTarget == null || !IsAlive || isSpawning) return;
 
 
             // --- Wall Avoidance Check (8-Direction Scan) ---
@@ -63,7 +64,7 @@ namespace ITCLASH.Enemies
             // การหันหน้าจะใช้ระบบของ base.Update() แทนเพื่อให้เสถียรขึ้น
 
 
-            float dist = DistanceToPlayer();
+            float dist = DistanceToCombatTarget();
             if (dist <= attackRange && Time.time >= nextAttackTime && HasLineOfSight())
             {
                 FireProjectile();
@@ -138,15 +139,17 @@ namespace ITCLASH.Enemies
             if (Agent == null || !Agent.isOnNavMesh) return;
             if (currentDist < retreatDistance)
             {
-                Vector3 retreatDir = (transform.position - PlayerTransform.position).normalized;
+                var target = GetCombatTarget();
+                Vector3 retreatDir = (transform.position - target.position).normalized;
                 retreatDir.y = 0;
-                Agent.SetDestination(PlayerTransform.position + retreatDir * (retreatDistance + 2f));
+                Agent.SetDestination(target.position + retreatDir * (retreatDistance + 2f));
                 Agent.isStopped = false;
             }
             else if (currentDist > attackRange || currentDist > midRangeDistance + 1f)
             {
+                var target = GetCombatTarget();
                 Agent.isStopped = false;
-                Agent.SetDestination(PlayerTransform.position);
+                Agent.SetDestination(target.position);
             }
             else
             {
@@ -160,8 +163,10 @@ namespace ITCLASH.Enemies
             if (projectilePrefab == null) return;
             nextAttackTime = Time.time + attackCooldown;
             Vector3 spawnPos = shootPoint != null ? shootPoint.position : transform.position;
+            
+            var target = GetCombatTarget();
             Vector3 targetPos = targetTransform != null ? targetTransform.position : 
-                (Camera.main != null ? Camera.main.transform.position : PlayerTransform.position + Vector3.up * 1.5f);
+                (target != null ? target.position + Vector3.up * 1.5f : transform.position + transform.forward * 10f);
             Vector3 fireDir = (targetPos - spawnPos).normalized;
             float roll = Random.Range(0f, 100f);
             if (roll < randomChance)
@@ -182,15 +187,18 @@ namespace ITCLASH.Enemies
 
         private bool HasLineOfSight()
         {
-            if (PlayerTransform == null) return false;
+            var target = GetCombatTarget();
+            if (target == null) return false;
+            
             Vector3 origin = transform.position + Vector3.up * 1.0f;
-            Vector3 target = Camera.main != null ? Camera.main.transform.position : PlayerTransform.position + Vector3.up * 1.5f;
-            Vector3 dir = (target - origin).normalized;
-            float dist = Vector3.Distance(origin, target);
+            Vector3 targetPos = target.position + Vector3.up * 1.5f;
+            Vector3 dir = (targetPos - origin).normalized;
+            float dist = Vector3.Distance(origin, targetPos);
+            
             int mask = ~LayerMask.GetMask("Enemy", "Projectile", "Ignore Raycast");
             if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, mask, QueryTriggerInteraction.Ignore))
             {
-                if (hit.collider.CompareTag("Player")) return true;
+                if (hit.transform.root == target.root) return true;
                 return false; 
             }
             return true;
@@ -205,10 +213,11 @@ namespace ITCLASH.Enemies
         void Update() { transform.Translate(Vector3.forward * speed * Time.deltaTime); }
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
+            // Damage any IDamageable that is not an enemy
+            var damageable = other.GetComponentInParent<IDamageable>();
+            if (damageable != null && other.GetComponentInParent<EnemyController>() == null)
             {
-                var hp = other.GetComponent<PlayerHealth>();
-                if (hp != null) hp.TakeDamage((int)damage);
+                damageable.ApplyDamage(damage);
                 Destroy(gameObject);
             }
             else if (other.gameObject.layer == 0 || other.CompareTag("Untagged")) Destroy(gameObject);

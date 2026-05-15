@@ -63,6 +63,9 @@ namespace ITCLASH.Enemies
             
             // ปิดการหันหน้าเข้าหาผู้เล่นแบบอัตโนมัติ เพื่อให้หันไปหาศัตรูแทน
             alwaysFacePlayer = false;
+
+            // ลงทะเบียนให้ศัตรูทุกตัวรู้ว่ามี Summon อยู่ และเริ่มโจมตีมัน
+            EnemyController.RegisterSummon(transform);
         }
 
         protected override void Update()
@@ -425,6 +428,9 @@ namespace ITCLASH.Enemies
             base.OnDisable();
             if (currentState == MaskState.WindUp || currentState == MaskState.Dashing || currentState == MaskState.Returning)
                 ActiveSummonAttackers = Mathf.Max(0, ActiveSummonAttackers - 1);
+
+            // ถอดทะเบียนออกจาก Taunt List เมื่อ Summon ตายหรือถูกทำลาย
+            EnemyController.UnregisterSummon(transform);
         }
     }
 }

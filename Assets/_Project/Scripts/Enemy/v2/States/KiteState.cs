@@ -20,16 +20,17 @@ namespace ITCLASH.Enemies
 
         public override void Tick(float dt)
         {
-            if (owner.PlayerTransform == null) return;
+            var target = owner.GetCombatTarget();
+            if (target == null) return;
 
-            float dist = owner.DistanceToPlayer();
+            float dist = owner.DistanceToCombatTarget();
             float preferred = owner.Stats.preferredRange;
             float tooClose  = owner.Stats.tooCloseRange;
 
             Vector3 self    = owner.transform.position;
-            Vector3 toPlay  = owner.PlayerTransform.position - self;
-            toPlay.y = 0f;
-            Vector3 dir = toPlay.sqrMagnitude > 0.0001f ? toPlay.normalized : owner.transform.forward;
+            Vector3 toTarget = target.position - self;
+            toTarget.y = 0f;
+            Vector3 dir = toTarget.sqrMagnitude > 0.0001f ? toTarget.normalized : owner.transform.forward;
 
             if (dist < tooClose)
             {
@@ -48,7 +49,7 @@ namespace ITCLASH.Enemies
                 if (owner.Agent != null && owner.Agent.isOnNavMesh)
                 {
                     owner.Agent.speed = owner.Stats.moveSpeed;
-                    owner.Agent.SetDestination(owner.PlayerTransform.position);
+                    owner.Agent.SetDestination(target.position);
                 }
                 if (owner.Anim != null) owner.Anim.SetBool("IsWalking", true);
             }

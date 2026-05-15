@@ -80,9 +80,10 @@ namespace ITCLASH.Enemies
             phase = Phase.Dashing;
             phaseEndTime = Time.time + owner.Stats.dashDuration;
 
-            // Lock direction at dash start.
-            Vector3 to = owner.PlayerTransform != null
-                ? owner.PlayerTransform.position - owner.transform.position
+            // Lock direction toward the current combat target at dash start.
+            var target = owner.GetCombatTarget();
+            Vector3 to = target != null
+                ? target.position - owner.transform.position
                 : owner.transform.forward;
             to.y = 0f;
             dashDirection = to.sqrMagnitude > 0.0001f ? to.normalized : owner.transform.forward;
@@ -104,16 +105,18 @@ namespace ITCLASH.Enemies
 
         void CheckDashHit()
         {
-            if (didDamage || owner.PlayerHealth == null || owner.PlayerTransform == null) return;
+            var target     = owner.GetCombatTarget();
+            var damageable = owner.GetCombatTargetDamageable();
+            if (didDamage || target == null || damageable == null) return;
 
             Vector3 center = owner.DashImpactPoint.position;
-            float dist = Vector3.Distance(center, owner.PlayerTransform.position);
+            float dist = Vector3.Distance(center, target.position);
             if (dist <= HIT_RADIUS + 0.5f)
             {
                 didDamage = true;
-                owner.PlayerHealth.TakeDamage(owner.Stats.dashDamage);
+                damageable.ApplyDamage(owner.Stats.dashDamage);
                 owner.Audio.PlayAttackHit();
-                owner.VFX.SpawnHitImpact(owner.transform, owner.PlayerTransform.position);
+                owner.VFX.SpawnHitImpact(owner.transform, target.position);
             }
         }
     }
