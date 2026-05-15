@@ -48,19 +48,7 @@ public class Dictionary : MonoBehaviour
         if (iconImage != null) iconImage.texture = info.icon;
     }
 
-    /// <summary>
-    /// Manually sets up the UI with UpgradeItemSO data.
-    /// </summary>
-    public void Setup(UpgradeItemSO info)
-    {
-        if (info == null) return;
-        _isManuallySetup = true;
-        itemData = info;
 
-        if (nameText != null) nameText.text = info.itemName;
-        if (descriptionText != null) descriptionText.text = info.description;
-        if (iconImage != null) iconImage.texture = info.icon;
-    }
 
     /// <summary>
     /// Updates the UI elements by searching for matching fields in the ScriptableObject via reflection.

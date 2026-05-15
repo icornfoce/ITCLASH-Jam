@@ -36,9 +36,6 @@ public class PlayerHealth : MonoBehaviour, ITCLASH.Enemies.IDamageable
     [Tooltip("ความแรงของการกระพริบ (0 = ไม่กระพริบ, 1 = หายไปเลยแล้วกลับมาเข้มสุด)")]
     [Range(0f, 1f)] public float pulseAmount = 0.3f;
 
-    [Header("Death & Quit")]
-    public CanvasGroup fadeGroup; // UI สีดำที่จะให้เฟดตอนตาย
-    public float deathFadeDuration = 2f;
 
     private bool isDead = false;
 
@@ -148,41 +145,11 @@ public class PlayerHealth : MonoBehaviour, ITCLASH.Enemies.IDamageable
     private void Die()
     {
         isDead = true;
-        Debug.Log("Player has died.");
+        Debug.Log("[PlayerHealth] Player has died.");
+
+        // แจ้ง BossManager (และ listeners อื่นๆ) ว่าผู้เล่นตายแล้ว
+        // BossManager จะจัดการ fade ดำ + Defeat UI เอง
         OnDeath?.Invoke();
-        
-        // Disable movement
-        PlayerController controller = GetComponent<PlayerController>();
-        if (controller != null)
-        {
-            controller.enabled = false;
-        }
-
-        // เริ่มขั้นตอนจบเกม (เฟดดำแล้วปิดเกม)
-        StartCoroutine(DeathSequence());
-    }
-
-    private System.Collections.IEnumerator DeathSequence()
-    {
-        if (fadeGroup != null)
-        {
-            fadeGroup.gameObject.SetActive(true);
-            float elapsed = 0f;
-            while (elapsed < deathFadeDuration)
-            {
-                elapsed += Time.deltaTime;
-                fadeGroup.alpha = Mathf.Clamp01(elapsed / deathFadeDuration);
-                yield return null;
-            }
-        }
-
-        Debug.Log("Death fade complete. Quitting game...");
-
-        #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-        #else
-        Application.Quit();
-        #endif
     }
 
     public float GetHealthNormalized()

@@ -61,7 +61,7 @@ public class DevPanelController : MonoBehaviour
             }
 
             // New Enemy System (v2)
-            ITCLASH.Enemies.EnemyController[] allV2Enemies = Object.FindObjectsByType<ITCLASH.Enemies.EnemyController>(FindObjectsSortMode.None);
+            EnemyController[] allV2Enemies = Object.FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
             foreach (var e in allV2Enemies)
             {
                 if (e != null && e.Stats != null)
@@ -72,14 +72,14 @@ public class DevPanelController : MonoBehaviour
                 }
             }
 
-            // MiniBoss
+            // MiniBoss — ต้องใช้ ApplyBossDamage (ApplyDamage ปกติเป็น Immune)
             MiniBoss[] miniBosses = Object.FindObjectsByType<MiniBoss>(FindObjectsSortMode.None);
             foreach (var b in miniBosses)
             {
                 if (b != null)
                 {
                     float dmg = b.maxHealth * 0.2f;
-                    b.ApplyDamage(dmg);
+                    b.ApplyBossDamage(dmg); // ✅ ใช้ method จริง ไม่ใช่ Immune stub
                     count++;
                 }
             }
@@ -87,31 +87,6 @@ public class DevPanelController : MonoBehaviour
             Debug.Log($"<color=orange>[DEV]</color> Damaged {count} enemies for 20% of their MAX HP!");
         }
 
-        // ------------------------------------------------
-        // G: Level + 1
-        // ------------------------------------------------
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            if (PlayerExperience.Instance != null)
-            {
-                float neededExp = PlayerExperience.Instance.maxExpForNextLevel - PlayerExperience.Instance.currentExp;
-                PlayerExperience.Instance.currentExp += neededExp;
-                PlayerExperience.Instance.AddExperience(0); // Trigger check กึ่งบังคับอัพเวล
-                Debug.Log($"<color=orange>[DEV]</color> Forced Level Up! Now level {PlayerExperience.Instance.currentLevel}");
-            }
-        }
-
-        // ------------------------------------------------
-        // H: Add 500 EXP
-        // ------------------------------------------------
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            if (PlayerExperience.Instance != null)
-            {
-                PlayerExperience.Instance.AddExperience(500f);
-                Debug.Log("<color=orange>[DEV]</color> Added 500 Base EXP.");
-            }
-        }
 
         // ------------------------------------------------
         // J: Kill ALL enemies
@@ -130,49 +105,6 @@ public class DevPanelController : MonoBehaviour
             Debug.Log($"<color=orange>[DEV]</color> Killed all {count} enemies!");
         }
 
-        // ------------------------------------------------
-        // K: Kill ONLY closest enemy
-        // ------------------------------------------------
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            Enemy[] allEnemies = Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);
-            Enemy closest = null;
-            float minDistance = float.MaxValue;
-
-            Transform playerT = PlayerExperience.Instance != null ? PlayerExperience.Instance.transform : Camera.main.transform;
-
-            foreach (Enemy e in allEnemies)
-            {
-                float dist = Vector3.Distance(playerT.position, e.transform.position);
-                if (dist < minDistance)
-                {
-                    minDistance = dist;
-                    closest = e;
-                }
-            }
-
-            if (closest != null)
-            {
-                Destroy(closest.gameObject);
-                Debug.Log($"<color=orange>[DEV]</color> Killed closest enemy at {minDistance:F2} unit distance.");
-            }
-            else
-            {
-                Debug.Log("<color=orange>[DEV]</color> No enemy found on map to kill.");
-            }
-        }
-
-        // ------------------------------------------------
-        // L: Force merge nearby gems into Rare Gem
-        // ------------------------------------------------
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            if (GemManager.Instance != null)
-            {
-                Transform playerT = PlayerExperience.Instance != null ? PlayerExperience.Instance.transform : Camera.main.transform;
-                GemManager.Instance.ForceMergeGems(playerT.position, mergeRadius);
-            }
-        }
 
         // ------------------------------------------------
         // V: Force ALL MiniBoss to use Summon Skill
@@ -213,6 +145,7 @@ public class DevPanelController : MonoBehaviour
                 Debug.Log($"<color=orange>[DEV]</color> Forced {bosses.Length} MiniBoss(es) to play skill then die!");
             }
         }
+
         // ------------------------------------------------
         // 1: Force ALL MiniBoss to use Void Zone Skill
         // ------------------------------------------------
@@ -233,7 +166,9 @@ public class DevPanelController : MonoBehaviour
             }
         }
 
+        // ------------------------------------------------
         // 2: Skip Wave
+        // ------------------------------------------------
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             var manager = FindFirstObjectByType<ITCLASH.Spawners.WaveManager>();

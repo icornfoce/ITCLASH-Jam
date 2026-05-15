@@ -588,8 +588,8 @@ namespace ITCLASH.Enemies
         // ส่งสัญญาณบอก BossManager
         OnBossDeathEvent?.Invoke();
         
-        // ลบ Boss ออกจากฉากหลังจากดีเลย์
-        Destroy(gameObject, 10f); 
+        // ลบ Boss ออกจากฉากทันที
+        Destroy(gameObject); 
     }
 
     // Cinematics and UI logic removed (now handled by BossManager)

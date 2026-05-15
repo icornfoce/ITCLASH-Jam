@@ -4,174 +4,336 @@ using System.Collections;
 
 namespace ITCLASH.Enemies
 {
+    /// <summary>
+    /// จัดการ Flow การต่อสู้กับบอสทั้งหมด
+    ///
+    /// FLOW:
+    ///   [Intro Timeline เล่น]
+    ///       → เล่นจบ → Destroy GameObject ที่มี introTimeline
+    ///       → SetActive(true) บอสจริง + StartFight()
+    ///   [บอสตาย]
+    ///       → MiniBoss.Die() → Destroy ตัวเอง → ส่ง event OnBossDeathEvent
+    ///       → เล่น dead timeline
+    ///       → เล่นจบ → ปิด UI ทุกอย่าง + เปิด Victory UI
+    ///   [ผู้เล่นตาย]
+    ///       → เฟดดำ → เปิด Defeat UI
+    /// </summary>
     public class BossManager : MonoBehaviour
     {
         public static BossManager Instance { get; private set; }
 
-        [Header("--- Boss Configuration ---")]
-        public GameObject bossPrefab;
-        public Transform bossSpawnPoint;
+        // ─────────────────────────────────────────────
+        // Inspector Fields
+        // ─────────────────────────────────────────────
 
-        [Header("--- Timelines ---")]
+        [Header("=== Boss Reference ===")]
+        [Tooltip("ลาก MiniBoss (บอสจริง) ที่วางใน Scene มาใส่ — จะถูกซ่อนไว้จนกว่า Intro จะจบ")]
+        public MiniBoss realBoss;
+
+        [Header("=== Timelines ===")]
+        [Tooltip("Intro cutscene — GameObject นี้จะถูก Destroy หลังเล่นจบ")]
         public PlayableDirector introTimeline;
-        public PlayableDirector deathTimeline;
 
-        [Header("--- UI Management ---")]
+        [Tooltip("Dead cutscene — เล่นหลังบอสตาย")]
+        public PlayableDirector deadTimeline;
+
+        [Header("=== UI ===")]
+        [Tooltip("Root ของ UI ทั้งหมดระหว่างเล่น (BossHP, Crosshair, ฯลฯ)")]
         public GameObject gameUIContainer;
+
+        [Tooltip("UI แสดงเมื่อชนะ")]
         public GameObject victoryUI;
+
+        [Tooltip("UI แสดงเมื่อแพ้")]
         public GameObject defeatUI;
 
-        private MiniBoss spawnedBoss;
-        private bool isBossDead = false;
-        private bool isPlayerDead = false;
+        [Header("=== Death Fade ===")]
+        [Tooltip("CanvasGroup สีดำสำหรับ Fade ตอนผู้เล่นตาย")]
+        public CanvasGroup deathFadeGroup;
+        public float deathFadeDuration = 2f;
+
+        // ─────────────────────────────────────────────
+        // Private State
+        // ─────────────────────────────────────────────
+
+        private bool _bossDeadHandled  = false;
+        private bool _playerDeadHandled = false;
+
+        // ─────────────────────────────────────────────
+        // Unity Lifecycle
+        // ─────────────────────────────────────────────
 
         private void Awake()
         {
             if (Instance == null) Instance = this;
-            else Destroy(gameObject);
+            else { Destroy(gameObject); return; }
+
+            // ซ่อนบอสจริงไว้ก่อน เพื่อไม่ให้โผล่ระหว่าง Intro
+            if (realBoss != null)
+                realBoss.gameObject.SetActive(false);
+
+            // ซ่อน UI เกมและหน้าจบ
+            SetActive(gameUIContainer, false);
+            SetActive(victoryUI, false);
+            SetActive(defeatUI, false);
+
+            // ซ่อน Fade Group
+            if (deathFadeGroup != null)
+            {
+                deathFadeGroup.alpha = 0f;
+                deathFadeGroup.gameObject.SetActive(false);
+            }
         }
 
         private void Start()
         {
-            // Subscribe to player death
-            PlayerHealth playerHealth = FindFirstObjectByType<PlayerHealth>();
-            if (playerHealth != null)
-            {
-                playerHealth.OnDeath.AddListener(HandlePlayerDefeat);
-            }
+            Debug.Log("[BossManager] Start() — เริ่มต้น Flow");
 
-            if (introTimeline != null)
+            // Subscribe ตายของ Player
+            PlayerHealth ph = FindFirstObjectByType<PlayerHealth>();
+            if (ph != null)
             {
-                StartCoroutine(FullBossSequence());
+                ph.OnDeath.AddListener(OnPlayerDied);
+                Debug.Log("[BossManager] Subscribe PlayerHealth.OnDeath ✓");
             }
             else
             {
-                // ถ้าไม่มีคัทซีน ให้เสกบอสทันที
-                SpawnBoss();
+                Debug.LogWarning("[BossManager] ไม่พบ PlayerHealth ใน Scene!");
             }
-        }
 
-        private IEnumerator FullBossSequence()
-        {
-            // 1. เตรียมฉาก (ซ่อน UI และล็อคตัวละคร)
-            if (gameUIContainer != null) gameUIContainer.SetActive(false);
-            if (victoryUI != null) victoryUI.SetActive(false);
-            if (defeatUI != null) defeatUI.SetActive(false);
-            SetPlayerControl(false);
-
-            // 2. เล่นคัทซีนเปิดตัว
+            // เริ่ม Flow
             if (introTimeline != null)
             {
-                introTimeline.Play();
-                yield return new WaitUntil(() => introTimeline.state != PlayState.Playing);
+                Debug.Log("[BossManager] พบ introTimeline → เริ่ม IntroSequence");
+                StartCoroutine(IntroSequence());
             }
-
-            // 3. เสกบอสและเริ่มการต่อสู้
-            SpawnBoss();
-            if (gameUIContainer != null) gameUIContainer.SetActive(true);
-            SetPlayerControl(true);
+            else
+            {
+                Debug.Log("[BossManager] ไม่มี introTimeline → BeginFight ทันที");
+                BeginFight();
+            }
         }
 
-        private void SpawnBoss()
+        // ─────────────────────────────────────────────
+        // Main Sequences
+        // ─────────────────────────────────────────────
+
+        private IEnumerator IntroSequence()
         {
-            if (bossPrefab == null || bossSpawnPoint == null)
+            Debug.Log("[BossManager] IntroSequence — ล็อคผู้เล่น + เล่น Intro");
+            SetPlayerControl(false);
+
+            float duration = (float)introTimeline.duration;
+            introTimeline.Play();
+            Debug.Log($"[BossManager] introTimeline.Play() — รอ {duration:F2}s");
+
+            // รอให้ครบ duration ของ Timeline (+ buffer นิดนึง)
+            yield return new WaitForSeconds(duration + 0.1f);
+
+            Debug.Log("[BossManager] Intro เล่นจบแล้ว → ลบ introTimeline GameObject");
+
+            if (introTimeline != null)
             {
-                Debug.LogError("[BossManager] Missing Boss Prefab or Spawn Point!");
+                Destroy(introTimeline.gameObject);
+                introTimeline = null;
+                Debug.Log("[BossManager] Destroy introTimeline.gameObject ✓");
+            }
+
+            yield return null; // รอ 1 frame ให้ Destroy เสร็จ
+            BeginFight();
+        }
+
+        private void BeginFight()
+        {
+            Debug.Log("[BossManager] BeginFight() called");
+
+            if (realBoss == null)
+            {
+                Debug.LogError("[BossManager] ❌ 'realBoss' เป็น null! ลาก MiniBoss มาใส่ใน Inspector");
                 return;
             }
 
-            GameObject bossObj = Instantiate(bossPrefab, bossSpawnPoint.position, bossSpawnPoint.rotation);
-            spawnedBoss = bossObj.GetComponent<MiniBoss>();
+            Debug.Log($"[BossManager] SetActive(true) → {realBoss.name}");
+            realBoss.gameObject.SetActive(true);
+            realBoss.OnBossDeathEvent += OnBossDied;
+            realBoss.StartFight();
 
-            if (spawnedBoss != null)
-            {
-                // ลงทะเบียน Event ตอนบอสตาย
-                spawnedBoss.OnBossDeathEvent += HandleBossDeath;
-                spawnedBoss.StartFight();
-            }
+            SetActive(gameUIContainer, true);
+            SetPlayerControl(true);
+
+            Debug.Log("[BossManager] ✅ Fight Started!");
         }
 
-        private void HandleBossDeath()
-        {
-            if (isBossDead || isPlayerDead) return;
-            isBossDead = true;
+        // ─────────────────────────────────────────────
+        // Event Handlers
+        // ─────────────────────────────────────────────
 
-            StartCoroutine(DeathSequence());
+        /// <summary>
+        /// ถูกเรียกจาก MiniBoss.Die() ผ่าน event
+        /// MiniBoss จะ Destroy ตัวเองหลัง invoke event นี้
+        /// </summary>
+        private void OnBossDied()
+        {
+            if (_bossDeadHandled || _playerDeadHandled) return;
+            _bossDeadHandled = true;
+            StartCoroutine(VictorySequence());
         }
 
-        private void HandlePlayerDefeat()
+        /// <summary>
+        /// ถูกเรียกจาก PlayerHealth.OnDeath
+        /// </summary>
+        private void OnPlayerDied()
         {
-            if (isBossDead || isPlayerDead) return;
-            isPlayerDead = true;
-
+            if (_bossDeadHandled || _playerDeadHandled) return;
+            _playerDeadHandled = true;
             StartCoroutine(DefeatSequence());
         }
 
-        private IEnumerator DeathSequence()
-        {
-            // 1. ซ่อน UI และล็อคตัวละครระหว่างคัทซีนตาย
-            if (gameUIContainer != null) gameUIContainer.SetActive(false);
-            SetPlayerControl(false);
+        // ─────────────────────────────────────────────
+        // Outcome Sequences
+        // ─────────────────────────────────────────────
 
-            // 2. เล่นคัทซีนตอนตาย
-            if (deathTimeline != null)
+        /// <summary>
+        /// บอสตาย → เล่น dead timeline → ปิด UI ทุกอย่าง → Victory UI
+        /// </summary>
+        private IEnumerator VictorySequence()
+        {
+            SetPlayerControl(false);
+            SetActive(gameUIContainer, false);
+
+            // เล่น Dead Timeline (ใช้ duration แบบเดียวกับ intro)
+            if (deadTimeline != null)
             {
-                deathTimeline.Play();
-                yield return new WaitUntil(() => deathTimeline.state != PlayState.Playing);
+                float duration = (float)deadTimeline.duration;
+                deadTimeline.Play();
+                Debug.Log($"[BossManager] deadTimeline.Play() — รอ {duration:F2}s");
+                yield return new WaitForSeconds(duration + 0.1f);
             }
 
-            // 3. โชว์ Victory Screen
-            if (victoryUI != null) victoryUI.SetActive(true);
-            
-            // ปลดล็อคเมาส์มาให้กดปุ่มตอนจบ
+            Debug.Log("[BossManager] Victory!");
+
+            // ปิด UI ทั้งหมด
+            SetActive(gameUIContainer, false);
+            SetActive(defeatUI, false);
+
+            // ปลดล็อคเมาส์ก่อนโชว์ Victory UI
+            // เพื่อให้ผู้เล่นกดปุ่มใน UI ได้ทันที
             Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            Cursor.visible   = true;
+
+            SetActive(victoryUI, true);
         }
 
+
+        /// <summary>
+        /// ผู้เล่นตาย → เฟดดำ → Defeat UI
+        /// </summary>
         private IEnumerator DefeatSequence()
         {
-            // ซ่อน UI เกมและล็อคการควบคุม
-            if (gameUIContainer != null) gameUIContainer.SetActive(false);
             SetPlayerControl(false);
+            SetActive(gameUIContainer, false);
 
-            // รอสักพักให้เห็นตัวละครล้ม
-            yield return new WaitForSeconds(1.5f);
+            // หยุดทุกอย่างในเกม (ศัตรู, physics, animation, ฯลฯ)
+            Time.timeScale = 0f;
+            Debug.Log("[BossManager] Time.timeScale = 0 — เกมหยุดแล้ว");
 
-            // โชว์หน้าจอพ่ายแพ้
-            if (defeatUI != null) defeatUI.SetActive(true);
+            // เฟดดำ — ต้องใช้ unscaledDeltaTime เพราะ timeScale = 0
+            if (deathFadeGroup != null)
+            {
+                deathFadeGroup.gameObject.SetActive(true);
+                float t = 0f;
+                while (t < deathFadeDuration)
+                {
+                    t += Time.unscaledDeltaTime;
+                    deathFadeGroup.alpha = Mathf.Clamp01(t / deathFadeDuration);
+                    yield return null;
+                }
+                deathFadeGroup.alpha = 1f;
+            }
+            else
+            {
+                yield return new WaitForSecondsRealtime(1.5f);
+            }
 
+            Debug.Log("[BossManager] Defeat!");
+
+            // ปลดล็อคเมาส์ + โชว์ Defeat UI
             Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            Cursor.visible   = true;
+
+            SetActive(gameUIContainer, false);
+            SetActive(victoryUI, false);
+            SetActive(defeatUI, true);
+
+            // คืน timeScale ให้ปกติเพื่อให้ UI และปุ่มทำงานได้
+            Time.timeScale = 1f;
         }
 
-        private void SetPlayerControl(bool enabled)
+
+        // ─────────────────────────────────────────────
+        // Helpers
+        // ─────────────────────────────────────────────
+
+        private void SetPlayerControl(bool enable)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
+            if (player == null) return;
+
+            var controller = player.GetComponent<PlayerController>();
+            if (controller != null) controller.enabled = enable;
+
+            var cam = player.GetComponentInChildren<FirstPersonCamera>();
+            if (cam != null) cam.enabled = enable;
+
+            if (enable)
             {
-                var controller = player.GetComponent<PlayerController>();
-                if (controller != null) controller.enabled = enabled;
-
-                var cam = player.GetComponentInChildren<FirstPersonCamera>();
-                if (cam != null) cam.enabled = enabled;
-
-                if (!enabled)
-                {
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
-                }
-                else
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-                }
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible   = false;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible   = true;
             }
         }
 
-        public void ForceStartBoss()
+        private static void SetActive(GameObject go, bool state)
+        {
+            if (go != null) go.SetActive(state);
+        }
+
+        private static void UnlockCursor()
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible   = true;
+        }
+
+        // ─────────────────────────────────────────────
+        // Dev / Debug
+        // ─────────────────────────────────────────────
+
+        /// <summary>เรียกจาก Dev Panel เพื่อข้าม Intro แล้วเริ่มสู้ทันที</summary>
+        public void DEV_SkipIntroAndFight()
         {
             StopAllCoroutines();
-            StartCoroutine(FullBossSequence());
+            if (introTimeline != null) Destroy(introTimeline.gameObject);
+            BeginFight();
+        }
+
+        /// <summary>เรียกจาก Dev Panel เพื่อบังคับ Victory</summary>
+        public void DEV_ForceVictory()
+        {
+            if (_bossDeadHandled || _playerDeadHandled) return;
+            _bossDeadHandled = true;
+            StartCoroutine(VictorySequence());
+        }
+
+        /// <summary>เรียกจาก Dev Panel เพื่อบังคับ Defeat</summary>
+        public void DEV_ForceDefeat()
+        {
+            if (_bossDeadHandled || _playerDeadHandled) return;
+            _playerDeadHandled = true;
+            StartCoroutine(DefeatSequence());
         }
     }
 }
