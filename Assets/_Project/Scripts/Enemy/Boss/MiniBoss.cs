@@ -109,7 +109,7 @@ public class MiniBoss : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
 
-        waveManager = Object.FindObjectOfType<ITCLASH.Spawners.WaveManager>();
+        waveManager = Object.FindFirstObjectByType<ITCLASH.Spawners.WaveManager>();
 
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null) playerTransform = player.transform;
@@ -164,7 +164,7 @@ public class MiniBoss : MonoBehaviour
 
     public void ApplyBossDamage(float amount)
     {
-        if (isDead) return;
+        if (isDead || isInvulnerable) return;
         currentHealth = Mathf.Max(0, currentHealth - amount);
         StartCoroutine(HitEffectRoutine());
         if (currentHealth <= maxHealth * 0.5f && !isPhase2) EnterPhase2();

@@ -215,6 +215,20 @@ public class AimTypingSystem : MonoBehaviour
 
         if (inputField != null)
             inputField.onValueChanged.AddListener(OnInputValueChanged);
+
+        // Fallback for AudioSource if not assigned
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (inputField != null)
+        {
+            inputField.onValueChanged.RemoveListener(OnInputValueChanged);
+        }
     }
 
     private void Update()
@@ -429,13 +443,33 @@ public class AimTypingSystem : MonoBehaviour
             return;
         }
 
-        // ── คลิกซ้าย → ยกเลิกการเล็ง ──
+        // ── คลิกซ้าย ──
         if (Input.GetMouseButtonDown(0))
         {
-            if (isZooming || isAimTyping)
+            // 1. ถ้ากำลังพิมพ์อยู่ -> ยกเลิกการแสกน
+            if (isAimTyping)
             {
                 CancelAll();
                 return;
+            }
+
+            // 2. ถ้าแค่กำลังซูม (Aiming) อยู่เฉยๆ
+            if (isZooming)
+            {
+                // ตรวจสอบว่าใน TypingSystem มีไอเทมให้ปล่อยไหม
+                bool hasItem = typingSystem != null && !string.IsNullOrEmpty(typingSystem.ItemName);
+                
+                if (!hasItem)
+                {
+                    // ถ้าไม่มีไอเทมให้ยิง ให้การคลิกซ้ายเป็นการยกเลิกการซูม (แบบเดิม)
+                    CancelAll();
+                    return;
+                }
+                else
+                {
+                    // ถ้ามีไอเทม ให้ปล่อยให้ TypingSystem.Update ทำงาน (ยิงไอเทม)
+                    // และเราไม่ต้องเรียก CancelAll() ตรงนี้ เพื่อให้ผู้เล่นยิงขณะซูมได้
+                }
             }
         }
 
@@ -645,12 +679,14 @@ public class AimTypingSystem : MonoBehaviour
 
     private void OnInputValueChanged(string newValue)
     {
+        if (this == null) return;
         if (isInternalUpdate || !isAimTyping) return;
 
-        // เล่นเสียงพิมพ์
-        if (typingSFXPool != null && typingSFXPool.Length > 0 && !string.IsNullOrEmpty(newValue))
-            if (audioSource != null)
-                audioSource.PlayOneShot(typingSFXPool[Random.Range(0, typingSFXPool.Length)]);
+        // เล่นเสียงพิมพ์ — ใช้ Pool ของตัวเองก่อน ถ้าว่างให้ Fallback ไปใช้ของ TypingSystem
+        if (!string.IsNullOrEmpty(newValue))
+        {
+            PlayTypingSFX();
+        }
 
         if (string.IsNullOrEmpty(newValue)) return;
 
@@ -660,6 +696,33 @@ public class AimTypingSystem : MonoBehaviour
         // แสดง Autocomplete เฉพาะตอนพิมพ์ถูกทิศ (ไม่ใช่ตอนลบ)
         if (!isDeleting && currentTargetWord.StartsWith(newValue, System.StringComparison.OrdinalIgnoreCase))
             ShowAutocomplete(currentTargetWord, newValue.Length);
+    }
+
+    private void PlayTypingSFX()
+    {
+        // ลองใช้ Pool ของ AimTypingSystem ก่อน
+        AudioClip[] pool = typingSFXPool;
+        AudioSource source = audioSource;
+
+        // Fallback: ถ้า Pool ว่างให้ขอยืมจาก TypingSystem
+        if ((pool == null || pool.Length == 0) && typingSystem != null)
+        {
+            pool   = typingSystem.TypingSFXPool;
+            source = typingSystem.TypingAudioSource;
+        }
+
+        if (pool != null && pool.Length > 0 && source != null)
+        {
+            source.pitch = Random.Range(0.9f, 1.1f);
+            source.PlayOneShot(pool[Random.Range(0, pool.Length)]);
+        }
+        else
+        {
+            if (pool == null || pool.Length == 0)
+                Debug.LogWarning("[AimTypingSystem] Typing SFX Pool is empty in both AimTypingSystem and TypingSystem!");
+            else if (source == null)
+                Debug.LogWarning("[AimTypingSystem] AudioSource is null — add one to the Player.");
+        }
     }
 
     private void ShowAutocomplete(string fullWord, int typedLength)

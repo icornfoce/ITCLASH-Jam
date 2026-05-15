@@ -15,7 +15,6 @@ public class FirePuddle : MonoBehaviour
     private System.Collections.Generic.List<ITCLASH.Enemies.EnemyController> enemiesInside = new System.Collections.Generic.List<ITCLASH.Enemies.EnemyController>();
     private float nextDamageTime = 0f;
     private Vector3 targetScale;
-    private bool isDying = false;
 
     private void Start()
     {
@@ -93,7 +92,6 @@ public class FirePuddle : MonoBehaviour
         }
 
         // 3. ใกล้ตายค่อยๆ หดเล็กลง (Scale Down)
-        isDying = true;
         elapsed = 0f;
         Vector3 currentScale = transform.localScale;
         while (elapsed < deathDuration)

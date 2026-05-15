@@ -12,7 +12,7 @@ public class BossHealthUI : MonoBehaviour
         {
             if (_instance == null)
             {
-                _instance = Object.FindObjectOfType<BossHealthUI>();
+                _instance = Object.FindFirstObjectByType<BossHealthUI>();
             }
             return _instance;
         }

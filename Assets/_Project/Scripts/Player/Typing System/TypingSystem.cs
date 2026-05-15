@@ -83,6 +83,9 @@ public class TypingSystem : MonoBehaviour
     private Vector3? firstItemTargetPos;
     private Vector3? secondItemTargetPos;
 
+    // กันไม่ให้ Release ในเฟรมเดียวกับที่รับไอเทมมา (เช่น Scan + คลิกพร้อมกัน)
+    private float _lastItemPlacedTime = -1f;
+
     [Header("Item Spawning Settings")]
     [SerializeField] private Transform playerTransform; // ลาก Player มาใส่ตรงนี้ (ถ้าไม่ใส่จะหา Tag "Player" อัตโนมัติ)
     [SerializeField] private Vector3 firstSlotOffset = new Vector3(-0.6f, 1.8f, -1.0f);
@@ -96,9 +99,13 @@ public class TypingSystem : MonoBehaviour
     private GameObject spawnedSecond;
 
     // Properties to access the current main item
-    public string ItemName => firstItem?.itemName ?? string.Empty;
-    public GameObject ItemPrefab => firstItem?.itemPrefab;
-    public Vector3 ItemSize => firstItem?.itemSize ?? Vector3.zero;
+    public string ItemName        => firstItem?.itemName ?? string.Empty;
+    public GameObject ItemPrefab  => firstItem?.itemPrefab;
+    public Vector3 ItemSize       => firstItem?.itemSize ?? Vector3.zero;
+
+    // Public API for AimTypingSystem to borrow SFX assets
+    public AudioClip[] TypingSFXPool    => typingSFXPool;
+    public AudioSource TypingAudioSource => audioSource;
 
     private void Awake()
     {
@@ -133,6 +140,26 @@ public class TypingSystem : MonoBehaviour
         {
             inputField.onValueChanged.AddListener(OnInputValueChanged);
         }
+
+        // Fallback for AudioSource if not assigned
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            Debug.Log("[TypingSystem] AudioSource created automatically.");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (inputField != null)
+        {
+            inputField.onValueChanged.RemoveListener(OnInputValueChanged);
+        }
     }
 
 
@@ -142,9 +169,9 @@ public class TypingSystem : MonoBehaviour
 
     void Update()
     {
-        // ยิงด้วยคลิกซ้าย และห้ามยิงตอนที่กำลังเล็ง (Zooming) อยู่
-        bool isAiming = aimTypingSystem != null && aimTypingSystem.IsZooming;
-        if (Input.GetMouseButtonDown(0) && !isAiming)
+        // ยิงด้วยคลิกซ้าย และห้ามยิงตอนที่กำลังพิมพ์ (AimTyping) อยู่
+        bool isAimTyping = aimTypingSystem != null && aimTypingSystem.IsAimTyping;
+        if (Input.GetMouseButtonDown(0) && !isAimTyping)
         {
             ReleaseItem();
             
@@ -408,6 +435,7 @@ public class TypingSystem : MonoBehaviour
                     RecordTypedWord();
 
                     ProcessItemMatch(item, targetPos);
+                    PlaySFX(typingSuccessSFX != null ? typingSuccessSFX : matchSFX);
                     SetSlowMotion(false);
                     return true;
                 }
@@ -424,7 +452,7 @@ public class TypingSystem : MonoBehaviour
         // ถ้าพิมพ์ผิด หรือหาไม่เจอ ให้ปิดหน้าต่างพิมพ์เหมือนกัน
         SpawnVFX(errorTypingVFXPrefab, playerTransform.position);
         SetSlowMotion(false);
-        PlaySFX(errorSFX);
+        PlaySFX(typingFailureSFX != null ? typingFailureSFX : errorSFX);
         return false;
     }
 
@@ -434,7 +462,8 @@ public class TypingSystem : MonoBehaviour
         if (firstItem == null || string.IsNullOrEmpty(firstItem.itemName))
         {
             firstItem = matchedItem;
-            firstItemTargetPos = targetPos; // จำตำแหน่งเป้าหมาย
+            firstItemTargetPos = targetPos;
+            _lastItemPlacedTime = Time.unscaledTime; // เริ่ม grace period
             spawnedFirst = SpawnItemAtOffset(firstItem, firstSlotOffset);
             
             PlaySFX(matchSFX);
@@ -446,7 +475,8 @@ public class TypingSystem : MonoBehaviour
         else if (secondItem == null || string.IsNullOrEmpty(secondItem.itemName))
         {
             secondItem = matchedItem;
-            secondItemTargetPos = targetPos; // จำตำแหน่งเป้าหมาย
+            secondItemTargetPos = targetPos;
+            _lastItemPlacedTime = Time.unscaledTime; // เริ่ม grace period
             spawnedSecond = SpawnItemAtOffset(secondItem, secondSlotOffset);
             
             PlaySFX(matchSFX);
@@ -460,7 +490,8 @@ public class TypingSystem : MonoBehaviour
         {
             if (spawnedSecond != null) Destroy(spawnedSecond);
             secondItem = matchedItem;
-            secondItemTargetPos = targetPos; // จำตำแหน่งเป้าหมาย
+            secondItemTargetPos = targetPos;
+            _lastItemPlacedTime = Time.unscaledTime; // เริ่ม grace period
             spawnedSecond = SpawnItemAtOffset(secondItem, secondSlotOffset);
             
             PlaySFX(matchSFX);
@@ -584,17 +615,26 @@ public class TypingSystem : MonoBehaviour
 
     public void ReleaseItem()
     {
-        // ปล่อยชิ้นที่สองก่อน (ถ้ามี)
-        if (secondItem != null)
+        // ป้องกัน Release ในทันทีหลังจากรับไอเทม (grace period 0.15 วินาที)
+        if (Time.unscaledTime - _lastItemPlacedTime < 0.15f) return;
+
+        // ปล่อยชิ้นที่สองก่อน (ถ้ามี และมีชื่อ)
+        if (secondItem != null && !string.IsNullOrEmpty(secondItem.itemName))
         {
             PerformRelease(ref secondItem, ref spawnedSecond, secondItemTargetPos);
-            secondItemTargetPos = null; // ล้างตำแหน่ง
+            secondItemTargetPos = null;
         }
-        // ถ้าไม่มีชิ้นที่สอง ให้ปล่อยชิ้นแรก
-        else if (firstItem != null)
+        // ถ้าไม่มีชิ้นที่สอง ให้ปล่อยชิ้นแรก (ถ้ามีชื่อ)
+        else if (firstItem != null && !string.IsNullOrEmpty(firstItem.itemName))
         {
             PerformRelease(ref firstItem, ref spawnedFirst, firstItemTargetPos);
-            firstItemTargetPos = null; // ล้างตำแหน่ง
+            firstItemTargetPos = null;
+        }
+        else
+        {
+            // ไม่มีไอเทมที่ Valid อยู่ในช่อง — ล้าง slot ที่อาจค้างอยู่
+            if (secondItem != null) { Destroy(spawnedSecond); secondItem = null; spawnedSecond = null; }
+            if (firstItem  != null) { Destroy(spawnedFirst);  firstItem  = null; spawnedFirst  = null; }
         }
     }
 
@@ -747,13 +787,32 @@ public class TypingSystem : MonoBehaviour
 
     private void OnInputValueChanged(string newValue)
     {
+        if (this == null) return;
+
         // Don't trigger feedback if we are in the middle of an internal update
-        if (isInternalUpdate || !isSlowed) return;
+        if (isInternalUpdate) return;
+        
+        // Only play SFX if the typing UI is active in some form
+        // (isSlowed = E-key mode, isAimActive = Aim mode from AimTypingSystem)
+        bool isAimActive = aimTypingSystem != null && aimTypingSystem.IsAimTyping;
+        if (!isSlowed && !isAimActive) return;
 
         // Play random typing sound if pool is available
         if (typingSFXPool != null && typingSFXPool.Length > 0 && !string.IsNullOrEmpty(newValue))
         {
-            if (audioSource != null) audioSource.PlayOneShot(typingSFXPool[Random.Range(0, typingSFXPool.Length)]);
+            if (audioSource != null)
+            {
+                audioSource.pitch = Random.Range(0.9f, 1.1f);
+                audioSource.PlayOneShot(typingSFXPool[Random.Range(0, typingSFXPool.Length)]);
+            }
+            else
+            {
+                Debug.LogWarning("[TypingSystem] SFX blocked: AudioSource is null! Add one to the Player.");
+            }
+        }
+        else if (typingSFXPool == null || typingSFXPool.Length == 0)
+        {
+            Debug.LogWarning("[TypingSystem] SFX blocked: Typing SFX Pool is empty! Assign clips in the Inspector.");
         }
 
         if (string.IsNullOrEmpty(newValue)) return;

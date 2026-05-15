@@ -13,7 +13,6 @@ public class DictionaryManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private bool refreshOnEnable = true;
     [SerializeField] private float itemHeight = 100f;
-    [SerializeField] private bool forceStretchWidth = true;
 
     // ─── Global Instance ───
     public static DictionaryManager Instance { get; private set; }
