@@ -13258,12 +13258,15 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 4590a091dab930c469b3dcabfe93ed28, type: 3}
     - target: {fileID: 8795257201312444017, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -229.99911
+      value: -229.99998
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8664569513314706854, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 548062261}
   m_SourcePrefab: {fileID: 100100000, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
 --- !u!1 &115321069
 GameObject:
@@ -58354,6 +58357,56 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 594456c76fa0ba3488ee0de0cefa2153, type: 3}
+--- !u!1 &548062257 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8664569513314706854, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+  m_PrefabInstance: {fileID: 113740006}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &548062261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 548062257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 146ca81df3730714d90a452b25625b80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AimTypingSystem
+  scanRange: 15
+  scanLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  scanInterval: 0.1
+  highlightColor: {r: 0, g: 1, b: 1, a: 1}
+  emissionIntensity: 2
+  flashSpeed: 5
+  normalFOV: 60
+  zoomFOV: 40
+  zoomSpeed: 8
+  aimTypingUI: {fileID: 0}
+  inputField: {fileID: 0}
+  autocompleteHighlightColor: {r: 0.1, g: 0.4, b: 0.8, a: 0.15}
+  targetWordLabel: {fileID: 0}
+  crosshairNormal: {fileID: 0}
+  crosshairHighlight: {fileID: 0}
+  wordLearnedPopup: {fileID: 0}
+  wordLearnedText: {fileID: 0}
+  popupDuration: 2.5
+  aimVignette: {fileID: 0}
+  vignetteFadeSpeed: 10
+  maxVignetteAlpha: 0.7
+  audioSource: {fileID: 0}
+  lockOnSFX: {fileID: 0}
+  successSFX: {fileID: 0}
+  failSFX: {fileID: 0}
+  typingSFXPool: []
+  successVFXPrefab: {fileID: 0}
+  aimDamageMultiplier: 2
+  itemData: {fileID: 11400000, guid: 354e0ae02c82d2f4d84c1090535658ce, type: 2}
+  typingSystem: {fileID: 2098966650}
+  slowTimeScale: 0.2
 --- !u!1 &548511994
 GameObject:
   m_ObjectHideFlags: 0
@@ -210390,6 +210443,17 @@ MonoBehaviour:
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
+--- !u!114 &2098966650 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8145246245279518781, guid: b5dba9f02e1ceef4ab21928fc16b0836, type: 3}
+  m_PrefabInstance: {fileID: 113740006}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8f76dfe927434a4ca3d0dac5b739c3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TypingSystem
 --- !u!1 &2099125425
 GameObject:
   m_ObjectHideFlags: 0
@@ -215972,7 +216036,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 3888552629203900863}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9999537
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -222829,7 +222893,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -191.49998, y: -229.99954}
+  m_AnchoredPosition: {x: -191.49998, y: -230}
   m_SizeDelta: {x: 383, y: 0}
   m_Pivot: {x: 0, y: 0.04}
 --- !u!1 &4823129679753500941

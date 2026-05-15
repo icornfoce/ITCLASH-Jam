@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine.EventSystems;
+using Unity.Cinemachine; 
 
 /// <summary>
 /// AimTypingSystem.cs — ระบบเล็งและพิมพ์คำ
@@ -144,6 +145,7 @@ public class AimTypingSystem : MonoBehaviour
     // ============================================================
 
     private Camera playerCamera;
+    private CinemachineCamera vcam;
 
     // Raycast & Highlighting
     private float scanTimer;
@@ -197,6 +199,9 @@ public class AimTypingSystem : MonoBehaviour
 
         if (playerCamera == null)
             Debug.LogError($"[AimTypingSystem] ❌ ไม่พบ Camera! กรุณาตั้ง Tag กล้องเป็น 'MainCamera' หรือลาก Script นี้ไปไว้ที่เดียวกับกล้อง", this);
+
+        vcam = GetComponent<CinemachineCamera>();
+        if (vcam == null) vcam = GetComponentInParent<CinemachineCamera>();
 
         targetFOV = normalFOV;
 
@@ -912,12 +917,22 @@ public class AimTypingSystem : MonoBehaviour
 
     private void HandleZoom()
     {
-        if (playerCamera == null) return;
-        playerCamera.fieldOfView = Mathf.Lerp(
-            playerCamera.fieldOfView,
-            targetFOV,
-            Time.unscaledDeltaTime * zoomSpeed
-        );
+        if (vcam != null)
+        {
+            // Cinemachine 3 — ปรับที่ Lens.FieldOfView ของ Virtual Camera
+            var lens = vcam.Lens;
+            lens.FieldOfView = Mathf.Lerp(lens.FieldOfView, targetFOV, Time.unscaledDeltaTime * zoomSpeed);
+            vcam.Lens = lens;
+        }
+        else if (playerCamera != null)
+        {
+            // Fallback: ปรับที่ Camera ตรงๆ (ถ้าไม่ใช้ Cinemachine)
+            playerCamera.fieldOfView = Mathf.Lerp(
+                playerCamera.fieldOfView,
+                targetFOV,
+                Time.unscaledDeltaTime * zoomSpeed
+            );
+        }
     }
 
     // ============================================================
