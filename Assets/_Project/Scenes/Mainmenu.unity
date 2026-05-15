@@ -565,7 +565,7 @@ MonoBehaviour:
   targetSceneName: 
   delayBeforeLoad: 0.5
   hoverScale: {x: 1.1, y: 1.1, z: 1.1}
-  hoverColor: {r: 1, g: 0, b: 0, a: 1}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
   animationSmoothTime: 0.1
   audioSource: {fileID: 810128765}
   hoverSFX: {fileID: 8300000, guid: 28e7e191f2c72d54f9945fe041f2edbd, type: 3}
