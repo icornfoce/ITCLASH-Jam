@@ -14720,7 +14720,7 @@ GameObject:
   - component: {fileID: 5911206648629905745}
   - component: {fileID: 1019447938293388183}
   m_Layer: 0
-  m_Name: MobSpawning
+  m_Name: SummonVFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

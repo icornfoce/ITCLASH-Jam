@@ -47,11 +47,11 @@ public abstract class BaseSummonSkill : BaseItemSkill
         Vector3 spawnPos = transform.position;
         Quaternion spawnRot = transform.rotation;
 
-        PlayVoice(spawnPos);
+        PlayVoice(playerTransform.position);
         
         // 1. เล่นเอฟเฟกต์เสก
         if (spawnVFX != null) Instantiate(spawnVFX, spawnPos, spawnRot);
-        if (spawnSFX != null) AudioSource.PlayClipAtPoint(spawnSFX, spawnPos);
+        if (spawnSFX != null) AudioSource.PlayClipAtPoint(spawnSFX, playerTransform.position);
 
         // 2. เสก (แบบมีดีเลย์ หรือ ทันที)
         if (spawnDelay > 0f)

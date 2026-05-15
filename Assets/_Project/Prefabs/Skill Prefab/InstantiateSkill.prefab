@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24392459f09de524595638cee8656e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InstantiateSkill
-  voiceClip: {fileID: 0}
+  voiceClip: {fileID: 8300000, guid: 326e7a002ac6f5942b2291e9b5aa9721, type: 3}
   voiceVolume: 1
   summonPrefab: {fileID: 3368657497738892344, guid: 1b1e3bc175511214f8dd96b85113162f, type: 3}
   summonDuration: 16
@@ -58,8 +58,8 @@ MonoBehaviour:
   - Instantiate
   - Instantiate
   - Instantiate
-  spawnVFX: {fileID: 5607819269926399345, guid: 45e0f06c750176947862c10346226439, type: 3}
-  spawnSFX: {fileID: 0}
+  spawnVFX: {fileID: 7761031033666763820, guid: 1eb833340b41fb444b576c4dced8d4dc, type: 3}
+  spawnSFX: {fileID: 8300000, guid: 326e7a002ac6f5942b2291e9b5aa9721, type: 3}
 --- !u!1 &6189096577016107875
 GameObject:
   m_ObjectHideFlags: 0
