@@ -19,9 +19,11 @@ namespace ITCLASH.Enemies
         [Header("--- UI Management ---")]
         public GameObject gameUIContainer;
         public GameObject victoryUI;
+        public GameObject defeatUI;
 
         private MiniBoss spawnedBoss;
         private bool isBossDead = false;
+        private bool isPlayerDead = false;
 
         private void Awake()
         {
@@ -31,6 +33,13 @@ namespace ITCLASH.Enemies
 
         private void Start()
         {
+            // Subscribe to player death
+            PlayerHealth playerHealth = FindFirstObjectByType<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.OnDeath.AddListener(HandlePlayerDefeat);
+            }
+
             if (introTimeline != null)
             {
                 StartCoroutine(FullBossSequence());
@@ -47,6 +56,7 @@ namespace ITCLASH.Enemies
             // 1. เตรียมฉาก (ซ่อน UI และล็อคตัวละคร)
             if (gameUIContainer != null) gameUIContainer.SetActive(false);
             if (victoryUI != null) victoryUI.SetActive(false);
+            if (defeatUI != null) defeatUI.SetActive(false);
             SetPlayerControl(false);
 
             // 2. เล่นคัทซีนเปิดตัว
@@ -83,10 +93,18 @@ namespace ITCLASH.Enemies
 
         private void HandleBossDeath()
         {
-            if (isBossDead) return;
+            if (isBossDead || isPlayerDead) return;
             isBossDead = true;
 
             StartCoroutine(DeathSequence());
+        }
+
+        private void HandlePlayerDefeat()
+        {
+            if (isBossDead || isPlayerDead) return;
+            isPlayerDead = true;
+
+            StartCoroutine(DefeatSequence());
         }
 
         private IEnumerator DeathSequence()
@@ -106,6 +124,22 @@ namespace ITCLASH.Enemies
             if (victoryUI != null) victoryUI.SetActive(true);
             
             // ปลดล็อคเมาส์มาให้กดปุ่มตอนจบ
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        private IEnumerator DefeatSequence()
+        {
+            // ซ่อน UI เกมและล็อคการควบคุม
+            if (gameUIContainer != null) gameUIContainer.SetActive(false);
+            SetPlayerControl(false);
+
+            // รอสักพักให้เห็นตัวละครล้ม
+            yield return new WaitForSeconds(1.5f);
+
+            // โชว์หน้าจอพ่ายแพ้
+            if (defeatUI != null) defeatUI.SetActive(true);
+
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
