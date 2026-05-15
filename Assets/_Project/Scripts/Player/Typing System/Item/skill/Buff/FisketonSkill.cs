@@ -2,79 +2,61 @@ using UnityEngine;
 using System.Collections;
 using ITCLASH.Enemies;
 
-public class FisketonSkill : BaseBuffSkill
+public class FisketonSkill : BaseAoESkill
 {
-    [Header("Fisketon Settings")]
-    public float damage = 20f;
-    public float knockback = 15f;
-    public float aoeRadius = 5f;
-    public float hitInterval = 0.5f; 
-    public float rotationSpeed = 360f; // ความเร็วในการหมุนรอบตัว
-    public float orbitRadius = 2f;     // ระยะห่างจากตัวผู้เล่น
-    public LayerMask enemyLayer;
+    [Header("─── Fisketon Damage Settings ───")]
+    public float damage = 30f;
+    public float knockbackForce = 10f;
+    
+    [Header("─── Spin Settings ───")]
+    [Tooltip("ความเร็วในการหมุนตอนลอยอยู่ในอากาศ")]
+    public Vector3 spinSpeed = new Vector3(0, 720f, 0);
+    
+    [Header("─── Visual Offset ───")]
+    [Tooltip("ลากส่วนที่เป็น Model มาใส่ที่นี่ เพื่อให้มันหมุนโดยไม่กระทบกับตัวหลัก")]
+    public Transform visualModel;
+    [Tooltip("ปรับแก้ Rotation เริ่มต้นของปลา (ถ้าปลาหันผิดทิศ)")]
+    public Vector3 rotationOffset = Vector3.zero;
 
-    private bool isSpinning = false;
-    private float currentAngle = 0f;
-
-    protected override void ApplyBuff(Transform playerTransform)
+    private void Start()
     {
-        // เปิดการแสดงผล Mesh (เพราะคลาสเบสสั่งปิดไว้)
-        foreach (Renderer r in GetComponentsInChildren<Renderer>())
+        // ถ้าไม่ได้ลาก visualModel มา ให้ลองหาลูกตัวแรก
+        if (visualModel == null && transform.childCount > 0)
         {
-            r.enabled = true;
+            visualModel = transform.GetChild(0);
         }
 
-        isSpinning = true;
-        StartCoroutine(SpinRoutine(playerTransform));
-        StartCoroutine(DamageRoutine(playerTransform));
-        Debug.Log("[FisketonSkill] ปลาหมุนเริ่มทำงาน! หมุนรอบตัวจริง!");
-    }
-
-    private IEnumerator SpinRoutine(Transform playerTransform)
-    {
-        while (isSpinning)
+        // เซ็ต Rotation เริ่มต้นให้โมเดลตาม Offset
+        if (visualModel != null)
         {
-            // คำนวณมุมหมุนตามเวลา
-            currentAngle += rotationSpeed * Time.deltaTime;
-            float rad = currentAngle * Mathf.Deg2Rad;
-            
-            // คำนวณตำแหน่ง Orbit รอบผู้เล่น
-            Vector3 offset = new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)) * orbitRadius;
-            transform.position = playerTransform.position + offset + Vector3.up * 1f;
-            
-            // หมุนให้หน้าปลาหันไปตามทิศทางการเคลื่อนที่
-            transform.rotation = Quaternion.LookRotation(new Vector3(-Mathf.Sin(rad), 0, Mathf.Cos(rad)));
-
-            yield return null;
+            visualModel.localRotation = Quaternion.Euler(rotationOffset);
         }
     }
 
-    private IEnumerator DamageRoutine(Transform playerTransform)
+    private void Update()
     {
-        while (isSpinning)
+        if (visualModel != null)
         {
-            Collider[] hits = Physics.OverlapSphere(playerTransform.position, aoeRadius, enemyLayer);
-            foreach (Collider hit in hits)
+            // หมุนโมเดลลูกไปเรื่อยๆ (จะหยุดหมุนเองเมื่อ Object ถูกทำลาย/ระเบิด)
+            visualModel.Rotate(spinSpeed * Time.deltaTime, Space.Self);
+        }
+    }
+
+    protected override void ApplyAoEEffect(GameObject enemyObj)
+    {
+        EnemyController enemy = enemyObj.GetComponentInParent<EnemyController>();
+        if (enemy != null)
+        {
+            enemy.ApplyDamage(damage);
+            
+            // ใส่แรงผลัก (Knockback)
+            IKnockbackable knockable = enemyObj.GetComponentInParent<IKnockbackable>();
+            if (knockable != null)
             {
-                EnemyController enemy = hit.GetComponentInParent<EnemyController>();
-                if (enemy != null)
-                {
-                    enemy.ApplyDamage(damage);
-                    IKnockbackable knockable = enemy.GetComponentInParent<IKnockbackable>();
-                    if (knockable != null)
-                    {
-                        Vector3 dir = (enemy.transform.position - playerTransform.position).normalized;
-                        knockable.ApplyKnockback(dir * knockback, 0.2f);
-                    }
-                }
+                Vector3 dir = (enemyObj.transform.position - transform.position).normalized;
+                dir.y = 0.2f; // ยกขึ้นนิดหน่อย
+                knockable.ApplyKnockback(dir * knockbackForce, 0.2f);
             }
-            yield return new WaitForSeconds(hitInterval);
         }
-    }
-
-    protected override void RemoveBuff(Transform playerTransform)
-    {
-        isSpinning = false;
-        Debug.Log("[FisketonSkill] ปลาหมุนหยุดทำงาน");
     }
 }

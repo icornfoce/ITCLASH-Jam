@@ -27,7 +27,7 @@ MonoBehaviour:
     icon: {fileID: 0}
     itemPrefab: {fileID: 2382775708128415278, guid: a8ede9ebbaff6d543b0b31e6ace1b433, type: 3}
     itemSize: {x: 1, y: 1, z: 1}
-    isUnlocked: 0
+    isUnlocked: 1
     itemSkill: {fileID: 6526245219535097824, guid: f37ca0ae1996d5c439aa6837dbdf9f23, type: 3}
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
