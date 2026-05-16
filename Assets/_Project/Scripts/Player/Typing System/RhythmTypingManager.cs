@@ -67,6 +67,13 @@ public class RhythmTypingManager : MonoBehaviour
     [Tooltip("Prefab ของ Letter Slot (ดู RhythmLetterSlot)")]
     [SerializeField] private GameObject letterSlotPrefab;
 
+    [Header("─── Osu! Style Settings ───")]
+    [Tooltip("เปิดเพื่อสุ่มตำแหน่งจุดเกิดของตัวอักษรบนหน้าจอ (อย่าลืมลบ HorizontalLayoutGroup ออกจาก Panel ด้วย!)")]
+    [SerializeField] private bool randomPositions = true;
+    
+    [Tooltip("ขอบเขต X และ Y ในการสุ่มตำแหน่งจากจุดกึ่งกลาง Panel")]
+    [SerializeField] private Vector2 randomPositionRange = new Vector2(300f, 150f);
+
     [Header("─── Visual Feedback ───")]
     [Tooltip("สี Ring ตอน Perfect")]
     [SerializeField] private Color perfectColor = new Color(0f, 1f, 0.5f, 1f);    // เขียว
@@ -122,6 +129,9 @@ public class RhythmTypingManager : MonoBehaviour
     /// <summary>จำนวนตัวที่พิมพ์ถูกแล้ว</summary>
     public int TypedCount => currentLetterIndex;
 
+    /// <summary>พิมพ์เสร็จทั้งคำแล้วหรือยัง</summary>
+    public bool IsWordCompleted => isActive && currentLetterIndex >= currentWord.Length;
+
     /// <summary>คำที่กำลังพิมพ์อยู่ทั้งคำ</summary>
     public string CurrentWord => currentWord;
 
@@ -134,7 +144,8 @@ public class RhythmTypingManager : MonoBehaviour
     /// </summary>
     /// <param name="word">คำที่ต้องพิมพ์</param>
     /// <param name="typingBaseTimeScale">TimeScale พื้นฐานของ TypingSystem (จะใช้เป็นค่าเริ่มต้น)</param>
-    public void StartRhythmTyping(string word, float typingBaseTimeScale)
+    /// <param name="customContainer">Panel ที่จะวาง Letter Slots (ถ้าไม่ใส่จะใช้ letterContainer พื้นฐาน)</param>
+    public void StartRhythmTyping(string word, float typingBaseTimeScale, Transform customContainer = null)
     {
         if (string.IsNullOrEmpty(word)) return;
 
@@ -156,10 +167,12 @@ public class RhythmTypingManager : MonoBehaviour
         // ล้าง Slot เก่า
         ClearSlots();
 
+        Transform targetContainer = customContainer != null ? customContainer : letterContainer;
+
         // สร้าง Slot สำหรับแต่ละตัวอักษร (ซ่อนไว้ก่อน)
         for (int i = 0; i < currentWord.Length; i++)
         {
-            GameObject slotObj = Instantiate(letterSlotPrefab, letterContainer);
+            GameObject slotObj = Instantiate(letterSlotPrefab, targetContainer);
             RhythmLetterSlot slot = slotObj.GetComponent<RhythmLetterSlot>();
 
             if (slot != null)
@@ -168,6 +181,18 @@ public class RhythmTypingManager : MonoBehaviour
                 slot.SetColors(perfectColor, goodColor, okColor, missColor);
                 slot.Hide(); // ยังไม่แสดง รอจนถึง Beat
                 activeSlots.Add(slot);
+            }
+
+            // สุ่มตำแหน่งแบบ Osu! (ต้องไม่มี LayoutGroup คุมอยู่)
+            if (randomPositions)
+            {
+                RectTransform rect = slotObj.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    float rx = UnityEngine.Random.Range(-randomPositionRange.x, randomPositionRange.x);
+                    float ry = UnityEngine.Random.Range(-randomPositionRange.y, randomPositionRange.y);
+                    rect.anchoredPosition = new Vector2(rx, ry);
+                }
             }
         }
 
@@ -206,12 +231,26 @@ public class RhythmTypingManager : MonoBehaviour
         // ตรวจสอบว่าพิมพ์ตัวถูกหรือไม่
         if (char.ToLower(typedChar) != char.ToLower(expected))
         {
-            // พิมพ์ผิดตัว → Miss เสมอ
+            // พิมพ์ผิดตัว → Miss
             ApplyTimeEffect(RhythmRating.Miss);
             if (currentLetterIndex < activeSlots.Count)
                 activeSlots[currentLetterIndex].ShowMiss();
             
             PlayFeedbackSFX(RhythmRating.Miss);
+
+            // ข้ามไปตัวถัดไปเลย
+            currentLetterIndex++;
+            if (currentLetterIndex < activeSlots.Count)
+            {
+                activeSlots[currentLetterIndex].ActivateRing();
+            }
+
+            // ตรวจสอบว่าพิมพ์ครบทั้งคำแล้วหรือยัง (แม้จะพิมพ์ผิดตัวสุดท้าย)
+            if (currentLetterIndex >= currentWord.Length)
+            {
+                Debug.Log("[RhythmTyping] Word completed with a miss at the end!");
+            }
+
             return RhythmRating.Miss;
         }
 

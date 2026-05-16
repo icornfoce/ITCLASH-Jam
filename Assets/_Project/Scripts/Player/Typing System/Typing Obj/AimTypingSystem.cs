@@ -64,6 +64,9 @@ public class AimTypingSystem : MonoBehaviour
     [Tooltip("Panel หลักของ Aim Typing (ซ่อนไว้ก่อน)")]
     [SerializeField] private GameObject aimTypingUI;
 
+    [Tooltip("Panel ที่จะวาง Letter Slots ของ Rhythm (ใช้ HorizontalLayoutGroup)")]
+    [SerializeField] private Transform rhythmLetterContainer;
+
     [Tooltip("TMP_InputField ช่องพิมพ์")]
     [SerializeField] private TMP_InputField inputField;
 
@@ -593,13 +596,10 @@ public class AimTypingSystem : MonoBehaviour
         // เริ่มซูม
         targetFOV = zoomFOV;
 
-        // แสดง Autocomplete ทันที (แสดงคำเต็มเป็น selected text)
-        ShowAutocomplete(currentTargetWord, 0);
-
         // ── Rhythm Typing: เริ่มแสดงตัวอักษรตามจังหวะ Beat ทันทีที่ล็อกเป้า ──
         if (rhythmTypingManager != null)
         {
-            rhythmTypingManager.StartRhythmTyping(currentTargetWord, slowTimeScale);
+            rhythmTypingManager.StartRhythmTyping(currentTargetWord, slowTimeScale, rhythmLetterContainer);
         }
     }
 
@@ -728,7 +728,18 @@ public class AimTypingSystem : MonoBehaviour
         if (string.IsNullOrEmpty(newValue)) return;
 
         bool isDeleting = !string.IsNullOrEmpty(lastInput) && newValue.Length < lastInput.Length;
-        lastInput = newValue;
+
+        // ── Rhythm Typing: บล็อคไม่ให้ลบตัวอักษร (Backspace) ──
+        if (isDeleting && rhythmTypingManager != null && rhythmTypingManager.IsActive)
+        {
+            isInternalUpdate = true;
+            inputField.text = lastInput;
+            inputField.caretPosition = inputField.text.Length;
+            isInternalUpdate = false;
+            return;
+        }
+
+        lastInput = inputField.text;
 
         // ── Rhythm Typing: ส่งตัวอักษรที่เพิ่งพิมพ์ไปประเมินจังหวะ ──
         if (!isDeleting && rhythmTypingManager != null && rhythmTypingManager.IsActive)
@@ -736,6 +747,17 @@ public class AimTypingSystem : MonoBehaviour
             char lastTypedChar = newValue[newValue.Length - 1];
             RhythmRating rating = rhythmTypingManager.ProcessKeyPress(lastTypedChar);
             Debug.Log($"[AimTyping] Rhythm Rating: {rating} for '{lastTypedChar}'");
+
+            if (rating == RhythmRating.Miss)
+            {
+                // ปล่อยตัวที่พิมพ์ผิดไว้ในช่อง (เพื่อให้ตรงกับที่กด) และให้ RhythmTypingManager ข้ามไปเลย
+            }
+
+            if (rhythmTypingManager.IsWordCompleted)
+            {
+                SubmitWord();
+                return;
+            }
         }
 
         // แสดง Autocomplete เฉพาะตอนพิมพ์ถูกทิศ (ไม่ใช่ตอนลบ)
@@ -773,6 +795,10 @@ public class AimTypingSystem : MonoBehaviour
     private void ShowAutocomplete(string fullWord, int typedLength)
     {
         if (inputField == null) return;
+
+        // ── ถ้ากำลังเล่น Rhythm อยู่ ไม่ต้องใส่คำใบ้ล่วงหน้าในช่องพิมพ์ ──
+        if (rhythmTypingManager != null && rhythmTypingManager.IsActive)
+            return;
 
         isInternalUpdate = true;
         inputField.text = fullWord;

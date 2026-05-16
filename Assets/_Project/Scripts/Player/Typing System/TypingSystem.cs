@@ -194,7 +194,24 @@ public class TypingSystem : MonoBehaviour
         bool aimActive = aimTypingSystem != null && aimTypingSystem.IsAimTyping;
         if (Input.GetKeyDown(KeyCode.E) && !isSlowed && !aimActive)
         {
-            OpenTyping();
+            // เช็คว่ามีคำปลดล็อคไหม
+            bool hasUnlocked = false;
+            if (itemData != null && itemData.items != null)
+            {
+                foreach (var item in itemData.items)
+                {
+                    if (item.isUnlocked) { hasUnlocked = true; break; }
+                }
+            }
+
+            if (hasUnlocked)
+            {
+                OpenTyping();
+            }
+            else
+            {
+                Debug.Log("[TypingSystem] Cannot open: No words unlocked.");
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.Escape) && isSlowed)
@@ -718,10 +735,31 @@ public class TypingSystem : MonoBehaviour
                 if (item.isUnlocked) unlockedItemsCache.Add(item);
             }
         }
-        scrollIndex = -1; // รีเซ็ตตำแหน่งการเลื่อน
 
         SetSlowMotion(true);
         PlaySFX(openSFX);
+
+        // ── สุ่มคำศัพท์ขึ้นมาทันทีเมื่อเปิดหน้าต่าง ──
+        if (unlockedItemsCache.Count > 0)
+        {
+            scrollIndex = Random.Range(0, unlockedItemsCache.Count);
+            
+            // ── ไม่ต้องยัดคำตอบลง inputField เพื่อให้ผู้เล่นได้พิมพ์เอง ──
+            if (inputField != null)
+            {
+                inputField.text = "";
+            }
+
+            // ── Rhythm Typing: เริ่มแสดงตัวอักษรตามจังหวะ Beat ──
+            if (rhythmTypingManager != null)
+            {
+                rhythmTypingManager.StartRhythmTyping(unlockedItemsCache[scrollIndex].itemName, slowTimeScale);
+            }
+        }
+        else
+        {
+            scrollIndex = -1;
+        }
     }
 
     private void HandleScrollSelection(float scrollDelta)
@@ -737,11 +775,11 @@ public class TypingSystem : MonoBehaviour
         if (scrollIndex >= unlockedItemsCache.Count) scrollIndex = 0;
 
         // นำคำศัพท์ไปใส่ในช่องพิมพ์
-        isInternalUpdate = true;
-        inputField.text = unlockedItemsCache[scrollIndex].itemName;
-        inputField.selectionAnchorPosition = 0;
-        inputField.selectionFocusPosition = inputField.text.Length;
-        isInternalUpdate = false;
+        // ── ปิดไว้เพื่อให้ผู้เล่นพิมพ์เอง ──
+        if (inputField != null)
+        {
+            inputField.text = "";
+        }
 
         // ── Rhythm Typing: เริ่มแสดงตัวอักษรตามจังหวะ Beat เมื่อเลือกคำด้วย Scroll ──
         if (rhythmTypingManager != null)
@@ -839,7 +877,18 @@ public class TypingSystem : MonoBehaviour
 
         // Unified Prediction Logic
         bool isDeleting = !string.IsNullOrEmpty(lastInput) && newValue.Length < lastInput.Length;
-        lastInput = newValue;
+
+        // ── Rhythm Typing: บล็อคไม่ให้ลบตัวอักษร (Backspace) ──
+        if (isDeleting && rhythmTypingManager != null && rhythmTypingManager.IsActive)
+        {
+            isInternalUpdate = true;
+            inputField.text = lastInput;
+            inputField.caretPosition = inputField.text.Length;
+            isInternalUpdate = false;
+            return;
+        }
+
+        lastInput = inputField.text;
 
         // ── Rhythm Typing: ส่งตัวอักษรที่เพิ่งพิมพ์ไปประเมินจังหวะ ──
         if (!isDeleting && rhythmTypingManager != null && rhythmTypingManager.IsActive)
@@ -848,6 +897,23 @@ public class TypingSystem : MonoBehaviour
             char lastTypedChar = newValue[newValue.Length - 1];
             RhythmRating rating = rhythmTypingManager.ProcessKeyPress(lastTypedChar);
             Debug.Log($"[TypingSystem] Rhythm Rating: {rating} for '{lastTypedChar}'");
+
+            if (rating == RhythmRating.Miss)
+            {
+                // ปล่อยตัวที่พิมพ์ผิดไว้ในช่อง (เพื่อให้ตรงกับที่กด) และให้ RhythmTypingManager ข้ามไปเลย
+            }
+
+            // ถ้าพิมพ์ถูกจนครบคำแล้ว ให้ submit เลย
+            if (rhythmTypingManager.IsWordCompleted)
+            {
+                TryMatchItem(rhythmTypingManager.CurrentWord, null);
+                isInternalUpdate = true;
+                inputField.text = "";
+                lastInput = "";
+                isInternalUpdate = false;
+                SetSlowMotion(false);
+                return;
+            }
         }
 
         if (!isDeleting && itemData != null)

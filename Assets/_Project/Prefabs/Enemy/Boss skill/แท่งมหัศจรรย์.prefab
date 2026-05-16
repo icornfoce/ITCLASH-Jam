@@ -3,8 +3,8 @@
 --- !u!1 &7337436839567336138
 GameObject:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 2353622427209544267, guid: 26a4da1b71da17a4d8ee5cb654d16aaa, type: 3}
-  m_PrefabInstance: {fileID: 9173798076729818877}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
@@ -22,8 +22,8 @@ GameObject:
 --- !u!4 &8246805002010007368
 Transform:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 746897297736175305, guid: 26a4da1b71da17a4d8ee5cb654d16aaa, type: 3}
-  m_PrefabInstance: {fileID: 9173798076729818877}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7337436839567336138}
   serializedVersion: 2
@@ -37,8 +37,8 @@ Transform:
 --- !u!198 &5723954793654397275
 ParticleSystem:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 9114849409841177424, guid: 26a4da1b71da17a4d8ee5cb654d16aaa, type: 3}
-  m_PrefabInstance: {fileID: 9173798076729818877}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7337436839567336138}
   serializedVersion: 8
@@ -4819,8 +4819,8 @@ ParticleSystem:
 ParticleSystemRenderer:
   serializedVersion: 7
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 27558406665214778, guid: 26a4da1b71da17a4d8ee5cb654d16aaa, type: 3}
-  m_PrefabInstance: {fileID: 9173798076729818877}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7337436839567336138}
   m_Enabled: 1
@@ -4910,6 +4910,7 @@ GameObject:
   - component: {fileID: 6595940835121973782}
   - component: {fileID: 7818979360280271295}
   - component: {fileID: 4282133242723400958}
+  - component: {fileID: -3987278411359116123}
   m_Layer: 0
   m_Name: "\u0E41\u0E17\u0E48\u0E07\u0E21\u0E2B\u0E31\u0E28\u0E08\u0E23\u0E23\u0E22\u0E4C"
   m_TagString: Untagged
@@ -5268,65 +5269,24 @@ MonoBehaviour:
   damage: 30
   lifeTime: 2
   spawnVFX: {fileID: 0}
---- !u!1001 &9173798076729818877
-PrefabInstance:
+--- !u!65 &-3987278411359116123
+BoxCollider:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 3181235254473161882}
-    m_Modifications:
-    - target: {fileID: 0}
-      propertyPath: m_LocalScale.y
-      value: 1.7634
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalPosition.x
-      value: 0.0048332214
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalPosition.y
-      value: -0.832867
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalPosition.z
-      value: -0.015141487
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalRotation.x
-      value: -1.1102228e-17
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 0}
-      propertyPath: m_Name
-      value: "\u0E41\u0E17\u0E48\u0E07\u0E21\u0E2B\u0E31\u0E28\u0E08\u0E23\u0E23\u0E22\u0E4C
-        (1)"
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8230340903901711556}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

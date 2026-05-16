@@ -85,8 +85,12 @@ public class RhythmLetterSlot : MonoBehaviour
         if (letterText != null)
         {
             letterText.text = c.ToString().ToUpper();
-            letterText.alpha = 0f; // ซ่อนไว้ก่อน
+            letterText.alpha = 1f; // แสดงทันที
+            letterText.color = new Color(0.6f, 0.6f, 0.6f, 1f); // สีเทาจางๆ เตรียมรอให้ผู้เล่นพิมพ์ตาม
         }
+
+        // ตั้งให้ขนาดเป็น 1 ทันที เพื่อไม่ให้ซ่อนถ้า Prefab เซฟไว้เป็น 0
+        transform.localScale = Vector3.one;
 
         // ตั้งค่าเริ่มต้นของ Ring
         if (ringOuter != null)
@@ -119,7 +123,7 @@ public class RhythmLetterSlot : MonoBehaviour
     /// </summary>
     public void Hide()
     {
-        if (letterText != null) letterText.alpha = 0f;
+        // ไม่ซ่อนตัวอักษรแล้ว (แสดงตัวอักษรสีเทาตลอด)
         if (ringOuter != null) ringOuter.gameObject.SetActive(false);
         if (ringInner != null) ringInner.gameObject.SetActive(false);
         isRevealed = false;
@@ -239,42 +243,31 @@ public class RhythmLetterSlot : MonoBehaviour
     {
         float elapsed = 0f;
 
-        // Pop-in effect
-        Vector3 startScale = Vector3.one * 0.3f;
-        Vector3 overshoot = Vector3.one * 1.2f;
+        // Bump effect (กระตุกตัวอักษรนิดนึงตามจังหวะบีท)
+        Vector3 startScale = Vector3.one;
+        Vector3 overshoot = Vector3.one * 1.3f;
         Vector3 finalScale = Vector3.one;
-
-        transform.localScale = startScale;
 
         while (elapsed < revealDuration)
         {
             elapsed += Time.unscaledDeltaTime;
             float t = elapsed / revealDuration;
 
-            // Ease-out-back curve
-            float easedT = 1f - Mathf.Pow(1f - t, 3f);
-
-            // Overshoot
-            if (t < 0.7f)
+            // Bump up then down
+            if (t < 0.5f)
             {
-                transform.localScale = Vector3.Lerp(startScale, overshoot, easedT / 0.7f);
+                transform.localScale = Vector3.Lerp(startScale, overshoot, t / 0.5f);
             }
             else
             {
-                float settleT = (t - 0.7f) / 0.3f;
+                float settleT = (t - 0.5f) / 0.5f;
                 transform.localScale = Vector3.Lerp(overshoot, finalScale, settleT);
-            }
-
-            if (letterText != null)
-            {
-                letterText.alpha = Mathf.Clamp01(t * 2f); // Fade-in เร็ว
             }
 
             yield return null;
         }
 
         transform.localScale = finalScale;
-        if (letterText != null) letterText.alpha = 1f;
     }
 
     private IEnumerator ResultAnimation(Color color, RhythmRating rating)
