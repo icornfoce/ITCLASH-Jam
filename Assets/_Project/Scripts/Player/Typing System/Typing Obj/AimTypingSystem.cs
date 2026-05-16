@@ -594,14 +594,14 @@ public class AimTypingSystem : MonoBehaviour
             needsFocus      = true;
         }
 
+        // ── สแกนและบันทึกคำศัพท์ทันทีที่ล็อกเป้า ──
+        RegisterWord(currentTargetWord, target);
+
         // เริ่มซูม
         targetFOV = zoomFOV;
 
-        // ── Rhythm Typing: เริ่มแสดงตัวอักษรตามจังหวะ Beat ทันทีที่ล็อกเป้า ──
-        if (rhythmTypingManager != null)
-        {
-            rhythmTypingManager.StartRhythmTyping(currentTargetWord, slowTimeScale, rhythmLetterContainer);
-        }
+        // หมายเหตุ: นำ rhythmTypingManager.StartRhythmTyping ออกตามความต้องการ "scan แล้วพอ ไม่ต้องเข้า Rhythm ต่อ"
+        // ผู้เล่นจะยังสามารถพิมพ์ในโหมดปกติ (Autocomplete) ได้ถ้าต้องการโจมตี
     }
 
     // ============================================================
@@ -643,7 +643,7 @@ public class AimTypingSystem : MonoBehaviour
             OnTypingFail(typed);
 
         if (inputField != null) inputField.text = "";
-        CancelTyping();  // ปิดแค่ Input — ยังอยู่ในโหมด Zoom เพื่อเล็งต่อได้
+        CancelAll();  // ออกจากโหมดพิมพ์และโหมด Zoom ทันทีหลังพิมพ์จบหนึ่งคำ
     }
 
     private void OnTypingSuccess()
