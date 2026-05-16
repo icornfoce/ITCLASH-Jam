@@ -66,6 +66,7 @@ public class AimTypingSystem : MonoBehaviour
 
     [Tooltip("Panel ที่จะวาง Letter Slots ของ Rhythm (ใช้ HorizontalLayoutGroup)")]
     [SerializeField] private Transform rhythmLetterContainer;
+    [SerializeField] private ComboSystem comboSystem; // เพิ่ม Reference ถึง ComboSystem
 
     [Tooltip("TMP_InputField ช่องพิมพ์")]
     [SerializeField] private TMP_InputField inputField;
@@ -767,6 +768,9 @@ public class AimTypingSystem : MonoBehaviour
             char lastTypedChar = newValue[newValue.Length - 1];
             RhythmRating rating = rhythmTypingManager.ProcessKeyPress(lastTypedChar);
             Debug.Log($"[AimTyping] Rhythm Rating: {rating} for '{lastTypedChar}'");
+
+            // เชื่อมระบบ Combo กับ Rhythm
+            if (comboSystem != null) comboSystem.AddCombo(rating);
 
             if (rating == RhythmRating.Miss)
             {

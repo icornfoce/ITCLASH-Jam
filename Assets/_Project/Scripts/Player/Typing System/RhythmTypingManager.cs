@@ -74,6 +74,12 @@ public class RhythmTypingManager : MonoBehaviour
     [Tooltip("ขอบเขต X และ Y ในการสุ่มตำแหน่งจากจุดกึ่งกลาง Panel")]
     [SerializeField] private Vector2 randomPositionRange = new Vector2(300f, 150f);
 
+    [Tooltip("ระยะห่างขั้นต่ำระหว่างตัวอักษรเพื่อไม่ให้ทับกัน")]
+    [SerializeField] private float minDistanceBetweenSlots = 80f;
+
+    [Tooltip("ขนาดของตัวอักษรใน UI (1 คือขนาดปกติ)")]
+    [SerializeField] private float slotUIScale = 1.2f;
+
     [Header("─── Visual Feedback ───")]
     [Tooltip("สี Ring ตอน Perfect")]
     [SerializeField] private Color perfectColor = new Color(0f, 1f, 0.5f, 1f);    // เขียว
@@ -201,11 +207,40 @@ public class RhythmTypingManager : MonoBehaviour
                 RectTransform rect = slotObj.GetComponent<RectTransform>();
                 if (rect != null)
                 {
-                    float rx = UnityEngine.Random.Range(-randomPositionRange.x, randomPositionRange.x);
-                    float ry = UnityEngine.Random.Range(-randomPositionRange.y, randomPositionRange.y);
-                    rect.anchoredPosition = new Vector2(rx, ry);
+                    Vector2 randomPos = Vector2.zero;
+                    bool foundPos = false;
+                    int attempts = 0;
+
+                    // วนลูปหาตำแหน่งที่ไม่ทับกับ Slot ก่อนหน้า
+                    while (!foundPos && attempts < 30)
+                    {
+                        float rx = UnityEngine.Random.Range(-randomPositionRange.x, randomPositionRange.x);
+                        float ry = UnityEngine.Random.Range(-randomPositionRange.y, randomPositionRange.y);
+                        randomPos = new Vector2(rx, ry);
+
+                        foundPos = true;
+                        foreach (var otherSlot in activeSlots)
+                        {
+                            if (otherSlot == slot) continue;
+                            RectTransform otherRect = otherSlot.GetComponent<RectTransform>();
+                            if (otherRect != null)
+                            {
+                                if (Vector2.Distance(randomPos, otherRect.anchoredPosition) < minDistanceBetweenSlots)
+                                {
+                                    foundPos = false;
+                                    break;
+                                }
+                            }
+                        }
+                        attempts++;
+                    }
+
+                    rect.anchoredPosition = randomPos;
                 }
             }
+
+            // ปรับขนาดตามที่ตั้งค่าไว้
+            slotObj.transform.localScale = Vector3.one * slotUIScale;
         }
 
         isActive = true;

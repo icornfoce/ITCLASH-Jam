@@ -454,7 +454,7 @@ public class TypingSystem : MonoBehaviour
                     // Track for Combo and Flow State (Success)
                     if (comboSystem != null) 
                     {
-                        comboSystem.AddCombo();
+                        comboSystem.AddWordCombo();
                     }
                     else
                     {
@@ -647,10 +647,10 @@ public class TypingSystem : MonoBehaviour
         if (spawnedSecond != null) spawnedSecond.SetActive(isVisible);
     }
 
-    public void ReleaseItem()
+    public void ReleaseItem(bool forceRelease = false)
     {
-        // ป้องกัน Release ในทันทีหลังจากรับไอเทม (grace period 0.15 วินาที)
-        if (Time.unscaledTime - _lastItemPlacedTime < 0.15f) return;
+        // ป้องกัน Release ในทันทีหลังจากรับไอเทม (grace period 0.15 วินาที) ยกเว้นบังคับ
+        if (!forceRelease && Time.unscaledTime - _lastItemPlacedTime < 0.15f) return;
 
         // ปล่อยชิ้นที่สองก่อน (ถ้ามี และมีชื่อ)
         if (secondItem != null && !string.IsNullOrEmpty(secondItem.itemName))
@@ -914,6 +914,9 @@ public class TypingSystem : MonoBehaviour
             RhythmRating rating = rhythmTypingManager.ProcessKeyPress(lastTypedChar);
             Debug.Log($"[TypingSystem] Rhythm Rating: {rating} for '{lastTypedChar}'");
 
+            // เชื่อมระบบ Combo กับ Rhythm
+            if (comboSystem != null) comboSystem.AddCombo(rating);
+
             if (rating == RhythmRating.Miss)
             {
                 // ปล่อยตัวที่พิมพ์ผิดไว้ในช่อง (เพื่อให้ตรงกับที่กด) และให้ RhythmTypingManager ข้ามไปเลย
@@ -929,6 +932,7 @@ public class TypingSystem : MonoBehaviour
                 lastInput = "";
                 isInternalUpdate = false;
                 SetSlowMotion(false);
+                ReleaseItem(true); // ปล่อยไอเทมทันทีที่พิมพ์จบ 1 คำ
                 return;
             }
         }
