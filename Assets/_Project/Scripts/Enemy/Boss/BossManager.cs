@@ -50,6 +50,9 @@ namespace ITCLASH.Enemies
         [Tooltip("ชื่อ Scene ที่จะโหลดเมื่อแพ้ (ปล่อยว่างไว้ถ้าจะใช้แค่ UI ด้านบน)")]
         public string defeatSceneName;
 
+        [Tooltip("ชื่อ Scene ที่จะโหลดเมื่อชนะ (ปล่อยว่างไว้ถ้าจะใช้แค่ UI ด้านบน)")]
+        public string victorySceneName;
+
         [Header("=== Death Fade ===")]
         [Tooltip("CanvasGroup สีดำสำหรับ Fade ตอนผู้เล่นตาย")]
         public CanvasGroup deathFadeGroup;
@@ -237,12 +240,19 @@ namespace ITCLASH.Enemies
             SetActive(gameUIContainer, false);
             SetActive(defeatUI, false);
 
-            // ปลดล็อคเมาส์ก่อนโชว์ Victory UI
-            // เพื่อให้ผู้เล่นกดปุ่มใน UI ได้ทันที
+            // ปลดล็อคเมาส์ก่อนโชว์ Victory UI หรือเปลี่ยน Scene
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible   = true;
 
-            SetActive(victoryUI, true);
+            if (!string.IsNullOrEmpty(victorySceneName))
+            {
+                // โหลด Scene ชนะ
+                UnityEngine.SceneManagement.SceneManager.LoadScene(victorySceneName);
+            }
+            else
+            {
+                SetActive(victoryUI, true);
+            }
         }
 
 
@@ -253,6 +263,9 @@ namespace ITCLASH.Enemies
         {
             SetPlayerControl(false);
             SetActive(gameUIContainer, false);
+
+            // รอ 1 วินาทีตามที่ผู้เล่นต้องการก่อนจะเฟดและหยุดเกม
+            yield return new WaitForSecondsRealtime(1f);
 
             // หยุดทุกอย่างในเกม (ศัตรู, physics, animation, ฯลฯ)
             Time.timeScale = 0f;
