@@ -57413,6 +57413,7 @@ MonoBehaviour:
   aimDamageMultiplier: 2
   itemData: {fileID: 11400000, guid: 354e0ae02c82d2f4d84c1090535658ce, type: 2}
   typingSystem: {fileID: 8145246245368092891}
+  rhythmTypingManager: {fileID: 0}
   slowTimeScale: 0.2
 --- !u!1 &548511994
 GameObject:
@@ -212991,7 +212992,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3616434898002899662}
   m_HandleRect: {fileID: 3888552629203900863}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -218250,7 +218251,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 3947786051685382688}
   m_TextViewport: {fileID: 4066440884771869712}
   m_TextComponent: {fileID: 7955572912371469673}
   m_Placeholder: {fileID: 2787347718894140555}
@@ -219754,6 +219755,7 @@ MonoBehaviour:
   aimDamageMultiplier: 2
   itemData: {fileID: 11400000, guid: 354e0ae02c82d2f4d84c1090535658ce, type: 2}
   typingSystem: {fileID: 8145246245368092891}
+  rhythmTypingManager: {fileID: 0}
   slowTimeScale: 0.2
 --- !u!1 &5462485257408668196
 GameObject:
@@ -223669,8 +223671,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TypingSystem
   itemData: {fileID: 11400000, guid: 354e0ae02c82d2f4d84c1090535658ce, type: 2}
-  typingUI: {fileID: 0}
-  inputField: {fileID: 0}
+  typingUI: {fileID: 6907002471837211596}
+  inputField: {fileID: 4296287146796469584}
   autocompleteHighlightColor: {r: 0.1, g: 0.4, b: 0.8, a: 0.15}
   aimTypingSystem: {fileID: 5459686836018279666}
   typingVignette: {fileID: 0}
@@ -223697,7 +223699,7 @@ MonoBehaviour:
     skillSpawnOffset: {x: 0, y: 1, z: 1}
     skillSpawnEulerAngles: {x: 0, y: 0, z: 0}
   slowTimeScale: 0.2
-  shakeTransform: {fileID: 0}
+  shakeTransform: {fileID: 2074355781881321055}
   shakeWordLengthThreshold: 10
   shakeDuration: 0.3
   shakeMagnitude: 0.2

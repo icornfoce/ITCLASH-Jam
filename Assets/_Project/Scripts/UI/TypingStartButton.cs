@@ -21,8 +21,11 @@ namespace ITClash.UI
         [SerializeField] private float delayBeforeLoad = 0.5f;
 
         [Header("── UI References ──")]
-        [Tooltip("TextMeshProUGUI สำหรับแสดงคำที่ต้องพิมพ์")]
+        [Tooltip("TextMeshProUGUI สำหรับแสดงข้อความที่กำลังพิมพ์ (ตัวสีเขียว)")]
         [SerializeField] private TextMeshProUGUI wordDisplay;
+        
+        [Tooltip("(ใส่หรือไม่ใส่ก็ได้) TextMeshProUGUI สำหรับแสดงคำจางๆ ด้านหลัง ให้ผู้เล่นพิมพ์ตาม")]
+        [SerializeField] private TextMeshProUGUI backgroundWordDisplay;
 
         [Header("── Colors ──")]
         [SerializeField] private Color typedColor = new Color(0.2f, 1f, 0.4f);    // สีตัวอักษรที่พิมพ์ถูกแล้ว
@@ -63,6 +66,15 @@ namespace ITClash.UI
         {
             _currentIndex = 0;
             _isCompleted = false;
+
+            // เซ็ตค่า Background Text ตั้งแต่เริ่ม
+            if (backgroundWordDisplay != null)
+            {
+                backgroundWordDisplay.text = targetWord;
+                backgroundWordDisplay.color = untypedColor;
+                wordDisplay.color = typedColor; // ให้ตัวหลักเป็นสีที่พิมพ์ถูก
+            }
+
             UpdateDisplay();
         }
 
@@ -70,13 +82,14 @@ namespace ITClash.UI
         {
             if (_isCompleted) return;
 
-            // จับทุกตัวอักษรที่พิมพ์ในเฟรมนี้
-            if (!string.IsNullOrEmpty(Input.inputString))
+            // จับ A–Z ผ่าน KeyCode (ใช้ได้ทั้ง Legacy และ New Input System)
+            for (KeyCode key = KeyCode.A; key <= KeyCode.Z; key++)
             {
-                foreach (char c in Input.inputString)
+                if (Input.GetKeyDown(key))
                 {
+                    char c = (char)('A' + (key - KeyCode.A));
                     ProcessChar(c);
-                    if (_isCompleted) break;
+                    if (_isCompleted) return;
                 }
             }
         }
@@ -115,23 +128,47 @@ namespace ITClash.UI
         {
             if (wordDisplay == null) return;
 
-            // สร้างข้อความด้วย rich text: ส่วนที่พิมพ์แล้ว = สีเขียว, ที่เหลือ = สีจาง
-            string typedHex = ColorUtility.ToHtmlStringRGBA(typedColor);
-            string untypedHex = ColorUtility.ToHtmlStringRGBA(untypedColor);
+            if (backgroundWordDisplay != null)
+            {
+                // โหมด 2 Text: Text หลักโชว์เฉพาะตัวที่พิมพ์แล้ว
+                wordDisplay.text = targetWord.Substring(0, _currentIndex);
+                wordDisplay.color = typedColor;               // ยืนยันว่าใช้สีที่ถูก
+                backgroundWordDisplay.color = untypedColor;   // รีเซ็ตสีพื้นหลังกลับมา (แก้บัคค้างสีแดงตอนพิมพ์ผิด)
+            }
+            else
+            {
+                // โหมด 1 Text: ใช้ Rich Text 
+                wordDisplay.color = Color.white; // รีเซ็ต base color ก่อนใช้ Rich Text
 
-            string typedPart = targetWord.Substring(0, _currentIndex);
-            string untypedPart = targetWord.Substring(_currentIndex);
+                string typedHex = ColorUtility.ToHtmlStringRGB(typedColor);
+                string typedAlpha = Mathf.RoundToInt(typedColor.a * 255).ToString("X2");
 
-            wordDisplay.text = $"<color=#{typedHex}>{typedPart}</color><color=#{untypedHex}>{untypedPart}</color>";
+                string untypedHex = ColorUtility.ToHtmlStringRGB(untypedColor);
+                string untypedAlpha = Mathf.RoundToInt(untypedColor.a * 255).ToString("X2");
+
+                string typedPart = targetWord.Substring(0, _currentIndex);
+                string untypedPart = targetWord.Substring(_currentIndex);
+
+                wordDisplay.text = $"<color=#{typedHex}><alpha=#{typedAlpha}>{typedPart}</color><color=#{untypedHex}><alpha=#{untypedAlpha}>{untypedPart}</color>";
+            }
         }
 
         private IEnumerator ShowErrorFlash()
         {
             if (wordDisplay == null) yield break;
 
-            // แสดงข้อความเป็นสีแดงชั่วครู่
-            string errorHex = ColorUtility.ToHtmlStringRGBA(errorColor);
-            wordDisplay.text = $"<color=#{errorHex}>{targetWord}</color>";
+            if (backgroundWordDisplay != null)
+            {
+                // เปลี่ยนสี background เป็นสีแดงชั่วคราว
+                backgroundWordDisplay.color = errorColor;
+                wordDisplay.text = ""; // ซ่อน text ที่พิมพ์อยู่
+            }
+            else
+            {
+                string errorHex = ColorUtility.ToHtmlStringRGB(errorColor);
+                string errorAlpha = Mathf.RoundToInt(errorColor.a * 255).ToString("X2");
+                wordDisplay.text = $"<color=#{errorHex}><alpha=#{errorAlpha}>{targetWord}</color>";
+            }
 
             // สั่น
             if (_rectTransform != null && !_isShaking)
@@ -167,9 +204,20 @@ namespace ITClash.UI
             PlaySFX(successSFX);
 
             // แสดงข้อความครบเป็นสีเขียวสดใส
-            string typedHex = ColorUtility.ToHtmlStringRGBA(typedColor);
-            if (wordDisplay != null)
-                wordDisplay.text = $"<color=#{typedHex}>{targetWord}</color>";
+            if (backgroundWordDisplay != null)
+            {
+                backgroundWordDisplay.gameObject.SetActive(false); // ซ่อนพื้นหลัง
+                wordDisplay.text = targetWord;
+                wordDisplay.color = typedColor;
+            }
+            else
+            {
+                string typedHex = ColorUtility.ToHtmlStringRGB(typedColor);
+                string typedAlpha = Mathf.RoundToInt(typedColor.a * 255).ToString("X2");
+
+                if (wordDisplay != null)
+                    wordDisplay.text = $"<color=#{typedHex}><alpha=#{typedAlpha}>{targetWord}</color>";
+            }
 
             if (!string.IsNullOrEmpty(targetSceneName))
             {
