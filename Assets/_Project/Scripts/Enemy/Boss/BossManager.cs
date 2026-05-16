@@ -47,10 +47,23 @@ namespace ITCLASH.Enemies
         [Tooltip("UI แสดงเมื่อแพ้")]
         public GameObject defeatUI;
 
+        [Tooltip("ชื่อ Scene ที่จะโหลดเมื่อแพ้ (ปล่อยว่างไว้ถ้าจะใช้แค่ UI ด้านบน)")]
+        public string defeatSceneName;
+
         [Header("=== Death Fade ===")]
         [Tooltip("CanvasGroup สีดำสำหรับ Fade ตอนผู้เล่นตาย")]
         public CanvasGroup deathFadeGroup;
         public float deathFadeDuration = 2f;
+
+        [Header("=== Audio ===")]
+        [Tooltip("AudioSource สำหรับเล่น BGM")]
+        public AudioSource bgmSource;
+        
+        [Tooltip("BGM ปกติที่เล่นในฉาก")]
+        public AudioClip normalBGM;
+        
+        [Tooltip("BGM ที่เล่นตอน Game Over")]
+        public AudioClip gameOverBGM;
 
         // ─────────────────────────────────────────────
         // Private State
@@ -88,6 +101,14 @@ namespace ITCLASH.Enemies
         private void Start()
         {
             Debug.Log("[BossManager] Start() — เริ่มต้น Flow");
+
+            // เล่น BGM ปกติเมื่อเริ่ม
+            if (bgmSource != null && normalBGM != null)
+            {
+                bgmSource.clip = normalBGM;
+                bgmSource.loop = true;
+                bgmSource.Play();
+            }
 
             // Subscribe ตายของ Player
             PlayerHealth ph = FindFirstObjectByType<PlayerHealth>();
@@ -237,6 +258,21 @@ namespace ITCLASH.Enemies
             Time.timeScale = 0f;
             Debug.Log("[BossManager] Time.timeScale = 0 — เกมหยุดแล้ว");
 
+            // ปิด BGM ปกติ
+            if (bgmSource != null)
+            {
+                bgmSource.Stop();
+                
+                // เปลี่ยน BGM เป็น Game Over BGM
+                if (gameOverBGM != null)
+                {
+                    bgmSource.clip = gameOverBGM;
+                    bgmSource.loop = true;
+                    bgmSource.ignoreListenerPause = true; // เผื่อกรณีมีการ pause
+                    bgmSource.Play();
+                }
+            }
+
             // เฟดดำ — ต้องใช้ unscaledDeltaTime เพราะ timeScale = 0
             if (deathFadeGroup != null)
             {
@@ -257,16 +293,25 @@ namespace ITCLASH.Enemies
 
             Debug.Log("[BossManager] Defeat!");
 
-            // ปลดล็อคเมาส์ + โชว์ Defeat UI
+            // ปลดล็อคเมาส์
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible   = true;
 
-            SetActive(gameUIContainer, false);
-            SetActive(victoryUI, false);
-            SetActive(defeatUI, true);
-
-            // คืน timeScale ให้ปกติเพื่อให้ UI และปุ่มทำงานได้
+            // คืน timeScale ให้ปกติ
             Time.timeScale = 1f;
+
+            if (!string.IsNullOrEmpty(defeatSceneName))
+            {
+                // โหลด Scene แพ้
+                UnityEngine.SceneManagement.SceneManager.LoadScene(defeatSceneName);
+            }
+            else
+            {
+                // โชว์ Defeat UI ใน Scene เดิม
+                SetActive(gameUIContainer, false);
+                SetActive(victoryUI, false);
+                SetActive(defeatUI, true);
+            }
         }
 
 
