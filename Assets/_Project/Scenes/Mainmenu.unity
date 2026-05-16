@@ -1160,7 +1160,7 @@ MonoBehaviour:
   targetWord: START
   targetSceneName: Map
   delayBeforeLoad: 0.3
-  inputField: {fileID: 0}
+  inputField: {fileID: 1554698833}
   typedColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
   selectionColor: {r: 0.1, g: 0.4, b: 0.8, a: 0.2}
   errorColor: {r: 1, g: 0.2, b: 0.2, a: 1}
