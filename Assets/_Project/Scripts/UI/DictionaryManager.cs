@@ -10,6 +10,9 @@ public class DictionaryManager : MonoBehaviour
     [SerializeField] private GameObject itemPrefab;
     [SerializeField] private Transform container;
 
+    [Tooltip("Panel หลักที่มี Header 'List' (ถ้าไม่ใส่จะหาจาก Container อัตโนมัติ)")]
+    [SerializeField] private GameObject listPanel;
+
     [Header("Settings")]
     [SerializeField] private bool refreshOnEnable = true;
     [SerializeField] private float itemHeight = 100f;
@@ -17,19 +20,77 @@ public class DictionaryManager : MonoBehaviour
     // ─── Global Instance ───
     public static DictionaryManager Instance { get; private set; }
 
+    private bool _isDestroying = false;
+
     private void Awake()
     {
-        // Setup Singleton
+        // Setup Singleton — เก็บเฉพาะตัวเดียว, ซ่อน UI ของตัวที่ซ้ำให้หมด
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            // ถ้าตัวเดิมไม่มี container แต่ตัวนี้มี → เปลี่ยนตัว
+            if (Instance.container == null && this.container != null)
+            {
+                Instance.HideAndDestroy();
+                Instance = this;
+                return;
+            }
+
+            // ตัวนี้เป็น duplicate → ทำลายตัวเอง
+            HideAndDestroy();
             return;
         }
         Instance = this;
     }
 
+    /// <summary>
+    /// ซ่อน UI ทั้งหมดของ DictionaryManager นี้แล้วทำลาย
+    /// </summary>
+    private void HideAndDestroy()
+    {
+        _isDestroying = true;
+
+        // 1. ซ่อน List Panel (ถ้ามี)
+        GameObject panel = GetListPanel();
+        if (panel != null) panel.SetActive(false);
+
+        // 2. ซ่อน Container (กรณี panel ไม่ได้ถูก assign แต่ container อยู่คนละ GO)
+        if (container != null) container.gameObject.SetActive(false);
+
+        // 3. ซ่อนตัวเอง
+        gameObject.SetActive(false);
+        Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// หา List Panel: ใช้ listPanel ที่ assign ไว้ ถ้าไม่มีให้ไล่ขึ้นจาก container
+    /// จะหยุดก่อนถึง Canvas (เพราะ Canvas = UI ทั้งระบบ ห้ามปิด)
+    /// </summary>
+    private GameObject GetListPanel()
+    {
+        if (listPanel != null) return listPanel;
+        if (container == null) return null;
+
+        // ไล่ขึ้นจาก container → หา parent ที่อยู่ใต้ Canvas พอดี
+        Transform current = container;
+        while (current.parent != null)
+        {
+            // ถ้า parent เป็น Canvas แล้ว → current คือ List panel
+            if (current.parent.GetComponent<Canvas>() != null)
+                return current.gameObject;
+            current = current.parent;
+        }
+
+        // ถ้าหา Canvas ไม่เจอ → ใช้ parent ตรงๆ ของ container
+        if (container.parent != null) return container.parent.gameObject;
+
+        return null;
+    }
+
     private void OnEnable()
     {
+        // ป้องกัน duplicate ที่กำลังจะถูกทำลายไม่ให้ Refresh
+        if (_isDestroying) return;
+
         if (refreshOnEnable)
         {
             RefreshDictionary();

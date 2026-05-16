@@ -502,7 +502,23 @@ public class AimTypingSystem : MonoBehaviour
                 return;
             }
 
-            // 4. ถ้าปกติ -> เข้าโหมดเล็ง (ครั้งที่ 1)
+            // 4. ถ้าปกติ -> ลอง Raycast ก่อน ถ้าเล็งวัตถุ Scannable อยู่ ให้เข้าโหมดพิมพ์ทันที (1 คลิก)
+            {
+                Vector3 screenCenter = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
+                Ray ray = playerCamera.ScreenPointToRay(screenCenter);
+
+                if (Physics.Raycast(ray, out RaycastHit hit, scanRange, scanLayerMask)
+                    && hit.collider.CompareTag("Scannable"))
+                {
+                    // เข้า Zoom + Lock Target ในคลิกเดียว
+                    EnterZoom();
+                    SetHoveredObject(hit.collider.gameObject);
+                    LockTarget(hit.collider.gameObject, hit.point);
+                    return;
+                }
+            }
+
+            // 5. ถ้าไม่ได้เล็งอะไร -> เข้าโหมดเล็งก่อน (Zoom only)
             EnterZoom();
         }
 
