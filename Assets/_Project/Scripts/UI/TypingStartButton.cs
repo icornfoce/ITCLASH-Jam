@@ -45,6 +45,7 @@ namespace ITClash.UI
         private Vector2 _originalPos;
         private RectTransform _rectTransform;
         private string _lastInput = "";
+        private bool _isInternalUpdate = false;
 
         private void Awake()
         {
@@ -97,20 +98,27 @@ namespace ITClash.UI
 
         private void OnInputValueChanged(string newValue)
         {
-            if (_isCompleted) return;
+            if (_isCompleted || _isInternalUpdate) return;
 
-            // ตรวจสอบว่าเป็นการลบคำหรือไม่
-            bool isDeleting = newValue.Length < _lastInput.Length;
+            if (string.IsNullOrEmpty(newValue))
+            {
+                UpdateDisplay();
+                return;
+            }
+
+            // ตรวจสอบว่าเป็นการลบคำหรือไม่ (กรณีที่ไม่ได้ใช้ Selection หรือกด Backspace)
+            bool isDeleting = newValue.Length < _currentIndex;
             if (isDeleting)
             {
                 UpdateDisplay();
                 return;
             }
 
-            // ตรวจสอบตัวอักษรล่าสุด
+            // ตรวจสอบตัวอักษรล่าสุดที่พิมพ์เข้ามา
+            // ในระบบ Autocomplete ตัวอักษรใหม่จะอยู่ที่ตำแหน่ง _currentIndex เสมอ
             if (newValue.Length > _currentIndex)
             {
-                char typed = newValue[newValue.Length - 1];
+                char typed = newValue[_currentIndex];
                 char expected = targetWord[_currentIndex];
 
                 if (char.ToUpper(typed) == char.ToUpper(expected))
@@ -134,6 +142,10 @@ namespace ITClash.UI
                     StartCoroutine(ShowErrorFlash());
                 }
             }
+            else
+            {
+                UpdateDisplay();
+            }
 
             _lastInput = inputField.text;
         }
@@ -142,11 +154,15 @@ namespace ITClash.UI
         {
             if (inputField == null) return;
 
+            _isInternalUpdate = true;
+
             // ใช้เทคนิค Autocomplete แบบระบบเก่าเป๊ะๆ
             inputField.SetTextWithoutNotify(targetWord);
             inputField.selectionAnchorPosition = _currentIndex;
             inputField.selectionFocusPosition = targetWord.Length;
             inputField.caretPosition = _currentIndex;
+
+            _isInternalUpdate = false;
         }
 
         private IEnumerator ShowErrorFlash()
