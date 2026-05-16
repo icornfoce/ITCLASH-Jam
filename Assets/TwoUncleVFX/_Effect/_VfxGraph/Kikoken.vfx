@@ -7868,6 +7868,7 @@ MonoBehaviour:
   m_InputSlots:
   - {fileID: 8926484042661615448}
   - {fileID: 8926484042661615449}
+<<<<<<< Updated upstream
   - {fileID: 8926484042661615666}
   - {fileID: 8926484042661615667}
   - {fileID: 8926484042661615672}
@@ -7875,6 +7876,15 @@ MonoBehaviour:
   - {fileID: 8926484042661615674}
   - {fileID: 8926484042661615675}
   - {fileID: 8926484042661615676}
+=======
+  - {fileID: 8926484042661615578}
+  - {fileID: 8926484042661615579}
+  - {fileID: 8926484042661615584}
+  - {fileID: 8926484042661615585}
+  - {fileID: 8926484042661615586}
+  - {fileID: 8926484042661615587}
+  - {fileID: 8926484042661615588}
+>>>>>>> Stashed changes
   m_OutputSlots: []
   m_Label: 
   m_Data: {fileID: 8926484042661614568}
@@ -8496,6 +8506,7 @@ MonoBehaviour:
   m_InputSlots:
   - {fileID: 8926484042661615494}
   - {fileID: 8926484042661615495}
+<<<<<<< Updated upstream
   - {fileID: 8926484042661615677}
   - {fileID: 8926484042661615678}
   - {fileID: 8926484042661615683}
@@ -8503,6 +8514,15 @@ MonoBehaviour:
   - {fileID: 8926484042661615685}
   - {fileID: 8926484042661615686}
   - {fileID: 8926484042661615687}
+=======
+  - {fileID: 8926484042661615589}
+  - {fileID: 8926484042661615590}
+  - {fileID: 8926484042661615595}
+  - {fileID: 8926484042661615596}
+  - {fileID: 8926484042661615597}
+  - {fileID: 8926484042661615598}
+  - {fileID: 8926484042661615599}
+>>>>>>> Stashed changes
   m_OutputSlots: []
   m_Label: 
   m_Data: {fileID: 8926484042661614568}
@@ -11294,7 +11314,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615666
+=======
+--- !u!114 &8926484042661615578
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11312,7 +11336,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615666}
+=======
+  m_MasterSlot: {fileID: 8926484042661615578}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615434}
     m_Value:
@@ -11328,7 +11356,11 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615667
+=======
+--- !u!114 &8926484042661615579
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11343,6 +11375,7 @@ MonoBehaviour:
   m_UIIgnoredErrors: []
   m_Parent: {fileID: 0}
   m_Children:
+<<<<<<< Updated upstream
   - {fileID: 8926484042661615668}
   - {fileID: 8926484042661615669}
   - {fileID: 8926484042661615670}
@@ -11351,6 +11384,16 @@ MonoBehaviour:
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
   m_MasterSlot: {fileID: 8926484042661615667}
+=======
+  - {fileID: 8926484042661615580}
+  - {fileID: 8926484042661615581}
+  - {fileID: 8926484042661615582}
+  - {fileID: 8926484042661615583}
+  m_UIPosition: {x: 0, y: 0}
+  m_UICollapsed: 1
+  m_UISuperCollapsed: 0
+  m_MasterSlot: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615434}
     m_Value:
@@ -11366,7 +11409,11 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615668
+=======
+--- !u!114 &8926484042661615580
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11379,12 +11426,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.VisualEffectGraph.Editor::UnityEditor.VFX.VFXSlotFloat
   m_UIIgnoredErrors: []
+<<<<<<< Updated upstream
   m_Parent: {fileID: 8926484042661615667}
+=======
+  m_Parent: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_Children: []
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615667}
+=======
+  m_MasterSlot: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 0}
     m_Value:
@@ -11399,7 +11454,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615669
+=======
+--- !u!114 &8926484042661615581
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11412,12 +11471,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.VisualEffectGraph.Editor::UnityEditor.VFX.VFXSlotFloat
   m_UIIgnoredErrors: []
+<<<<<<< Updated upstream
   m_Parent: {fileID: 8926484042661615667}
+=======
+  m_Parent: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_Children: []
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615667}
+=======
+  m_MasterSlot: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 0}
     m_Value:
@@ -11432,7 +11499,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615670
+=======
+--- !u!114 &8926484042661615582
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11445,12 +11516,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.VisualEffectGraph.Editor::UnityEditor.VFX.VFXSlotFloat
   m_UIIgnoredErrors: []
+<<<<<<< Updated upstream
   m_Parent: {fileID: 8926484042661615667}
+=======
+  m_Parent: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_Children: []
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615667}
+=======
+  m_MasterSlot: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 0}
     m_Value:
@@ -11465,7 +11544,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615671
+=======
+--- !u!114 &8926484042661615583
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11478,12 +11561,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.VisualEffectGraph.Editor::UnityEditor.VFX.VFXSlotFloat
   m_UIIgnoredErrors: []
+<<<<<<< Updated upstream
   m_Parent: {fileID: 8926484042661615667}
+=======
+  m_Parent: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_Children: []
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615667}
+=======
+  m_MasterSlot: {fileID: 8926484042661615579}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 0}
     m_Value:
@@ -11498,7 +11589,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615672
+=======
+--- !u!114 &8926484042661615584
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11516,7 +11611,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615672}
+=======
+  m_MasterSlot: {fileID: 8926484042661615584}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615434}
     m_Value:
@@ -11532,7 +11631,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615673
+=======
+--- !u!114 &8926484042661615585
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11550,7 +11653,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615673}
+=======
+  m_MasterSlot: {fileID: 8926484042661615585}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615434}
     m_Value:
@@ -11566,7 +11673,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615674
+=======
+--- !u!114 &8926484042661615586
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11584,7 +11695,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615674}
+=======
+  m_MasterSlot: {fileID: 8926484042661615586}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615434}
     m_Value:
@@ -11600,7 +11715,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615675
+=======
+--- !u!114 &8926484042661615587
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11618,7 +11737,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615675}
+=======
+  m_MasterSlot: {fileID: 8926484042661615587}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615434}
     m_Value:
@@ -11634,7 +11757,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615676
+=======
+--- !u!114 &8926484042661615588
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11652,7 +11779,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615676}
+=======
+  m_MasterSlot: {fileID: 8926484042661615588}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615434}
     m_Value:
@@ -11668,7 +11799,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615677
+=======
+--- !u!114 &8926484042661615589
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11686,7 +11821,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615677}
+=======
+  m_MasterSlot: {fileID: 8926484042661615589}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615471}
     m_Value:
@@ -11702,7 +11841,11 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615678
+=======
+--- !u!114 &8926484042661615590
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11717,6 +11860,7 @@ MonoBehaviour:
   m_UIIgnoredErrors: []
   m_Parent: {fileID: 0}
   m_Children:
+<<<<<<< Updated upstream
   - {fileID: 8926484042661615679}
   - {fileID: 8926484042661615680}
   - {fileID: 8926484042661615681}
@@ -11725,6 +11869,16 @@ MonoBehaviour:
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
   m_MasterSlot: {fileID: 8926484042661615678}
+=======
+  - {fileID: 8926484042661615591}
+  - {fileID: 8926484042661615592}
+  - {fileID: 8926484042661615593}
+  - {fileID: 8926484042661615594}
+  m_UIPosition: {x: 0, y: 0}
+  m_UICollapsed: 1
+  m_UISuperCollapsed: 0
+  m_MasterSlot: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615471}
     m_Value:
@@ -11740,7 +11894,11 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615679
+=======
+--- !u!114 &8926484042661615591
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11753,12 +11911,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.VisualEffectGraph.Editor::UnityEditor.VFX.VFXSlotFloat
   m_UIIgnoredErrors: []
+<<<<<<< Updated upstream
   m_Parent: {fileID: 8926484042661615678}
+=======
+  m_Parent: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_Children: []
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615678}
+=======
+  m_MasterSlot: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 0}
     m_Value:
@@ -11773,7 +11939,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615680
+=======
+--- !u!114 &8926484042661615592
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11786,12 +11956,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.VisualEffectGraph.Editor::UnityEditor.VFX.VFXSlotFloat
   m_UIIgnoredErrors: []
+<<<<<<< Updated upstream
   m_Parent: {fileID: 8926484042661615678}
+=======
+  m_Parent: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_Children: []
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615678}
+=======
+  m_MasterSlot: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 0}
     m_Value:
@@ -11806,7 +11984,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615681
+=======
+--- !u!114 &8926484042661615593
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11819,12 +12001,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.VisualEffectGraph.Editor::UnityEditor.VFX.VFXSlotFloat
   m_UIIgnoredErrors: []
+<<<<<<< Updated upstream
   m_Parent: {fileID: 8926484042661615678}
+=======
+  m_Parent: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_Children: []
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615678}
+=======
+  m_MasterSlot: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 0}
     m_Value:
@@ -11839,7 +12029,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615682
+=======
+--- !u!114 &8926484042661615594
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11852,12 +12046,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.VisualEffectGraph.Editor::UnityEditor.VFX.VFXSlotFloat
   m_UIIgnoredErrors: []
+<<<<<<< Updated upstream
   m_Parent: {fileID: 8926484042661615678}
+=======
+  m_Parent: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_Children: []
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615678}
+=======
+  m_MasterSlot: {fileID: 8926484042661615590}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 0}
     m_Value:
@@ -11872,7 +12074,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615683
+=======
+--- !u!114 &8926484042661615595
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11890,7 +12096,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615683}
+=======
+  m_MasterSlot: {fileID: 8926484042661615595}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615471}
     m_Value:
@@ -11906,7 +12116,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615684
+=======
+--- !u!114 &8926484042661615596
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11924,7 +12138,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615684}
+=======
+  m_MasterSlot: {fileID: 8926484042661615596}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615471}
     m_Value:
@@ -11940,7 +12158,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615685
+=======
+--- !u!114 &8926484042661615597
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11958,7 +12180,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615685}
+=======
+  m_MasterSlot: {fileID: 8926484042661615597}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615471}
     m_Value:
@@ -11974,7 +12200,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615686
+=======
+--- !u!114 &8926484042661615598
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -11992,7 +12222,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615686}
+=======
+  m_MasterSlot: {fileID: 8926484042661615598}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615471}
     m_Value:
@@ -12008,7 +12242,11 @@ MonoBehaviour:
         PublicKeyToken=b77a5c561934e089
   m_Direction: 0
   m_LinkedSlots: []
+<<<<<<< Updated upstream
 --- !u!114 &8926484042661615687
+=======
+--- !u!114 &8926484042661615599
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -12026,7 +12264,11 @@ MonoBehaviour:
   m_UIPosition: {x: 0, y: 0}
   m_UICollapsed: 1
   m_UISuperCollapsed: 0
+<<<<<<< Updated upstream
   m_MasterSlot: {fileID: 8926484042661615687}
+=======
+  m_MasterSlot: {fileID: 8926484042661615599}
+>>>>>>> Stashed changes
   m_MasterData:
     m_Owner: {fileID: 8926484042661615471}
     m_Value:
