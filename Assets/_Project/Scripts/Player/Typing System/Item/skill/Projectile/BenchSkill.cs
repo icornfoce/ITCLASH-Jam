@@ -13,7 +13,9 @@ public class BenchSkill : BaseProjectileSkill
         IDamageable damageable = collision.gameObject.GetComponentInParent<IDamageable>();
         if (damageable != null)
         {
-            damageable.ApplyDamage(damage);
+            float finalDamage = damage * PowerMultiplier;
+            damageable.ApplyDamage(finalDamage);
+            Debug.Log($"[BenchSkill] Hit {collision.gameObject.name} with {finalDamage} damage (Power: {PowerMultiplier:F2}x)");
         }
 
         IKnockbackable knockable = collision.gameObject.GetComponentInParent<IKnockbackable>();
@@ -21,7 +23,7 @@ public class BenchSkill : BaseProjectileSkill
         {
             Transform enemyTransform = ((MonoBehaviour)knockable).transform;
             Vector3 knockDir = (enemyTransform.position - transform.position).normalized;
-            knockable.ApplyKnockback(knockDir * knockback, 0.3f);
+            knockable.ApplyKnockback(knockDir * (knockback * PowerMultiplier), 0.3f);
         }
 
         SpawnHitVFX(collision.contacts[0].point);

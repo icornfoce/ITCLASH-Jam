@@ -23,15 +23,17 @@ public class FisketonSkill : BaseAoESkill
         EnemyController enemy = enemyObj.GetComponentInParent<EnemyController>();
         if (enemy != null)
         {
-            enemy.ApplyDamage(damage);
+            // ดาเมจคูณด้วยพลังจากการพิมพ์
+            float finalDamage = damage * PowerMultiplier;
+            enemy.ApplyDamage(finalDamage);
             
             IKnockbackable knockable = enemyObj.GetComponentInParent<IKnockbackable>();
             if (knockable != null)
             {
-                // ผลักศัตรูออกจากจุดที่ปลาตก
+                // ผลักศัตรูแรงขึ้นตามพลัง
                 Vector3 dir = (enemyObj.transform.position - transform.position).normalized;
                 dir.y = 0.2f;
-                knockable.ApplyKnockback(dir * knockbackForce, 0.2f);
+                knockable.ApplyKnockback(dir * (knockbackForce * PowerMultiplier), 0.2f);
             }
         }
     }

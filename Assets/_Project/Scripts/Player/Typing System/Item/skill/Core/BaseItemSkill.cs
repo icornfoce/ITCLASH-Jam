@@ -21,6 +21,12 @@ public abstract class BaseItemSkill : MonoBehaviour
     public float voiceVolume = 1f;
 
     /// <summary>
+    /// คืนค่าที่ถูกคูณด้วยพลังจากการพิมพ์ (PowerMultiplier)
+    /// ใช้สำหรับคำนวณ Damage หรือแรงผลักให้แรงขึ้นตามจังหวะการพิมพ์
+    /// </summary>
+    public float GetBuffedValue(float baseValue) => baseValue * PowerMultiplier;
+
+    /// <summary>
     /// เรียกใช้ทันทีเมื่อ Skill ถูกปล่อยออกมา
     /// ทุก Skill ต้อง Override ฟังก์ชันนี้
     /// </summary>
