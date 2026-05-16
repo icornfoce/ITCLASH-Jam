@@ -11,7 +11,7 @@ public abstract class BaseAoESkill : BaseItemSkill
     public float delayBeforeExplode = 0.5f;
     [Tooltip("Layer ของศัตรูที่ต้องการให้โดนผลกระทบ")]
     public LayerMask enemyLayer;
-    
+
     [Header("─── VFX & Audio ───")]
     public GameObject explosionVFX;
     public AudioClip explosionSFX;
@@ -25,74 +25,87 @@ public abstract class BaseAoESkill : BaseItemSkill
     public bool autoScaleVFX = true;
 
     [Header("─── Spawn Settings ───")]
-    [Tooltip("ระยะห่างจากตัวผู้เล่นตอนเริ่มเกิด (หน่วยเป็นเมตร)")]
-    public float spawnForwardOffset = 2.0f;
+    [Tooltip("ระยะห่างไปข้างหน้า Player ตอน Spawn (ห่างพอไม่โดน Player)")]
+    public float spawnForwardOffset = 2.5f;
+
+    [Header("─── Player Ignore ───")]
+    [Tooltip("Layer ของ Player — สกิลจะไม่ชนและไม่โดนผลกระทบจาก Player")]
+    public LayerMask playerLayer;
 
     private Vector3 impactPoint = Vector3.zero; // จุดที่ปะทะพื้นจริง
+
+    // เก็บ Collider ของ Player ไว้ Ignore
+    private Collider _playerCollider;
 
     public override void Activate(Transform playerTransform)
     {
         PlayVoice(transform.position);
         transform.SetParent(null);
-        
-        // --- ถ้าไม่ได้เล็งเป้าเจาะจง ให้ขยับตำแหน่งไปข้างหน้า Player ก่อนพุ่ง ---
-        if (!TargetPosition.HasValue)
+
+        // ── Ignore collision กับ Player ทุก Collider ──
+        _playerCollider = playerTransform.GetComponentInChildren<Collider>();
+        if (_playerCollider != null)
         {
-            // ขยับไปข้างหน้า + ขึ้นข้างบนนิดหน่อยเพื่อให้พ้นตัวผู้เล่น
-            transform.position = playerTransform.position + (playerTransform.forward * spawnForwardOffset) + (Vector3.up * 1.2f);
+            Collider[] myColliders = GetComponentsInChildren<Collider>();
+            foreach (var col in myColliders)
+                Physics.IgnoreCollision(col, _playerCollider, true);
         }
 
-        // --- ระบบ Ground Snap สำหรับกรณีที่มีเป้าหมาย (จากการเล็ง) ---
+        // ── Spawn ข้างหน้า Player พร้อม Raycast ลงพื้น ──
+        Vector3 spawnOrigin;
         if (TargetPosition.HasValue)
         {
-            // ลองยิง Ray ลงพื้นเพื่อ Snap ทันที
-            if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit hit, 10f))
-            {
-                transform.position = hit.point;
-                impactPoint = hit.point;
-                
-                // หยุดฟิสิกส์เพราะเราวางบนพื้นแล้ว
-                Rigidbody r = GetComponent<Rigidbody>();
-                if (r != null) { r.isKinematic = true; r.useGravity = false; }
-                
-                TriggerAoE();
-                return;
-            }
+            spawnOrigin = TargetPosition.Value + Vector3.up * 3f;
+        }
+        else
+        {
+            // ข้างหน้า Player ในระดับเอว + สูงขึ้น 3m เพื่อ arc ลงพื้น
+            spawnOrigin = playerTransform.position
+                          + playerTransform.forward * spawnForwardOffset
+                          + Vector3.up * 3f;
+        }
+        transform.position = spawnOrigin;
+
+        // Raycast หาพื้นจาก spawnOrigin ลงมา
+        if (Physics.Raycast(spawnOrigin, Vector3.down, out RaycastHit groundHit, 20f))
+        {
+            transform.position = groundHit.point;
+            impactPoint = groundHit.point;
+
+            Rigidbody r = GetComponent<Rigidbody>();
+            if (r != null) { r.isKinematic = true; r.useGravity = false; }
+
+            TriggerAoE();
+            return;
         }
 
-        // --- ระบบฟิสิกส์ปกติ (กรณีที่ไม่มีเป้าหมาย หรือ Snap ไม่เจอ) ---
+        // Fallback: ถ้า Raycast ไม่เจอพื้น ใช้ Physics arc ปกติ
         Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null) 
-        { 
-            rb.isKinematic = false; 
-            rb.useGravity = true; 
-            
-            // เพิ่มแรงพุ่งไปข้างหน้า + แรงกดลงพื้นเล็กน้อย
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
             Vector3 force = (playerTransform.forward * throwForce) + (Vector3.down * 2f);
             rb.AddForce(force, ForceMode.Impulse);
         }
 
-        // กรณีฉุกเฉิน: ถ้าไม่โดนพื้นภายใน 5 วินาที ให้ระเบิดเอง
         Invoke(nameof(TriggerAoE), 5f);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        // 1. เก็บจุดที่ปะทะพื้นจริงๆ
+        // ถ้าชน Player ให้ข้ามไปเลย (ป้องกัน Physics.IgnoreCollision ทำงานไม่ทัน)
+        if (_playerCollider != null && collision.collider == _playerCollider) return;
+
+        // ชน Layer ของ Player โดยตรง
+        if ((playerLayer.value & (1 << collision.gameObject.layer)) != 0) return;
+
         impactPoint = collision.contacts[0].point;
-        
-        // 2. ย้ายตำแหน่งวัตถุให้ติดพื้นตรงจุดที่ชน
         transform.position = impactPoint;
 
-        // 3. หยุดระบบฟิสิกส์เพื่อให้วัตถุค้างอยู่ที่พื้น
         Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
+        if (rb != null) { rb.isKinematic = true; rb.useGravity = false; }
 
-        // เมื่อแตะพื้นหรือวัตถุ ให้ระเบิดทันทีและยกเลิก Invoke เดิม
         CancelInvoke(nameof(TriggerAoE));
         TriggerAoE();
     }

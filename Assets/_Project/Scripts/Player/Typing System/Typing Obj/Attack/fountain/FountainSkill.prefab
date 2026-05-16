@@ -117,21 +117,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f179b22e787a373479199e0e354511e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FountainSkill
+  PowerMultiplier: 1
   voiceClip: {fileID: 0}
   voiceVolume: 1
+  duration: 7
+  actionInterval: 1
+  targetingRange: 10
+  damagePerTick: 30
   radius: 5
-  delayBeforeExplode: 0.5
+  pushForce: 3
   enemyLayer:
     serializedVersion: 2
     m_Bits: 0
-  explosionVFX: {fileID: 4006964074200084299, guid: 92f2b09c6fd63cd4f92c6a193ee913c2, type: 3}
-  explosionSFX: {fileID: 8300000, guid: 369e3214dcb26f541b8ffd3da5483c8a, type: 3}
-  lifeSpanAfterExplode: 1.5
-  throwForce: 30
-  autoScaleVFX: 1
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 128
   spawnForwardOffset: 4
-  damage: 30
-  slowDuration: 4
+  fountainVFX: {fileID: 4006964074200084299, guid: 92f2b09c6fd63cd4f92c6a193ee913c2, type: 3}
+  activateSFX: {fileID: 0}
+  autoScaleVFX: 1
+  vfxFadeOutTime: 1
 --- !u!54 &5421210501644771209
 Rigidbody:
   m_ObjectHideFlags: 0
