@@ -689,7 +689,8 @@ public class AimTypingSystem : MonoBehaviour
                 power = rhythmTypingManager.GetPowerMultiplier();
             }
 
-            typingSystem.TryMatchItem(currentTargetWord, isEnemy ? lockedHitPoint : (Vector3?)null, power);
+            float comboMult = comboSystem != null ? comboSystem.GetComboDamageMultiplier() : 1f;
+            typingSystem.TryMatchItem(currentTargetWord, isEnemy ? lockedHitPoint : (Vector3?)null, power * comboMult);
         }
 
         // ออกจาก Aim mode ทันทีที่พิมพ์ถูก
@@ -774,7 +775,13 @@ public class AimTypingSystem : MonoBehaviour
 
             if (rating == RhythmRating.Miss)
             {
-                // ปล่อยตัวที่พิมพ์ผิดไว้ในช่อง (เพื่อให้ตรงกับที่กด) และให้ RhythmTypingManager ข้ามไปเลย
+                // Auto Correct: บังคับแก้ตัวอักษรให้ถูกแม้กดพลาด (เพื่อกันบั๊ก)
+                isInternalUpdate = true;
+                string correctPart = rhythmTypingManager.CurrentWord.Substring(0, rhythmTypingManager.TypedCount);
+                inputField.text = correctPart;
+                inputField.caretPosition = inputField.text.Length;
+                lastInput = inputField.text;
+                isInternalUpdate = false;
             }
 
             if (rhythmTypingManager.IsWordCompleted)
@@ -786,7 +793,30 @@ public class AimTypingSystem : MonoBehaviour
 
         // แสดง Autocomplete เฉพาะตอนพิมพ์ถูกทิศ (ไม่ใช่ตอนลบ)
         if (!isDeleting && currentTargetWord.StartsWith(newValue, System.StringComparison.OrdinalIgnoreCase))
+        {
+            // ไม่ใช่ Rhythm Mode นับ Combo ปกติจากการพิมพ์ถูก
+            if (rhythmTypingManager == null || !rhythmTypingManager.IsActive)
+            {
+                if (comboSystem != null) comboSystem.AddCombo(RhythmRating.Perfect);
+            }
+
+            // ถ้าพิมพ์ครบเหมือนเป้าหมายเป๊ะ ให้ Submit เองเลย (Auto Enter)
+            if (newValue.Length == currentTargetWord.Length)
+            {
+                SubmitWord();
+                return;
+            }
+            
             ShowAutocomplete(currentTargetWord, newValue.Length);
+        }
+        else if (!isDeleting)
+        {
+            // พิมพ์ผิด
+            if (rhythmTypingManager == null || !rhythmTypingManager.IsActive)
+            {
+                if (comboSystem != null) comboSystem.AddCombo(RhythmRating.Miss);
+            }
+        }
     }
 
     private void PlayTypingSFX()

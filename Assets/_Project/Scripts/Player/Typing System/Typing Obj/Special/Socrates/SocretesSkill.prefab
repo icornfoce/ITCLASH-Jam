@@ -78,7 +78,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: c59a1f0f56e40774294a445b8965d7ab, type: 3}
       propertyPath: m_TagString
-      value: Scannable
+      value: Untagged
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -130,9 +130,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d67436c3ab11fd48ba958456efbf873, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SocratesSkill
+  PowerMultiplier: 1
   voiceClip: {fileID: 8300000, guid: d895bb99e6070ca48879454a5af379aa, type: 3}
   voiceVolume: 1
   duration: 10
   actionInterval: 1
   targetingRange: 10
   aggroRadius: 15
+  activeVFX: {fileID: 0}
+  activeSFX: {fileID: 0}
+  visualModel: {fileID: 0}

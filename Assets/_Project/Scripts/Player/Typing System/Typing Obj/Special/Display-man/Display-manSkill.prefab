@@ -195,7 +195,7 @@ GameObject:
   - component: {fileID: 4265322488733304979}
   m_Layer: 0
   m_Name: Display-manSkill
-  m_TagString: Scannable
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -309,6 +309,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4574f26c40d00cd40ac9268570097951, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DisplayManSkill
+  PowerMultiplier: 1
   voiceClip: {fileID: 8300000, guid: 6cef479d20843fe469699282303c891b, type: 3}
   voiceVolume: 1
   summonPrefab: {fileID: 1284868079160593247, guid: 0dba23c50bdfd554f84ac0959fd9dac9, type: 3}

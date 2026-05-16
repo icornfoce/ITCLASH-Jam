@@ -252,6 +252,7 @@ public class TypingSystem : MonoBehaviour
 
                     Debug.Log($"[TypingSystem] Submitting: {textToSubmit}");
                     TryMatchItem(textToSubmit.Trim(), null);
+                    SetSlowMotion(false);
                 }
                 else
                 {
@@ -740,8 +741,6 @@ public class TypingSystem : MonoBehaviour
 
     public void OpenTyping()
     {
-        Debug.Log("[TypingSystem] Opening Typing UI (Slow Motion Active)");
-        
         // รีเซ็ต Cache ของไอเทมที่ปลดล็อคแล้วเพื่อเตรียมให้ Scroll
         unlockedItemsCache.Clear();
         if (itemData != null)
@@ -752,6 +751,20 @@ public class TypingSystem : MonoBehaviour
             }
         }
 
+        // ── ถ้าระบบ Flow State ทำงานอยู่ ให้พิมพ์เสร็จทันทีและปล่อยสกิลเลย (Auto Cast) ──
+        if (comboSystem != null && comboSystem.IsFlowStateActive && unlockedItemsCache.Count > 0)
+        {
+            scrollIndex = Random.Range(0, unlockedItemsCache.Count);
+            string word = unlockedItemsCache[scrollIndex].itemName;
+            
+            Debug.Log($"<color=orange>[Flow State]</color> Auto-Casting: {word}");
+            float comboBonus = comboSystem.GetComboDamageMultiplier();
+            TryMatchItem(word, null, 1f * comboBonus);
+            ReleaseItem(true);
+            return;
+        }
+
+        Debug.Log("[TypingSystem] Opening Typing UI (Slow Motion Active)");
         SetSlowMotion(true);
         PlaySFX(openSFX);
 
@@ -919,20 +932,26 @@ public class TypingSystem : MonoBehaviour
 
             if (rating == RhythmRating.Miss)
             {
-                // ปล่อยตัวที่พิมพ์ผิดไว้ในช่อง (เพื่อให้ตรงกับที่กด) และให้ RhythmTypingManager ข้ามไปเลย
+                // Auto Correct: บังคับแก้ตัวอักษรให้ถูกแม้กดพลาด (เพื่อกันบั๊ก)
+                isInternalUpdate = true;
+                string correctPart = rhythmTypingManager.CurrentWord.Substring(0, rhythmTypingManager.TypedCount);
+                inputField.text = correctPart;
+                inputField.caretPosition = inputField.text.Length;
+                lastInput = inputField.text;
+                isInternalUpdate = false;
             }
 
             // ถ้าพิมพ์ถูกจนครบคำแล้ว ให้ submit เลย
             if (rhythmTypingManager.IsWordCompleted)
             {
-                float power = rhythmTypingManager.GetPowerMultiplier();
+                float comboMult = comboSystem != null ? comboSystem.GetComboDamageMultiplier() : 1f;
+                float power = rhythmTypingManager.GetPowerMultiplier() * comboMult;
                 TryMatchItem(rhythmTypingManager.CurrentWord, null, power);
                 isInternalUpdate = true;
                 inputField.text = "";
                 lastInput = "";
                 isInternalUpdate = false;
                 SetSlowMotion(false);
-                ReleaseItem(true); // ปล่อยไอเทมทันทีที่พิมพ์จบ 1 คำ
                 return;
             }
         }
@@ -942,9 +961,21 @@ public class TypingSystem : MonoBehaviour
             foreach (var item in itemData.items)
             {
                 // Only consider unlocked items that start with the input
-                if (item.isUnlocked && item.itemName.Length > newValue.Length &&
+                if (item.isUnlocked && item.itemName.Length >= newValue.Length &&
                     item.itemName.StartsWith(newValue, System.StringComparison.OrdinalIgnoreCase))
                 {
+                    // พิมพ์ครบเป๊ะๆ -> ส่งข้อมูล (Auto Enter)
+                    if (item.itemName.Length == newValue.Length)
+                    {
+                        TryMatchItem(item.itemName, null, 1f);
+                        isInternalUpdate = true;
+                        inputField.text = "";
+                        lastInput = "";
+                        isInternalUpdate = false;
+                        SetSlowMotion(false);
+                        return;
+                    }
+                    
                     isInternalUpdate = true;
                     int typedLength = newValue.Length;
                     inputField.text = item.itemName;
@@ -979,10 +1010,18 @@ public class TypingSystem : MonoBehaviour
 
         if (hasPossibleMatch)
         {
+            if (rhythmTypingManager == null || !rhythmTypingManager.IsActive)
+            {
+                if (comboSystem != null) comboSystem.AddCombo(RhythmRating.Perfect);
+            }
             SpawnVFX(typingSuccessVFXPrefab, playerTransform.position);
         }
-        else
+        else if (!isDeleting)
         {
+            if (rhythmTypingManager == null || !rhythmTypingManager.IsActive)
+            {
+                if (comboSystem != null) comboSystem.AddCombo(RhythmRating.Miss);
+            }
             SpawnVFX(typingFailureVFXPrefab, playerTransform.position);
         }
     }

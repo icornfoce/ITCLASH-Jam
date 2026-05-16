@@ -15,6 +15,14 @@ public class ComboSystem : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Image sliderFillImage; // สีของหลอด
     [SerializeField] private CanvasGroup canvasGroup;
 
+    [Header("Flow State")]
+    [SerializeField] private int flowStateComboThreshold = 20; // จำนวน Combo ที่จะเข้า Flow State
+    [SerializeField] private float flowStateDuration = 3f; // ระยะเวลาของ Flow State (วินาที)
+    [SerializeField] private ParticleSystem flowStateVFX; // เอฟเฟกต์ตอนเข้า Flow State
+    
+    public bool IsFlowStateActive { get; private set; }
+    private float flowStateTimer;
+
     [Header("Dynamic Effects")]
     [SerializeField] private Color[] comboColors; // สีที่จะเปลี่ยนตามระดับ Combo
     [SerializeField] private float shakeAmount = 10f;
@@ -46,30 +54,66 @@ public class ComboSystem : MonoBehaviour
     {
         if (CurrentCombo > 0)
         {
-            comboTimer -= Time.deltaTime;
-            
-            // Optional: Update color or shake as timer runs out
-            if (comboTimer <= 0)
+            // ถ้าอยู่ใน Flow State
+            if (IsFlowStateActive)
             {
-                ResetCombo();
+                flowStateTimer -= Time.deltaTime;
+                
+                if (comboTimerSlider != null)
+                {
+                    comboTimerSlider.maxValue = flowStateDuration;
+                    comboTimerSlider.value = flowStateTimer;
+                    
+                    // สีหลอดตอน Flow State (เช่น ทอง -> แดง)
+                    if (sliderFillImage != null)
+                    {
+                        sliderFillImage.color = Color.Lerp(Color.red, Color.cyan, flowStateTimer / flowStateDuration);
+                    }
+                }
+
+                if (flowStateTimer <= 0)
+                {
+                    // หมดเวลา Flow State -> รีเซ็ตคอมโบ
+                    IsFlowStateActive = false;
+                    ResetCombo();
+                }
+            }
+            // ถ้ายังไม่เข้า Flow State
+            else
+            {
+                comboTimer -= Time.deltaTime;
+                
+                if (comboTimerSlider != null)
+                {
+                    comboTimerSlider.maxValue = comboMaxTime;
+                    comboTimerSlider.value = comboTimer;
+                    
+                    // เปลี่ยนสีหลอดตามเวลาที่เหลือ (แดง -> เขียว) และกระพริบแดงถ้าใกล้หมด
+                    if (sliderFillImage != null)
+                    {
+                        float timeRatio = comboTimer / comboMaxTime;
+                        if (timeRatio < 0.3f)
+                        {
+                            // กระพริบสีแดงเตือน!
+                            sliderFillImage.color = Color.Lerp(Color.red, Color.yellow, Mathf.PingPong(Time.time * 8f, 1f));
+                        }
+                        else
+                        {
+                            // ไล่สีปกติจากเหลืองไปเขียว
+                            sliderFillImage.color = Color.Lerp(Color.yellow, Color.green, (timeRatio - 0.3f) / 0.7f);
+                        }
+                    }
+                }
+
+                if (comboTimer <= 0)
+                {
+                    ResetCombo();
+                }
             }
             
             // Smooth fade in
             if (canvasGroup != null)
                 canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, 1f, Time.deltaTime * fadeSpeed);
-                
-            if (comboTimerSlider != null)
-            {
-                comboTimerSlider.maxValue = comboMaxTime;
-                comboTimerSlider.value = comboTimer;
-                
-                // เปลี่ยนสีหลอดตามเวลาที่เหลือ
-                if (sliderFillImage != null)
-                {
-                    float timeRatio = comboTimer / comboMaxTime;
-                    sliderFillImage.color = Color.Lerp(Color.red, Color.green, timeRatio);
-                }
-            }
         }
         else
         {
@@ -83,7 +127,17 @@ public class ComboSystem : MonoBehaviour
     {
         if (rating == RhythmRating.Miss)
         {
+            IsFlowStateActive = false;
             ResetCombo();
+            ShowRatingUI(rating);
+            PlayRatingSFX(rating);
+            return;
+        }
+
+        if (IsFlowStateActive)
+        {
+            // หยุดนับ Combo แต่ยังแสดง UI
+            TriggerPopEffect();
             ShowRatingUI(rating);
             PlayRatingSFX(rating);
             return;
@@ -91,13 +145,31 @@ public class ComboSystem : MonoBehaviour
 
         CurrentCombo++;
         comboTimer = comboMaxTime;
-        if (comboTimerSlider != null) comboTimerSlider.value = comboMaxTime;
         
         UpdateUI();
         UpdateColor();
         TriggerPopEffect();
         ShowRatingUI(rating);
         PlayRatingSFX(rating);
+
+        // เช็คเข้า Flow State
+        if (CurrentCombo >= flowStateComboThreshold && !IsFlowStateActive)
+        {
+            IsFlowStateActive = true;
+            flowStateTimer = flowStateDuration;
+            
+            Debug.Log($"🌊 <color=cyan>FLOW STATE ACTIVATED FOR {flowStateDuration} SECONDS!</color> 🌊");
+            if (flowStateVFX != null) flowStateVFX.Play();
+            // ถ้ามีเสียง Flow State แยก สามารถใส่ตรงนี้ได้
+        }
+    }
+
+    public float GetComboDamageMultiplier()
+    {
+        // ยิ่ง Combo เยอะ ยิ่งคูณดาเมจ (เช่น +5% ต่อ 1 Combo)
+        // เริ่มต้นที่ 1.0x, สูงสุดที่ 3.0x (หรือตามต้องการ)
+        float bonus = CurrentCombo * 0.05f;
+        return Mathf.Clamp(1f + bonus, 1f, 3f);
     }
 
     private void UpdateColor()
@@ -173,6 +245,7 @@ public class ComboSystem : MonoBehaviour
         }
         CurrentCombo = 0;
         comboTimer = 0;
+        IsFlowStateActive = false;
         if (comboTimerSlider != null) comboTimerSlider.value = 0;
         UpdateUI();
     }
