@@ -76,6 +76,10 @@ public class TypingSystem : MonoBehaviour
     [SerializeField] private AudioClip flowStateStartSFX;
     [SerializeField] private ComboSystem comboSystem;
 
+    [Header("─── Rhythm Typing ───")]
+    [Tooltip("ลาก RhythmTypingManager มาใส่ — ระบบพิมพ์ตามจังหวะ BGM (ถ้าไม่ใส่จะพิมพ์แบบเดิม)")]
+    [SerializeField] private RhythmTypingManager rhythmTypingManager;
+
     private List<float> typedWordTimestamps = new List<float>();
     private float flowStateEndTime = -1f;
     private bool isFlowStateActive => Time.time < flowStateEndTime;
@@ -738,6 +742,12 @@ public class TypingSystem : MonoBehaviour
         inputField.selectionAnchorPosition = 0;
         inputField.selectionFocusPosition = inputField.text.Length;
         isInternalUpdate = false;
+
+        // ── Rhythm Typing: เริ่มแสดงตัวอักษรตามจังหวะ Beat เมื่อเลือกคำด้วย Scroll ──
+        if (rhythmTypingManager != null)
+        {
+            rhythmTypingManager.StartRhythmTyping(unlockedItemsCache[scrollIndex].itemName, slowTimeScale);
+        }
         
         Debug.Log($"[TypingSystem] Scrolled to: {inputField.text}");
     }
@@ -777,6 +787,12 @@ public class TypingSystem : MonoBehaviour
             needsFocus = false;
             // ล็อกเมาส์ไว้ปกติ
             CursorUnlocker.ApplyLock();
+
+            // ── หยุดระบบ Rhythm Typing เมื่อปิดหน้าต่างพิมพ์ ──
+            if (rhythmTypingManager != null && rhythmTypingManager.IsActive)
+            {
+                rhythmTypingManager.StopRhythmTyping();
+            }
         }
     }
 
@@ -825,6 +841,15 @@ public class TypingSystem : MonoBehaviour
         bool isDeleting = !string.IsNullOrEmpty(lastInput) && newValue.Length < lastInput.Length;
         lastInput = newValue;
 
+        // ── Rhythm Typing: ส่งตัวอักษรที่เพิ่งพิมพ์ไปประเมินจังหวะ ──
+        if (!isDeleting && rhythmTypingManager != null && rhythmTypingManager.IsActive)
+        {
+            // ดึงตัวอักษรตัวสุดท้ายที่เพิ่งพิมพ์
+            char lastTypedChar = newValue[newValue.Length - 1];
+            RhythmRating rating = rhythmTypingManager.ProcessKeyPress(lastTypedChar);
+            Debug.Log($"[TypingSystem] Rhythm Rating: {rating} for '{lastTypedChar}'");
+        }
+
         if (!isDeleting && itemData != null)
         {
             foreach (var item in itemData.items)
@@ -839,6 +864,13 @@ public class TypingSystem : MonoBehaviour
                     inputField.selectionAnchorPosition = typedLength;
                     inputField.selectionFocusPosition = item.itemName.Length;
                     isInternalUpdate = false;
+
+                    // ── Rhythm Typing: เริ่มแสดงตัวอักษรตามจังหวะ Beat ──
+                    if (rhythmTypingManager != null && !rhythmTypingManager.IsActive)
+                    {
+                        rhythmTypingManager.StartRhythmTyping(item.itemName, slowTimeScale);
+                    }
+
                     break; // Found first match
                 }
             }

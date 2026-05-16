@@ -133,7 +133,11 @@ public class AimTypingSystem : MonoBehaviour
     [Tooltip("ลาก TypingSystem มาใส่ เพื่อให้เมื่อพิมพ์ Aim สำเร็จ จะเสกไอเทมและใช้งานเลย")]
     [SerializeField] private TypingSystem typingSystem;
 
+    [Tooltip("ลาก RhythmTypingManager มาใส่ — ระบบพิมพ์ตามจังหวะ BGM (ถ้าไม่ใส่จะพิมพ์แบบเดิม)")]
+    [SerializeField] private RhythmTypingManager rhythmTypingManager;
+
     // ───────────────────────────────────────────────────────────
+
 
     [Header("─── Slow Motion ───")]
     [Range(0.05f, 1f)]
@@ -591,6 +595,12 @@ public class AimTypingSystem : MonoBehaviour
 
         // แสดง Autocomplete ทันที (แสดงคำเต็มเป็น selected text)
         ShowAutocomplete(currentTargetWord, 0);
+
+        // ── Rhythm Typing: เริ่มแสดงตัวอักษรตามจังหวะ Beat ทันทีที่ล็อกเป้า ──
+        if (rhythmTypingManager != null)
+        {
+            rhythmTypingManager.StartRhythmTyping(currentTargetWord, slowTimeScale);
+        }
     }
 
     // ============================================================
@@ -682,6 +692,12 @@ public class AimTypingSystem : MonoBehaviour
         lockedTarget      = null;
         currentTargetWord = "";
 
+        // ── หยุดระบบ Rhythm Typing เมื่อยกเลิกการพิมพ์ ──
+        if (rhythmTypingManager != null && rhythmTypingManager.IsActive)
+        {
+            rhythmTypingManager.StopRhythmTyping();
+        }
+
         SetHoveredObject(null);
         if (aimTypingUI != null) aimTypingUI.SetActive(false);
         if (inputField != null)  inputField.text = "";
@@ -713,6 +729,14 @@ public class AimTypingSystem : MonoBehaviour
 
         bool isDeleting = !string.IsNullOrEmpty(lastInput) && newValue.Length < lastInput.Length;
         lastInput = newValue;
+
+        // ── Rhythm Typing: ส่งตัวอักษรที่เพิ่งพิมพ์ไปประเมินจังหวะ ──
+        if (!isDeleting && rhythmTypingManager != null && rhythmTypingManager.IsActive)
+        {
+            char lastTypedChar = newValue[newValue.Length - 1];
+            RhythmRating rating = rhythmTypingManager.ProcessKeyPress(lastTypedChar);
+            Debug.Log($"[AimTyping] Rhythm Rating: {rating} for '{lastTypedChar}'");
+        }
 
         // แสดง Autocomplete เฉพาะตอนพิมพ์ถูกทิศ (ไม่ใช่ตอนลบ)
         if (!isDeleting && currentTargetWord.StartsWith(newValue, System.StringComparison.OrdinalIgnoreCase))
