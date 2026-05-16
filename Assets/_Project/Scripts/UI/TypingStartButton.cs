@@ -6,14 +6,9 @@ using System.Collections;
 
 namespace ITClash.UI
 {
-    /// <summary>
-    /// ปุ่มเริ่มเกมแบบพิมพ์คำ — แทนที่การคลิก
-    /// แสดงคำเป้าหมาย ผู้เล่นพิมพ์ตัวอักษรที่ถูกต้องทีละตัว พิมพ์ครบ = เริ่มเกม
-    /// </summary>
     public class TypingStartButton : MonoBehaviour
     {
         [Header("── Target Word ──")]
-        [Tooltip("คำที่ผู้เล่นต้องพิมพ์เพื่อเริ่มเกม")]
         [SerializeField] private string targetWord = "START";
 
         [Header("── Scene Navigation ──")]
@@ -21,16 +16,13 @@ namespace ITClash.UI
         [SerializeField] private float delayBeforeLoad = 0.5f;
 
         [Header("── UI References ──")]
-        [Tooltip("TextMeshProUGUI สำหรับแสดงข้อความที่กำลังพิมพ์ (ตัวสีเขียว)")]
-        [SerializeField] private TextMeshProUGUI wordDisplay;
-        
-        [Tooltip("(ใส่หรือไม่ใส่ก็ได้) TextMeshProUGUI สำหรับแสดงคำจางๆ ด้านหลัง ให้ผู้เล่นพิมพ์ตาม")]
-        [SerializeField] private TextMeshProUGUI backgroundWordDisplay;
+        [Tooltip("ใช้ TMP_InputField เพื่อให้เหมือนระบบเก่า (AimTypingSystem)")]
+        [SerializeField] private TMP_InputField inputField;
 
         [Header("── Colors ──")]
-        [SerializeField] private Color typedColor = new Color(0.2f, 1f, 0.4f);    // สีตัวอักษรที่พิมพ์ถูกแล้ว
-        [SerializeField] private Color untypedColor = new Color(1f, 1f, 1f, 0.5f); // สีตัวอักษรที่ยังไม่ได้พิมพ์
-        [SerializeField] private Color errorColor = new Color(1f, 0.2f, 0.2f);     // สีเมื่อพิมพ์ผิด
+        [SerializeField] private Color typedColor = new Color(1f, 1f, 1f, 1f);       // สีตัวอักษรหลัก
+        [SerializeField] private Color selectionColor = new Color(0.1f, 0.4f, 0.8f, 0.2f); // สีไฮไลท์ (ทำให้คำดูจาง)
+        [SerializeField] private Color errorColor = new Color(1f, 0.2f, 0.2f, 1f);      // สีเมื่อพิมพ์ผิด
 
         [Header("── Audio ──")]
         [SerializeField] private AudioSource audioSource;
@@ -43,7 +35,6 @@ namespace ITClash.UI
         [SerializeField] private float fadeDuration = 1f;
 
         [Header("── Animation ──")]
-        [Tooltip("สั่นเมื่อพิมพ์ผิด")]
         [SerializeField] private float shakeIntensity = 10f;
         [SerializeField] private float shakeDuration = 0.3f;
 
@@ -53,132 +44,123 @@ namespace ITClash.UI
         private bool _isShaking = false;
         private Vector2 _originalPos;
         private RectTransform _rectTransform;
+        private string _lastInput = "";
 
         private void Awake()
         {
-            _rectTransform = wordDisplay != null ? wordDisplay.GetComponent<RectTransform>() : null;
-            if (_rectTransform != null) _originalPos = _rectTransform.anchoredPosition;
+            if (inputField != null)
+            {
+                _rectTransform = inputField.GetComponent<RectTransform>();
+                _originalPos = _rectTransform.anchoredPosition;
+                
+                // ตั้งค่าเบื้องต้นให้เหมือนระบบเก่า
+                inputField.onValueChanged.AddListener(OnInputValueChanged);
+                inputField.textComponent.color = typedColor;
+                inputField.selectionColor = selectionColor;
+                
+                // ปิดการใช้ Rich Text ใน InputField เพื่อไม่ให้ตีกับระบบคัดลอกตำแหน่ง
+                inputField.richText = false;
+            }
 
             if (audioSource == null) audioSource = GetComponentInParent<AudioSource>();
         }
 
         private void Start()
         {
+            ResetTyping();
+        }
+
+        private void ResetTyping()
+        {
             _currentIndex = 0;
             _isCompleted = false;
-
-            // เซ็ตค่า Background Text ตั้งแต่เริ่ม
-            if (backgroundWordDisplay != null)
+            _lastInput = "";
+            
+            if (inputField != null)
             {
-                backgroundWordDisplay.text = targetWord;
-                backgroundWordDisplay.color = untypedColor;
-                wordDisplay.color = typedColor; // ให้ตัวหลักเป็นสีที่พิมพ์ถูก
+                inputField.interactable = true;
+                inputField.ActivateInputField();
+                UpdateDisplay();
             }
-
-            UpdateDisplay();
         }
 
         private void Update()
         {
-            if (_isCompleted) return;
+            if (_isCompleted || inputField == null) return;
 
-            // จับ A–Z ผ่าน KeyCode (ใช้ได้ทั้ง Legacy และ New Input System)
-            for (KeyCode key = KeyCode.A; key <= KeyCode.Z; key++)
+            // บังคับให้ Focus ตลอดเวลาเพื่อให้พิมพ์ได้ทันที
+            if (!inputField.isFocused)
             {
-                if (Input.GetKeyDown(key))
-                {
-                    char c = (char)('A' + (key - KeyCode.A));
-                    ProcessChar(c);
-                    if (_isCompleted) return;
-                }
+                inputField.ActivateInputField();
             }
         }
 
-        private void ProcessChar(char typed)
+        private void OnInputValueChanged(string newValue)
         {
-            if (_currentIndex >= targetWord.Length) return;
+            if (_isCompleted) return;
 
-            char expected = targetWord[_currentIndex];
-
-            // เทียบแบบ case-insensitive
-            if (char.ToUpper(typed) == char.ToUpper(expected))
+            // ตรวจสอบว่าเป็นการลบคำหรือไม่
+            bool isDeleting = newValue.Length < _lastInput.Length;
+            if (isDeleting)
             {
-                // ✅ ถูกต้อง
-                _currentIndex++;
-                PlaySFX(typeSFX);
                 UpdateDisplay();
+                return;
+            }
 
-                // พิมพ์ครบ!
-                if (_currentIndex >= targetWord.Length)
+            // ตรวจสอบตัวอักษรล่าสุด
+            if (newValue.Length > _currentIndex)
+            {
+                char typed = newValue[newValue.Length - 1];
+                char expected = targetWord[_currentIndex];
+
+                if (char.ToUpper(typed) == char.ToUpper(expected))
                 {
-                    _isCompleted = true;
-                    OnWordCompleted();
+                    _currentIndex++;
+                    PlaySFX(typeSFX);
+                    
+                    if (_currentIndex >= targetWord.Length)
+                    {
+                        _isCompleted = true;
+                        OnWordCompleted();
+                    }
+                    else
+                    {
+                        UpdateDisplay();
+                    }
+                }
+                else
+                {
+                    PlaySFX(errorSFX);
+                    StartCoroutine(ShowErrorFlash());
                 }
             }
-            else
-            {
-                // ❌ ผิด — รีเซ็ตกลับเริ่มต้น
-                _currentIndex = 0;
-                PlaySFX(errorSFX);
-                StartCoroutine(ShowErrorFlash());
-            }
+
+            _lastInput = inputField.text;
         }
 
         private void UpdateDisplay()
         {
-            if (wordDisplay == null) return;
+            if (inputField == null) return;
 
-            if (backgroundWordDisplay != null)
-            {
-                // โหมด 2 Text: Text หลักโชว์เฉพาะตัวที่พิมพ์แล้ว
-                wordDisplay.text = targetWord.Substring(0, _currentIndex);
-                wordDisplay.color = typedColor;               // ยืนยันว่าใช้สีที่ถูก
-                backgroundWordDisplay.color = untypedColor;   // รีเซ็ตสีพื้นหลังกลับมา (แก้บัคค้างสีแดงตอนพิมพ์ผิด)
-            }
-            else
-            {
-                // โหมด 1 Text: ใช้ Rich Text 
-                wordDisplay.color = Color.white; // รีเซ็ต base color ก่อนใช้ Rich Text
-
-                string typedHex = ColorUtility.ToHtmlStringRGB(typedColor);
-                string typedAlpha = Mathf.RoundToInt(typedColor.a * 255).ToString("X2");
-
-                string untypedHex = ColorUtility.ToHtmlStringRGB(untypedColor);
-                string untypedAlpha = Mathf.RoundToInt(untypedColor.a * 255).ToString("X2");
-
-                string typedPart = targetWord.Substring(0, _currentIndex);
-                string untypedPart = targetWord.Substring(_currentIndex);
-
-                wordDisplay.text = $"<color=#{typedHex}><alpha=#{typedAlpha}>{typedPart}</color><color=#{untypedHex}><alpha=#{untypedAlpha}>{untypedPart}</color>";
-            }
+            // ใช้เทคนิค Autocomplete แบบระบบเก่าเป๊ะๆ
+            inputField.SetTextWithoutNotify(targetWord);
+            inputField.selectionAnchorPosition = _currentIndex;
+            inputField.selectionFocusPosition = targetWord.Length;
+            inputField.caretPosition = _currentIndex;
         }
 
         private IEnumerator ShowErrorFlash()
         {
-            if (wordDisplay == null) yield break;
+            if (inputField == null) yield break;
 
-            if (backgroundWordDisplay != null)
-            {
-                // เปลี่ยนสี background เป็นสีแดงชั่วคราว
-                backgroundWordDisplay.color = errorColor;
-                wordDisplay.text = ""; // ซ่อน text ที่พิมพ์อยู่
-            }
-            else
-            {
-                string errorHex = ColorUtility.ToHtmlStringRGB(errorColor);
-                string errorAlpha = Mathf.RoundToInt(errorColor.a * 255).ToString("X2");
-                wordDisplay.text = $"<color=#{errorHex}><alpha=#{errorAlpha}>{targetWord}</color>";
-            }
-
-            // สั่น
+            inputField.textComponent.color = errorColor;
+            
             if (_rectTransform != null && !_isShaking)
-            {
                 StartCoroutine(ShakeRoutine());
-            }
 
             yield return new WaitForSecondsRealtime(0.15f);
 
-            // กลับสู่ปกติ
+            inputField.textComponent.color = typedColor;
             UpdateDisplay();
         }
 
@@ -203,32 +185,20 @@ namespace ITClash.UI
         {
             PlaySFX(successSFX);
 
-            // แสดงข้อความครบเป็นสีเขียวสดใส
-            if (backgroundWordDisplay != null)
+            if (inputField != null)
             {
-                backgroundWordDisplay.gameObject.SetActive(false); // ซ่อนพื้นหลัง
-                wordDisplay.text = targetWord;
-                wordDisplay.color = typedColor;
-            }
-            else
-            {
-                string typedHex = ColorUtility.ToHtmlStringRGB(typedColor);
-                string typedAlpha = Mathf.RoundToInt(typedColor.a * 255).ToString("X2");
-
-                if (wordDisplay != null)
-                    wordDisplay.text = $"<color=#{typedHex}><alpha=#{typedAlpha}>{targetWord}</color>";
+                inputField.SetTextWithoutNotify(targetWord);
+                inputField.selectionAnchorPosition = targetWord.Length;
+                inputField.selectionFocusPosition = targetWord.Length;
+                inputField.interactable = false;
             }
 
             if (!string.IsNullOrEmpty(targetSceneName))
             {
                 if (fadeCanvasGroup != null)
-                {
                     StartCoroutine(FadeOutAndLoad());
-                }
                 else
-                {
                     StartCoroutine(DelayedLoad());
-                }
             }
         }
 

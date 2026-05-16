@@ -276,7 +276,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: START
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -423,8 +423,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4292008308
-  m_fontColor: {r: 0.45490196, g: 0.8509804, b: 0.8235294, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1117,6 +1117,7 @@ GameObject:
   - component: {fileID: 1554698833}
   - component: {fileID: 1554698832}
   - component: {fileID: 1554698831}
+  - component: {fileID: 1554698835}
   m_Layer: 5
   m_Name: TypingUI
   m_TagString: Untagged
@@ -1141,8 +1142,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -153}
-  m_SizeDelta: {x: 1000, y: 100}
+  m_AnchoredPosition: {x: 53.360107, y: -153}
+  m_SizeDelta: {x: 442.2347, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1554698831
 MonoBehaviour:
@@ -1159,10 +1160,9 @@ MonoBehaviour:
   targetWord: START
   targetSceneName: Map
   delayBeforeLoad: 0.3
-  wordDisplay: {fileID: 1645149016}
-  backgroundWordDisplay: {fileID: 281861807}
+  inputField: {fileID: 0}
   typedColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
-  untypedColor: {r: 1, g: 1, b: 1, a: 0.5}
+  selectionColor: {r: 0.1, g: 0.4, b: 0.8, a: 0.2}
   errorColor: {r: 1, g: 0.2, b: 0.2, a: 1}
   audioSource: {fileID: 0}
   typeSFX: {fileID: 0}
@@ -1320,6 +1320,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1554698829}
   m_CullTransparentMesh: 1
+--- !u!114 &1554698835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554698829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2497d79a395932840961bc97d3511756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ITClash.UI.UITiltEffect
+  maxTiltAngle: 10
+  smoothTime: 0.1
+  moveIntensity: 5
 --- !u!1 &1645149014
 GameObject:
   m_ObjectHideFlags: 0
