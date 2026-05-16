@@ -611,18 +611,32 @@ public class AimTypingSystem : MonoBehaviour
     {
         if (inputField == null) return;
 
-        // ดึงเฉพาะส่วนที่ผู้เล่นพิมพ์จริงๆ (ไม่รวม selected/autocomplete portion)
-        int anchorPos   = inputField.selectionAnchorPosition;
-        int focusPos    = inputField.selectionFocusPosition;
-        int typedLength = Mathf.Min(anchorPos, focusPos);
+        bool isRhythmActive = rhythmTypingManager != null && rhythmTypingManager.IsActive;
+        bool isSuccess = false;
+        string typed = "";
 
-        // ถ้าไม่มี selection → ถือว่าพิมพ์ทั้งหมด
-        if (typedLength == 0 && anchorPos == focusPos)
-            typedLength = inputField.text.Length;
+        if (isRhythmActive)
+        {
+            // Rhythm Mode ถือว่า Success เสมอเมื่อ Submit ถูกเรียก (เพราะจะเรียกตอนพิมพ์ครบคำ)
+            isSuccess = true;
+            typed = currentTargetWord;
+        }
+        else
+        {
+            // ดึงเฉพาะส่วนที่ผู้เล่นพิมพ์จริงๆ (ไม่รวม selected/autocomplete portion)
+            int anchorPos   = inputField.selectionAnchorPosition;
+            int focusPos    = inputField.selectionFocusPosition;
+            int typedLength = Mathf.Min(anchorPos, focusPos);
 
-        string typed = inputField.text.Substring(0, typedLength).Trim();
+            // ถ้าไม่มี selection → ถือว่าพิมพ์ทั้งหมด
+            if (typedLength == 0 && anchorPos == focusPos)
+                typedLength = inputField.text.Length;
 
-        if (string.Equals(typed, currentTargetWord, System.StringComparison.OrdinalIgnoreCase))
+            typed = inputField.text.Substring(0, typedLength).Trim();
+            isSuccess = string.Equals(typed, currentTargetWord, System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (isSuccess)
             OnTypingSuccess();
         else
             OnTypingFail(typed);
@@ -668,7 +682,13 @@ public class AimTypingSystem : MonoBehaviour
         // แต่ถ้าสแกนสิ่งของรอบตัว (เช่น ตะเกียงบนโต๊ะ) ให้ส่ง null เพื่อให้ยิงตามเป้าเล็ง (Crosshair) ตามปกติ
         if (typingSystem != null)
         {
-            typingSystem.TryMatchItem(currentTargetWord, isEnemy ? lockedHitPoint : (Vector3?)null);
+            float power = 1f;
+            if (rhythmTypingManager != null && rhythmTypingManager.IsActive)
+            {
+                power = rhythmTypingManager.GetPowerMultiplier();
+            }
+
+            typingSystem.TryMatchItem(currentTargetWord, isEnemy ? lockedHitPoint : (Vector3?)null, power);
         }
 
         // ออกจาก Aim mode ทันทีที่พิมพ์ถูก

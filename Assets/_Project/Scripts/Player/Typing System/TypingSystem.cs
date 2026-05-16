@@ -93,6 +93,10 @@ public class TypingSystem : MonoBehaviour
     // กันไม่ให้ Release ในเฟรมเดียวกับที่รับไอเทมมา (เช่น Scan + คลิกพร้อมกัน)
     private float _lastItemPlacedTime = -1f;
 
+    // ระบบพลัง Rhythm Typing
+    private float firstItemPower = 1f;
+    private float secondItemPower = 1f;
+
     [Header("Item Spawning Settings")]
     [SerializeField] private Transform playerTransform; // ลาก Player มาใส่ตรงนี้ (ถ้าไม่ใส่จะหา Tag "Player" อัตโนมัติ)
     [SerializeField] private Vector3 firstSlotOffset = new Vector3(-0.6f, 1.8f, -1.0f);
@@ -390,9 +394,9 @@ public class TypingSystem : MonoBehaviour
         }
     }
 
-    public bool TryMatchItem(string input, Vector3? targetPos = null)
+    public bool TryMatchItem(string input, Vector3? targetPos = null, float power = 1f)
     {
-        Debug.Log($"<color=white>[TypingSystem] Attempting to match: '{input}'</color>");
+        Debug.Log($"<color=white>[TypingSystem] Attempting to match: '{input}' with power {power:F2}x</color>");
         
         if (itemData == null) 
         {
@@ -459,7 +463,7 @@ public class TypingSystem : MonoBehaviour
                     
                     RecordTypedWord();
 
-                    ProcessItemMatch(item, targetPos);
+                    ProcessItemMatch(item, targetPos, power);
                     PlaySFX(typingSuccessSFX != null ? typingSuccessSFX : matchSFX);
                     SetSlowMotion(false);
                     return true;
@@ -481,13 +485,14 @@ public class TypingSystem : MonoBehaviour
         return false;
     }
 
-    private void ProcessItemMatch(ItemInfo matchedItem, Vector3? targetPos)
+    private void ProcessItemMatch(ItemInfo matchedItem, Vector3? targetPos, float power)
     {
         // ถ้าช่องแรกว่าง ให้ใส่ช่องแรก
         if (firstItem == null || string.IsNullOrEmpty(firstItem.itemName))
         {
             firstItem = matchedItem;
             firstItemTargetPos = targetPos;
+            firstItemPower = power;
             _lastItemPlacedTime = Time.unscaledTime; // เริ่ม grace period
             spawnedFirst = SpawnItemAtOffset(firstItem, firstSlotOffset);
             
@@ -501,6 +506,7 @@ public class TypingSystem : MonoBehaviour
         {
             secondItem = matchedItem;
             secondItemTargetPos = targetPos;
+            secondItemPower = power;
             _lastItemPlacedTime = Time.unscaledTime; // เริ่ม grace period
             spawnedSecond = SpawnItemAtOffset(secondItem, secondSlotOffset);
             
@@ -516,6 +522,7 @@ public class TypingSystem : MonoBehaviour
             if (spawnedSecond != null) Destroy(spawnedSecond);
             secondItem = matchedItem;
             secondItemTargetPos = targetPos;
+            secondItemPower = power;
             _lastItemPlacedTime = Time.unscaledTime; // เริ่ม grace period
             spawnedSecond = SpawnItemAtOffset(secondItem, secondSlotOffset);
             
@@ -616,7 +623,9 @@ public class TypingSystem : MonoBehaviour
 
                 // ตั้งค่าไอเทมใหม่
                 firstItem = combo.resultItem;
+                firstItemPower = Mathf.Max(firstItemPower, secondItemPower); // ใช้พลังที่สูงกว่า
                 secondItem = null;
+                secondItemPower = 1f;
                 spawnedSecond = null;
                 
                 // สร้างไอเทมผลลัพธ์
@@ -646,14 +655,16 @@ public class TypingSystem : MonoBehaviour
         // ปล่อยชิ้นที่สองก่อน (ถ้ามี และมีชื่อ)
         if (secondItem != null && !string.IsNullOrEmpty(secondItem.itemName))
         {
-            PerformRelease(ref secondItem, ref spawnedSecond, secondItemTargetPos);
+            PerformRelease(ref secondItem, ref spawnedSecond, secondItemPower, secondItemTargetPos);
             secondItemTargetPos = null;
+            secondItemPower = 1f;
         }
         // ถ้าไม่มีชิ้นที่สอง ให้ปล่อยชิ้นแรก (ถ้ามีชื่อ)
         else if (firstItem != null && !string.IsNullOrEmpty(firstItem.itemName))
         {
-            PerformRelease(ref firstItem, ref spawnedFirst, firstItemTargetPos);
+            PerformRelease(ref firstItem, ref spawnedFirst, firstItemPower, firstItemTargetPos);
             firstItemTargetPos = null;
+            firstItemPower = 1f;
         }
         else
         {
@@ -663,7 +674,7 @@ public class TypingSystem : MonoBehaviour
         }
     }
 
-    private void PerformRelease(ref ItemInfo item, ref GameObject obj, Vector3? targetPos = null)
+    private void PerformRelease(ref ItemInfo item, ref GameObject obj, float powerMultiplier, Vector3? targetPos = null)
     {
         if (item == null) return;
 
@@ -705,6 +716,11 @@ public class TypingSystem : MonoBehaviour
             if (skill != null)
             {
                 skill.TargetPosition = targetPos; // ส่งตำแหน่งเป้าหมายไปให้ Skill
+                skill.PowerMultiplier = powerMultiplier;
+
+                // ── ขยายขนาดของ Item ที่ปล่อยออกตามตัวคูณพลัง ──
+                skillObj.transform.localScale *= powerMultiplier;
+
                 skill.Activate(playerTransform);
             }
         }
@@ -906,7 +922,8 @@ public class TypingSystem : MonoBehaviour
             // ถ้าพิมพ์ถูกจนครบคำแล้ว ให้ submit เลย
             if (rhythmTypingManager.IsWordCompleted)
             {
-                TryMatchItem(rhythmTypingManager.CurrentWord, null);
+                float power = rhythmTypingManager.GetPowerMultiplier();
+                TryMatchItem(rhythmTypingManager.CurrentWord, null, power);
                 isInternalUpdate = true;
                 inputField.text = "";
                 lastInput = "";

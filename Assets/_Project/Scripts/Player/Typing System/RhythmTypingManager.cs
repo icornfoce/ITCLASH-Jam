@@ -114,6 +114,12 @@ public class RhythmTypingManager : MonoBehaviour
     private float targetTimeScale = 0.2f;
     private bool hasTimeEffect = false;
 
+    // Rhythm Stats for Power Buff
+    private int perfectCount = 0;
+    private int goodCount = 0;
+    private int okCount = 0;
+    private int missCount = 0;
+
     // ============================================================
     // PROPERTIES
     // ============================================================
@@ -155,6 +161,12 @@ public class RhythmTypingManager : MonoBehaviour
         targetTimeScale = baseTimeScale;
         hasTimeEffect = false;
         timeEffectTimer = 0f;
+
+        // Reset Stats
+        perfectCount = 0;
+        goodCount = 0;
+        okCount = 0;
+        missCount = 0;
 
         // คำนวณระยะเวลาระหว่าง Beat
         beatInterval = 60f / bpm;
@@ -231,6 +243,7 @@ public class RhythmTypingManager : MonoBehaviour
         // ตรวจสอบว่าพิมพ์ตัวถูกหรือไม่
         if (char.ToLower(typedChar) != char.ToLower(expected))
         {
+            missCount++;
             // พิมพ์ผิดตัว → Miss
             ApplyTimeEffect(RhythmRating.Miss);
             if (currentLetterIndex < activeSlots.Count)
@@ -256,6 +269,15 @@ public class RhythmTypingManager : MonoBehaviour
 
         // พิมพ์ถูกตัว → ตรวจสอบจังหวะ
         RhythmRating rating = EvaluateTiming();
+
+        switch (rating)
+        {
+            case RhythmRating.Perfect: perfectCount++; break;
+            case RhythmRating.Good: goodCount++; break;
+            case RhythmRating.OK: okCount++; break;
+            case RhythmRating.Miss: missCount++; break;
+        }
+
         ApplyTimeEffect(rating);
 
         // อัปเดต UI ของ Slot ปัจจุบัน
@@ -280,6 +302,20 @@ public class RhythmTypingManager : MonoBehaviour
         }
 
         return rating;
+    }
+
+    /// <summary>
+    /// คำนวณตัวคูณพลังจากผลการพิมพ์ (ยิ่งพิมพ์ได้ Perfect เยอะยิ่งตีแรง/ใหญ่ขึ้น)
+    /// </summary>
+    public float GetPowerMultiplier()
+    {
+        if (string.IsNullOrEmpty(currentWord)) return 1f;
+
+        // Perfect ได้บัฟ +20%, Good +10%, Miss โดนหัก -10%
+        float buff = (perfectCount * 0.2f) + (goodCount * 0.1f) - (missCount * 0.1f);
+        
+        // จำกัดตัวคูณให้อยู่ระหว่าง 0.5x ถึง 3.0x
+        return Mathf.Clamp(1f + buff, 0.5f, 3.0f);
     }
 
     // ============================================================
